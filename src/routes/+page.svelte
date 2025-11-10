@@ -27,7 +27,6 @@
 
 	function onSelect(letter: string) {
 		if (gameOver) return;
-
 		selected = [...selected, letter];
 	}
 	function removeLetterFromSelection() {
