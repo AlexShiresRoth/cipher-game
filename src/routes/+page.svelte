@@ -1,26 +1,34 @@
 <script lang="ts">
 	import clsx from 'clsx';
+	import { format, parseISO } from 'date-fns';
 	import { fade, fly } from 'svelte/transition';
+	import type { CipherPuzzle } from '../types';
 
-	export let word = 'squid';
-	export let cipher = 'disqu';
+	export let data: CipherPuzzle;
+	export let word = data.word;
+	export let cipher = data.cipherWord;
 	export let cipherState = cipher.split('');
 	export let errors: string[] = [];
 	export let win = false;
 	export let lose = false;
 	export let gameOver = false;
-	// this is the amount you can move before losing
-	export let moveLimit = 20;
+	export let moveLimit = data.maxAttempts;
 	export let moveAmount = 0;
+	export let modalOpen = false;
 
 	const alpha = 'abcdefghijklmnopqrstuvwxyz'.split('');
+
+	const today = format(parseISO(data.date), 'EEE d, yyyy');
+	const date = new Date();
+	const formattedDate = date.toISOString().split('T')[0];
 
 	let selected: string[] = [];
 	let guesses: string[] = [];
 
 	function onSelect(letter: string) {
+		if (gameOver) return;
+
 		selected = [...selected, letter];
-		console.log('hello', letter);
 	}
 	function removeLetterFromSelection() {
 		selected.pop();
@@ -29,7 +37,12 @@
 	function clearSelection() {
 		selected = [];
 	}
-	function guess() {
+	async function isValidWord(word: string) {
+		const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
+
+		return res.ok;
+	}
+	async function guess() {
 		if (guesses.filter((guess) => guess === selected.join('')).length > 0) {
 			errors = [...errors, 'Already guessed'];
 			console.error('Already guessed!');
@@ -49,6 +62,15 @@
 			return;
 		}
 
+		const isValidGuess = await isValidWord(selected.join(''));
+
+		if (!isValidGuess) {
+			errors = [...errors, 'Not a valid guess'];
+			console.error('Not a valid word in list');
+			selected = [];
+			return;
+		}
+
 		let selectionLength = selected.length;
 
 		const startIndex = cipherState.indexOf(selected[0]);
@@ -62,6 +84,13 @@
 			}
 		})();
 
+		if (moveIndex === startIndex) {
+			errors = [...errors, 'Same position'];
+			console.error('Move equates to same position');
+			selected = [];
+			return;
+		}
+
 		(function () {
 			const newState = [...cipherState];
 			[newState[startIndex], newState[moveIndex]] = [newState[moveIndex], newState[startIndex]];
@@ -73,14 +102,54 @@
 		moveAmount++;
 	}
 
+	async function shareResults() {
+		const shareText = win
+			? `I cracked the Cipher in ${moveAmount}/${moveLimit}`
+			: `I couldn't figure out the cipher today 😩`;
+
+		navigator.share({
+			text: shareText,
+			title: 'Cipher Game',
+			url: 'https://cipher-game-alpha.vercel.app/'
+		});
+	}
+
 	$: (() => {
-		if (cipherState.join('') === word) {
+		if (typeof window === 'undefined') return;
+
+		if (formattedDate !== data.date) {
+			localStorage.removeItem('gameStatus');
+			localStorage.removeItem('moves');
+			localStorage.removeItem('cipher');
+		}
+		if (cipherState.join('') === word && moveAmount <= moveLimit) {
 			win = true;
 			gameOver = true;
+			modalOpen = true;
+			localStorage.setItem('gameStatus', 'win');
+			localStorage.setItem('moves', String(moveAmount));
+			localStorage.setItem('cipher', word);
 		}
 		if (moveAmount >= moveLimit) {
 			lose = true;
 			gameOver = true;
+			modalOpen = true;
+			localStorage.setItem('gameStatus', 'lose');
+		}
+		if (localStorage.getItem('gameStatus') === 'win') {
+			win = true;
+			gameOver = true;
+			modalOpen = true;
+		}
+		if (localStorage.getItem('gameStatus') === 'lose') {
+			lose = true;
+			gameOver = true;
+			modalOpen = true;
+			moveAmount = moveLimit;
+		}
+		const moves = localStorage.getItem('moves');
+		if (moves) {
+			moveAmount = parseInt(moves);
 		}
 		if (errors.length > 0) {
 			setTimeout(() => {
@@ -89,38 +158,72 @@
 				errors = newErrors;
 			}, 3000);
 		}
+		const storedCipher = localStorage.getItem('cipher');
+		if (storedCipher) {
+			cipherState = storedCipher.split('');
+		}
 	})();
 </script>
 
 <main class="flex w-screen flex-col items-center">
-	<nav class="flex w-full justify-between border-b border-b-black">
-		<div class="flex items-center px-4 text-black/50">
-			<p>v0.1.alpha</p>
+	<nav class="grid w-full grid-cols-3 justify-between border-b border-b-black">
+		<div class="flex items-center justify-start px-4 text-sm text-black/50">
+			<p>{today}</p>
 		</div>
 		<div class="flex items-center justify-center">
 			<h2 class="text-3xl font-bold uppercase">CIPHER</h2>
 		</div>
-		<div class="flex items-center">
+		<div class="flex items-center justify-end">
 			<button
+				on:click={() => {
+					modalOpen = true;
+				}}
 				class="bg-black px-4 py-2 text-white transition-colors hover:cursor-pointer hover:bg-black/80"
-				>menu</button
+				>{gameOver ? 'share' : 'menu'}</button
 			>
 		</div>
 	</nav>
 
-	{#if gameOver}
+	<div class="flex w-full items-center justify-between px-4 py-2 text-sm">
+		<div>
+			<p>Current: {moveAmount}</p>
+		</div>
+		<div>
+			<p>Max Moves: {moveLimit}</p>
+		</div>
+	</div>
+
+	{#if gameOver && modalOpen}
 		<div
 			transition:fade={{ delay: 1000 }}
-			class="fixed top-0 left-0 z-10 flex h-screen w-screen flex-col items-center justify-center bg-white"
+			class="fixed top-0 left-0 z-10 flex h-screen w-screen flex-col items-center bg-white"
 		>
-			{#if win}
-				<h1 class="text-6xl font-bold text-emerald-500 uppercase">you won!</h1>
-				<button>Share success</button>
-			{/if}
-			{#if lose}
-				<h1 class="text-6xl font-bold uppercase">better luck next time 😩!</h1>
-				<button>Share success</button>
-			{/if}
+			<div class="mt-2 flex w-full items-center justify-end px-4">
+				<button
+					class="text-lg font-bold text-black"
+					on:click={() => {
+						modalOpen = false;
+					}}>X</button
+				>
+			</div>
+			<div class="flex h-full w-full flex-col items-center justify-center">
+				{#if win}
+					<div class="flex w-full flex-col items-center justify-center gap-4">
+						<h1 class="text-6xl font-bold text-emerald-500 uppercase">you won!</h1>
+						<button class="rounded-full bg-black px-4 py-2 text-white" on:click={shareResults}
+							>Share your result</button
+						>
+					</div>
+				{/if}
+				{#if lose}
+					<div class="flex w-full flex-col items-center justify-center gap-4">
+						<h1 class="text-6xl font-bold uppercase">better luck next time 😩!</h1>
+						<button class="rounded-full bg-black px-4 py-2 text-white" on:click={shareResults}
+							>Share your result</button
+						>
+					</div>
+				{/if}
+			</div>
 		</div>
 	{/if}
 
@@ -179,29 +282,31 @@
 		{#if !gameOver}
 			<div
 				data-testid="button-rows"
-				class="mt-12 flex w-full items-center justify-between gap-4 md:justify-end"
+				class="mt-2 flex w-full items-center justify-between gap-4 md:justify-end"
 			>
-				<div>
-					<button
-						on:click={clearSelection}
-						class={clsx('px-4 py-2 transition-colors md:text-lg', {
-							'bg-gray-100 text-black/80': selected.length === 0,
-							'bg-black text-white': selected.length > 0
-						})}>Clear</button
-					>
+				<div class="flex items-center gap-4">
+					<div>
+						<button
+							on:click={clearSelection}
+							class={clsx('rounded-full px-4 py-2 text-sm transition-colors md:text-lg', {
+								'bg-gray-100 text-black/80': selected.length === 0,
+								'bg-black text-white': selected.length > 0
+							})}>Clear</button
+						>
+					</div>
+					<div>
+						<button
+							on:click={removeLetterFromSelection}
+							class={clsx('rounded-full px-4 py-2 text-sm transition-colors md:text-lg', {
+								'bg-gray-100 text-black/80': selected.length === 0,
+								'bg-black text-white': selected.length > 0
+							})}>Delete</button
+						>
+					</div>
 				</div>
 				<div>
 					<button
-						on:click={removeLetterFromSelection}
-						class={clsx('px-4 py-2 transition-colors md:text-lg', {
-							'bg-gray-100 text-black/80': selected.length === 0,
-							'bg-black text-white': selected.length > 0
-						})}>Delete</button
-					>
-				</div>
-				<div>
-					<button
-						class={clsx('px-4 py-2 transition-colors md:text-lg', {
+						class={clsx('rounded-full px-4 py-2 text-sm transition-colors md:text-lg', {
 							'bg-gray-100 text-black/80': selected.length <= 1,
 							'bg-black text-white': selected.length > 1
 						})}
@@ -212,4 +317,31 @@
 			</div>
 		{/if}
 	</div>
+	<footer class="mt-8 flex w-full flex-col items-center bg-gray-100">
+		<div class="flex w-full items-center border-b border-b-gray-200 px-4 py-2">
+			<p class="text-xs text-gray-400">
+				&copy; {new Date().getFullYear()} Alex Rothenberg. All rights reserved.
+			</p>
+		</div>
+		<div class="flex w-full items-center justify-between border-b border-b-gray-200 px-4 py-2">
+			<div>
+				<p class="text-xs text-gray-400">
+					created by <a
+						href="https://alexshiresroth.com/"
+						class="underline"
+						target="_blank"
+						rel="noopener noreferrer">Alex Rothenberg</a
+					>
+				</p>
+			</div>
+			<div>
+				<p class="text-xs text-gray-400">v0.2@alpha</p>
+			</div>
+		</div>
+		<div class="flex w-full items-center justify-center px-4 py-2">
+			<p class="text-xs text-gray-400">
+				Unauthorized copying, reproduction, or distribution of this game is prohibited.
+			</p>
+		</div>
+	</footer>
 </main>
