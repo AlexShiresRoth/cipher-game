@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { format } from 'date-fns';
 	let showNavModal = false;
-	const today = format(new Date(), 'EEE d, yyyy');
+	const today = format(new Date().toLocaleDateString(), 'EEE d, yyyy');
 </script>
 
 <main>
@@ -68,6 +68,11 @@
 			</li>
 			<li>If the shift goes past the end, it <strong>wraps around</strong>.</li>
 			<li>Each guess counts as one move — and you only get a few!</li>
+			<li>
+				<b>Duplicate letters: </b>
+				if there are duplicate letters in a word, you will be able to select which one to start from.
+				An animation will indicate this.
+			</li>
 		</ol>
 
 		<h3 class="text-lg font-semibold text-amber-500">Example</h3>
