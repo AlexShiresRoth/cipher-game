@@ -1,6 +1,6 @@
 <script lang="ts">
 	import clsx from 'clsx';
-	import { format, parseISO } from 'date-fns';
+	import { format } from 'date-fns';
 	import { fade, fly } from 'svelte/transition';
 	import type { CipherPuzzle } from '../types';
 
@@ -19,7 +19,7 @@
 
 	const alpha = 'qwertyuiopasdfghjklzxcvbnm'.split('');
 
-	const today = format(parseISO(data.date), 'EEE d, yyyy');
+	const today = format(new Date(), 'EEE d, yyyy');
 	const date = new Date();
 	const formattedDate = date.toISOString().split('T')[0];
 
@@ -142,12 +142,14 @@
 			localStorage.setItem('gameStatus', 'win');
 			localStorage.setItem('moves', String(moveAmount));
 			localStorage.setItem('cipher', word);
+			localStorage.setItem('date', formattedDate);
 		}
 		if (moveAmount > moveLimit) {
 			lose = true;
 			gameOver = true;
 			modalOpen = true;
 			localStorage.setItem('gameStatus', 'lose');
+			localStorage.setItem('date', formattedDate);
 		}
 		if (localStorage.getItem('gameStatus') === 'win') {
 			win = true;
@@ -178,6 +180,12 @@
 		if (selected.length > 1) {
 			const { moveIndex } = getMoveToIndex();
 			indexToSwap = moveIndex;
+		}
+		if (formattedDate !== localStorage.getItem('date')) {
+			localStorage.removeItem('date');
+			localStorage.removeItem('gameStatus');
+			localStorage.removeItem('cipher');
+			localStorage.removeItem('moves');
 		}
 	})();
 </script>
