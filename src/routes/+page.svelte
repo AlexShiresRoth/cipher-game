@@ -19,18 +19,41 @@
 
 	const alpha = 'qwertyuiopasdfghjklzxcvbnm'.split('');
 
-	const today = format(new Date(), 'EEE d, yyyy');
+	const today = format(new Date().toLocaleDateString(), 'EEE d, yyyy');
 	const date = new Date();
-	const formattedDate = date.toISOString().split('T')[0];
+	const formattedDate = format(date.toLocaleDateString(), 'yyyy-MM-dd');
 
 	let selected: string[] = [];
 	let guesses: string[] = [];
-
 	let indexToSwap: number;
+	let startIndex: number = -1;
+	let allowChooseIndex = false;
 
 	function onSelect(letter: string) {
 		if (gameOver) return;
+		if (selected.length >= 12) return;
 		selected = [...selected, letter];
+		// set starting index to the first letter of selection
+		if (selected.length <= 1) {
+			startIndex = cipherState.indexOf(selected[0]);
+		}
+		// we need to allow selecting starting index if there are duplicate letters
+		if (selected[0] === letter) {
+			if (cipherState.filter((l) => l === letter).length > 1) {
+				allowChooseIndex = true;
+			}
+		}
+		if (selected.length > 1) {
+			allowChooseIndex = false;
+		}
+	}
+	function chooseStartingIndex(index: number) {
+		if (cipherState[index] === selected[0]) {
+			startIndex = index;
+			allowChooseIndex = false;
+			const moveIndex = getMoveToIndex();
+			indexToSwap = moveIndex;
+		}
 	}
 	function removeLetterFromSelection() {
 		selected.pop();
@@ -39,11 +62,16 @@
 	function clearSelection() {
 		selected = [];
 		indexToSwap = -1;
+		startIndex = -1;
+	}
+	function resetStorage() {
+		localStorage.removeItem('date');
+		localStorage.removeItem('gameStatus');
+		localStorage.removeItem('cipher');
+		localStorage.removeItem('moves');
 	}
 	function getMoveToIndex() {
 		let selectionLength = selected.length;
-
-		const startIndex = cipherState.indexOf(selected[0]);
 
 		let moveIndex: number = startIndex + selectionLength;
 
@@ -54,7 +82,7 @@
 			}
 		})();
 
-		return { moveIndex, startIndex };
+		return moveIndex;
 	}
 	async function isValidWord(word: string) {
 		const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
@@ -65,22 +93,19 @@
 		if (guesses.filter((guess) => guess === selected.join('')).length > 0) {
 			errors = [...errors, 'Already guessed'];
 			console.error('Already guessed!');
-			selected = [];
-			indexToSwap = -1;
+			clearSelection();
 			return;
 		}
 		if (selected.length === 1) {
 			errors = [...errors, 'Too short'];
 			console.error('Too short!');
-			selected = [];
-			indexToSwap = -1;
+			clearSelection();
 			return;
 		}
 		if (!cipherState.includes(selected[0])) {
 			errors = [...errors, 'Not in cipher'];
 			console.error('Not in cipher!');
-			selected = [];
-			indexToSwap = -1;
+			clearSelection();
 			return;
 		}
 
@@ -89,18 +114,16 @@
 		if (!isValidGuess) {
 			errors = [...errors, 'Not a valid guess'];
 			console.error('Not a valid word in list');
-			selected = [];
-			indexToSwap = -1;
+			clearSelection();
 			return;
 		}
 
-		const { moveIndex, startIndex } = getMoveToIndex();
+		const moveIndex = getMoveToIndex();
 
 		if (moveIndex === startIndex) {
 			errors = [...errors, 'Same position'];
 			console.error('Move equates to same position');
-			selected = [];
-			indexToSwap = -1;
+			clearSelection();
 			return;
 		}
 
@@ -111,8 +134,7 @@
 		})();
 
 		guesses = [...guesses, selected.join('')];
-		selected = [];
-		indexToSwap = -1;
+		clearSelection();
 		moveAmount++;
 	}
 
@@ -131,9 +153,7 @@
 		if (typeof window === 'undefined') return;
 
 		if (formattedDate !== data.date) {
-			localStorage.removeItem('gameStatus');
-			localStorage.removeItem('moves');
-			localStorage.removeItem('cipher');
+			resetStorage();
 		}
 		if (cipherState.join('') === word && moveAmount <= moveLimit) {
 			win = true;
@@ -177,15 +197,15 @@
 		if (storedCipher) {
 			cipherState = storedCipher.split('');
 		}
-		if (selected.length > 1) {
-			const { moveIndex } = getMoveToIndex();
+		if (selected.length > 0) {
+			const moveIndex = getMoveToIndex();
 			indexToSwap = moveIndex;
 		}
 		if (formattedDate !== localStorage.getItem('date')) {
-			localStorage.removeItem('date');
-			localStorage.removeItem('gameStatus');
-			localStorage.removeItem('cipher');
-			localStorage.removeItem('moves');
+			resetStorage();
+		}
+		if (selected.length === 0) {
+			clearSelection();
 		}
 	})();
 </script>
@@ -230,6 +250,7 @@
 		</div>
 	</nav>
 
+	<!-- Moves row -->
 	<div class="flex w-full items-center justify-between px-4 py-2 text-sm">
 		<div>
 			<p>Current: {moveAmount}</p>
@@ -295,21 +316,35 @@
 		<!-- Cipher blocks row -->
 		<div class="mb-8 flex w-full justify-center gap-2">
 			{#each cipherState as key, i (`${key}-${i}`)}
-				<div
+				<button
+					on:click={() => {
+						if (allowChooseIndex) {
+							chooseStartingIndex(i);
+						}
+					}}
 					transition:fly={{ y: 100, duration: 700, delay: 100 * (i + 1) }}
 					class={clsx(
 						'relative flex w-12 items-center justify-center border-2 p-2 transition-all md:w-20',
 						{
-							'border-amber-500 text-amber-500': cipherState[i] === selected[0],
+							'animate-bounce': allowChooseIndex && cipherState.filter((l) => l === key).length > 1,
+							'border-amber-500 text-amber-500': startIndex === i,
 							'border-indigo-500 text-indigo-500 shadow-[3px_3px_0px_1px_rgba(0,0,0,.2)]':
 								indexToSwap === i,
-							'border-emerald-500 text-emerald-500': word.split('').indexOf(key) === i,
-							'border-black': word.split('').indexOf(key) !== i && cipherState[i] !== selected[0]
+							'border-emerald-500 text-emerald-500': word.split('')[i] === cipherState[i],
+							'border-black': startIndex !== i
 						}
 					)}
 				>
 					<p class="text-2xl font-bold uppercase md:text-5xl">{key}</p>
-					{#if selected.length > 0 && cipherState[i] === selected[0]}
+					{#if allowChooseIndex && cipherState.filter((l) => l === key).length > 1}
+						<div
+							class="absolute -bottom-10 z-10 flex flex-col items-center justify-center"
+							transition:fly={{ y: 20 }}
+						>
+							<span class="text-xs text-amber-500 uppercase">Start here?</span>
+						</div>
+					{/if}
+					{#if startIndex === i}
 						<div class="absolute -bottom-6 z-10" transition:fly={{ y: 20 }}>
 							<span class="text-xs text-amber-500 uppercase">{cipherState[indexToSwap]}</span>
 						</div>
@@ -319,7 +354,7 @@
 							<span class="text-xs text-indigo-500 uppercase">{selected[0]}</span>
 						</div>
 					{/if}
-				</div>
+				</button>
 			{/each}
 		</div>
 
