@@ -1,7 +1,7 @@
 <script lang="ts">
 	import clsx from 'clsx';
 	import { format } from 'date-fns';
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
 	import type { CipherPuzzle } from '../types';
 
@@ -28,7 +28,7 @@
 	let indexToSwap: number;
 	let startIndex: number = -1;
 	let allowChooseIndex = false;
-
+	let showLetters = false;
 	// user action for selecting letters
 	function onSelect(letter: string) {
 		if (gameOver) return;
@@ -237,7 +237,7 @@
 	async function shareResults() {
 		const shareText = win
 			? `I cracked the Cipher in ${moveAmount}/${moveLimit} moves 😉`
-			: `I couldn't figure out the cipher today 😩`;
+			: `The Cipher stumped me today 😩`;
 
 		navigator.share({
 			text: shareText,
@@ -260,6 +260,11 @@
 		checkForGameStatus();
 		checkForErrors();
 		checkSelection();
+
+		showLetters = false;
+		tick().then(() => {
+			setTimeout(() => (showLetters = true), 200);
+		});
 	})();
 </script>
 
@@ -316,7 +321,7 @@
 
 	{#if gameOver && modalOpen}
 		<div
-			transition:fade={{ delay: 1000 }}
+			transition:fade
 			class="fixed top-0 left-0 z-10 flex h-screen w-screen flex-col items-center bg-white"
 		>
 			<div class="mt-2 flex w-full items-center justify-end px-4">
@@ -338,7 +343,24 @@
 				{/if}
 				{#if lose}
 					<div class="flex w-full flex-col items-center justify-center gap-4">
-						<h1 class="text-6xl font-bold uppercase">better luck next time 😩!</h1>
+						<h2>The Cipher Was:</h2>
+
+						<div class="flex w-11/12 justify-center gap-1">
+							{#each word.split('') as letter, i (`${letter}-${i}`)}
+								{#if showLetters}
+									<div
+										transition:fly={{ y: -100, delay: i * 80, duration: 400 }}
+										class="w-12 border-2 border-black p-2 text-center uppercase"
+									>
+										<p>{letter}</p>
+									</div>
+								{/if}
+								{#if !showLetters}
+									<div class="opacity-0"><p>{letter}</p></div>
+								{/if}
+							{/each}
+						</div>
+						<h1 class="text-center text-6xl font-bold uppercase">better luck next time 😩!</h1>
 						<button class="rounded-full bg-black px-4 py-2 text-white" on:click={shareResults}
 							>Share your result</button
 						>
