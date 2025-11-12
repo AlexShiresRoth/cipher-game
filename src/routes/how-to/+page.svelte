@@ -22,14 +22,14 @@
 		>
 			<button
 				on:click={() => {
-					showNavModal = true;
+					showNavModal = !showNavModal;
 				}}
 				class="bg-black px-4 py-2 text-white transition-colors hover:cursor-pointer hover:bg-black/80"
 				>{'menu'}</button
 			>
 			{#if showNavModal}
 				<div
-					class="absolute top-full left-0 z-10 flex w-full flex-col items-start bg-black p-2 text-white"
+					class="absolute top-full right-0 z-10 flex w-full max-w-36 flex-col items-start bg-black p-2 text-white"
 				>
 					<a href="/">home</a>
 				</div>
@@ -38,7 +38,7 @@
 	</nav>
 	<section
 		id="how-to-play"
-		class="mx-auto max-w-xl border-2 border-black bg-white p-6 font-mono leading-relaxed text-black"
+		class="mx-auto max-w-xl border-2 border-black bg-white p-6 font-mono leading-relaxed text-black md:max-w-1/2"
 	>
 		<h2 class="mb-4 border-b-2 border-black pb-2 text-xl font-bold">How to Play Cipher</h2>
 
@@ -48,21 +48,22 @@
 
 		<h3 class="text-lg font-semibold text-amber-500">Objective</h3>
 		<p class="mb-4">
-			You’ll be given a <strong>shuffled 4–6 letter word</strong> (the
+			You’ll be given a <strong>shuffled 5–7 letter word</strong> (the
 			<em>cipher</em>). Your job is to rearrange the letters back into the correct word using
-			<strong>word guesses</strong>.
+			<strong>real word guesses</strong>.
 		</p>
 
 		<h3 class="text-lg font-semibold text-amber-500">How It Works</h3>
 		<ol class="mb-4 list-inside list-decimal space-y-2">
-			<li>Choose a word that starts with a letter found in the cipher.</li>
+			<li>Choose a minimum 3 letter word that starts with a letter found in the cipher.</li>
 			<li>
-				When you guess, the cipher will move:
+				When you guess, one letter in the cipher, that matches the first letter of your guess, will
+				move:
 				<ul class="ml-4 list-inside list-disc">
 					<li>
 						The starting letter of your guessed word
-						<strong>shifts forward</strong> in the cipher by
-						<strong>the length of your guessed word</strong>.
+						<strong>swaps with</strong> the letter in the cipher at
+						<strong>the end of your guessed word</strong>.
 					</li>
 				</ul>
 			</li>
@@ -98,7 +99,7 @@
 
 		<h3 class="text-lg font-semibold text-amber-500">Rules</h3>
 		<ul class="mb-4 ml-4 list-inside list-disc">
-			<li>No 1-letter words allowed.</li>
+			<li>Guesses must be atleast 3-letter words.</li>
 			<li>Each guess must start with a letter in the cipher.</li>
 			<li>Repeating the same guess won’t count again.</li>
 			<li>When the cipher matches the original word — <strong>you win!</strong></li>

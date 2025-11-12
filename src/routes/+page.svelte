@@ -1,10 +1,11 @@
 <script lang="ts">
 	import clsx from 'clsx';
 	import { format } from 'date-fns';
+	import { onMount } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
 	import type { CipherPuzzle } from '../types';
 
-	export let data: CipherPuzzle;
+	export let data: CipherPuzzle & { id: string };
 	export let word = data.word;
 	export let cipher = data.cipherWord;
 	export let cipherState = cipher.split('');
@@ -18,7 +19,6 @@
 	export let showNavModal = false;
 
 	const alpha = 'qwertyuiopasdfghjklzxcvbnm'.split('');
-
 	const today = format(new Date().toLocaleDateString(), 'EEE d, yyyy');
 	const date = new Date();
 	const formattedDate = format(date.toLocaleDateString(), 'yyyy-MM-dd');
@@ -29,6 +29,7 @@
 	let startIndex: number = -1;
 	let allowChooseIndex = false;
 
+	// user action for selecting letters
 	function onSelect(letter: string) {
 		if (gameOver) return;
 		if (selected.length >= 12) return;
@@ -47,29 +48,8 @@
 			allowChooseIndex = false;
 		}
 	}
-	function chooseStartingIndex(index: number) {
-		if (cipherState[index] === selected[0]) {
-			startIndex = index;
-			allowChooseIndex = false;
-			const moveIndex = getMoveToIndex();
-			indexToSwap = moveIndex;
-		}
-	}
-	function removeLetterFromSelection() {
-		selected.pop();
-		selected = [...selected];
-	}
-	function clearSelection() {
-		selected = [];
-		indexToSwap = -1;
-		startIndex = -1;
-	}
-	function resetStorage() {
-		localStorage.removeItem('date');
-		localStorage.removeItem('gameStatus');
-		localStorage.removeItem('cipher');
-		localStorage.removeItem('moves');
-	}
+
+	// find index to swap with based on word guess
 	function getMoveToIndex() {
 		let selectionLength = selected.length;
 
@@ -84,11 +64,126 @@
 
 		return moveIndex;
 	}
+
+	// this only happens if there are duplicate letters
+	// the user can then click on the letter
+	function chooseStartingIndex(index: number) {
+		if (cipherState[index] === selected[0]) {
+			startIndex = index;
+			allowChooseIndex = false;
+			const moveIndex = getMoveToIndex();
+			indexToSwap = moveIndex;
+		}
+	}
+
+	// delete one letter from guess
+	function removeLetterFromSelection() {
+		selected.pop();
+		selected = [...selected];
+	}
+
+	// clear word guess
+	function clearSelection() {
+		selected = [];
+		indexToSwap = -1;
+		startIndex = -1;
+	}
+
+	// remove all stored data
+	function resetStorage() {
+		win = false;
+		lose = false;
+		gameOver = false;
+		modalOpen = false;
+		clearSelection();
+		localStorage.removeItem('date');
+		localStorage.removeItem('gameStatus');
+		localStorage.removeItem('cipher');
+		localStorage.removeItem('moves');
+	}
+
+	// handle if user has already completed todays game
+	function checkTodaysPuzzle() {
+		const savedGame = localStorage.getItem('date');
+
+		if (formattedDate !== data.date) {
+			resetStorage();
+		}
+		if (savedGame && formattedDate !== savedGame) {
+			resetStorage();
+		}
+		if (localStorage.getItem('gameStatus') === 'win') {
+			win = true;
+			gameOver = true;
+			modalOpen = true;
+		}
+		if (localStorage.getItem('gameStatus') === 'lose') {
+			lose = true;
+			gameOver = true;
+			modalOpen = true;
+			moveAmount = moveLimit;
+		}
+	}
+
+	// check for when user has either won or lost game
+	function checkForGameStatus() {
+		const moves = localStorage.getItem('moves');
+		const storedCipher = localStorage.getItem('cipher');
+
+		if (!gameOver && cipherState.join('') === word && moveAmount <= moveLimit) {
+			win = true;
+			gameOver = true;
+			modalOpen = true;
+			localStorage.setItem('gameStatus', 'win');
+			localStorage.setItem('moves', String(moveAmount));
+			localStorage.setItem('cipher', word);
+			localStorage.setItem('date', formattedDate);
+		}
+		if (!gameOver && moveAmount > moveLimit) {
+			lose = true;
+			gameOver = true;
+			modalOpen = true;
+			localStorage.setItem('gameStatus', 'lose');
+			localStorage.setItem('date', formattedDate);
+		}
+		if (moves) {
+			moveAmount = parseInt(moves);
+		}
+		if (storedCipher) {
+			cipherState = storedCipher.split('');
+		}
+	}
+
+	// render any errors & remove after set time
+	function checkForErrors() {
+		if (errors.length > 0) {
+			setTimeout(() => {
+				const newErrors = [...errors];
+				newErrors.pop();
+				errors = newErrors;
+			}, 3000);
+		}
+	}
+
+	// handle user selection & interaction
+	function checkSelection() {
+		if (selected.length > 0) {
+			const moveIndex = getMoveToIndex();
+			indexToSwap = moveIndex;
+		}
+		if (selected.length === 0) {
+			clearSelection();
+		}
+	}
+
+	// word guess validation check
 	async function isValidWord(word: string) {
 		const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
 
 		return res.ok;
 	}
+
+	// guess input event
 	async function guess() {
 		if (guesses.filter((guess) => guess === selected.join('')).length > 0) {
 			errors = [...errors, 'Already guessed'];
@@ -96,7 +191,7 @@
 			clearSelection();
 			return;
 		}
-		if (selected.length === 1) {
+		if (selected.length <= 2) {
 			errors = [...errors, 'Too short'];
 			console.error('Too short!');
 			clearSelection();
@@ -138,6 +233,7 @@
 		moveAmount++;
 	}
 
+	// social results game sharing
 	async function shareResults() {
 		const shareText = win
 			? `I cracked the Cipher in ${moveAmount}/${moveLimit} moves 😉`
@@ -145,72 +241,29 @@
 
 		navigator.share({
 			text: shareText,
-			title: 'Cipher Game',
+			title: `Cipher #${data.id}`,
 			url: 'https://cipher-game-alpha.vercel.app/'
 		});
 	}
+
+	onMount(() => {
+		checkTodaysPuzzle();
+	});
+
+	// reactive effects
 	$: (() => {
+		(startIndex, indexToSwap, selected, allowChooseIndex, guesses, win, lose, gameOver);
+		(moveAmount, modalOpen, showNavModal, date);
+
 		if (typeof window === 'undefined') return;
 
-		if (formattedDate !== data.date) {
-			resetStorage();
-		}
-		if (cipherState.join('') === word && moveAmount <= moveLimit) {
-			win = true;
-			gameOver = true;
-			modalOpen = true;
-			localStorage.setItem('gameStatus', 'win');
-			localStorage.setItem('moves', String(moveAmount));
-			localStorage.setItem('cipher', word);
-			localStorage.setItem('date', formattedDate);
-		}
-		if (moveAmount > moveLimit) {
-			lose = true;
-			gameOver = true;
-			modalOpen = true;
-			localStorage.setItem('gameStatus', 'lose');
-			localStorage.setItem('date', formattedDate);
-		}
-		if (localStorage.getItem('gameStatus') === 'win') {
-			win = true;
-			gameOver = true;
-			modalOpen = true;
-		}
-		if (localStorage.getItem('gameStatus') === 'lose') {
-			lose = true;
-			gameOver = true;
-			modalOpen = true;
-			moveAmount = moveLimit;
-		}
-		const moves = localStorage.getItem('moves');
-		if (moves) {
-			moveAmount = parseInt(moves);
-		}
-		if (errors.length > 0) {
-			setTimeout(() => {
-				const newErrors = [...errors];
-				newErrors.pop();
-				errors = newErrors;
-			}, 3000);
-		}
-		const storedCipher = localStorage.getItem('cipher');
-		if (storedCipher) {
-			cipherState = storedCipher.split('');
-		}
-		if (selected.length > 0) {
-			const moveIndex = getMoveToIndex();
-			indexToSwap = moveIndex;
-		}
-		if (formattedDate !== localStorage.getItem('date')) {
-			resetStorage();
-		}
-		if (selected.length === 0) {
-			clearSelection();
-		}
+		checkForGameStatus();
+		checkForErrors();
+		checkSelection();
 	})();
 </script>
 
-<main class="mb-28 flex w-screen flex-col items-center">
+<main class="mb-28 flex min-h-[80vh] w-screen flex-col items-center">
 	<nav class="grid w-full grid-cols-3 justify-between border-b border-b-black">
 		<div class="flex items-center justify-start px-4 text-sm text-black/50">
 			<p>{today}</p>
@@ -228,18 +281,19 @@
 		>
 			<button
 				on:click={() => {
-					showNavModal = true;
+					showNavModal = !showNavModal;
 				}}
 				class="bg-black px-4 py-2 text-white transition-colors hover:cursor-pointer hover:bg-black/80"
 				>{'menu'}</button
 			>
 			{#if showNavModal}
 				<div
-					class="absolute top-full left-0 z-10 flex w-full flex-col items-start bg-black p-2 text-white"
+					class="absolute top-full right-0 z-10 flex w-full max-w-36 flex-col items-start bg-black text-white"
 				>
-					<a href="/how-to">how to play</a>
+					<a href="/how-to" class="w-full px-2 py-1">how to play</a>
 					{#if gameOver}
 						<button
+							class="w-full border-t border-t-white/40 px-2 py-1 text-left"
 							on:click={() => {
 								modalOpen = true;
 							}}>share</button
@@ -360,14 +414,15 @@
 
 		<!-- Letter selection box -->
 		<div class="flex w-full justify-center">
-			<div class="grid grid-cols-6 gap-4 md:grid-cols-7 md:gap-12">
+			<div class="flex flex-wrap items-center justify-center gap-2 md:gap-4">
 				{#each alpha as l}
 					<button
 						on:click={() => onSelect(l)}
 						class={clsx(
-							'flex w-12 items-center justify-center rounded-full p-2 text-2xl uppercase hover:cursor-pointer md:text-4xl',
+							'flex w-12 items-center justify-center rounded p-1 text-2xl uppercase hover:cursor-pointer md:text-4xl',
 							{
-								'bg-amber-300': selected.includes(l)
+								'bg-amber-300': selected.includes(l),
+								'bg-gray-100': !selected.includes(l)
 							}
 						)}>{l}</button
 					>
@@ -379,7 +434,7 @@
 		{#if !gameOver}
 			<div
 				data-testid="button-rows"
-				class="mt-2 flex w-full items-center justify-between gap-4 md:justify-end"
+				class="my-8 flex w-full items-center justify-between gap-4 md:justify-end"
 			>
 				<div class="flex items-center gap-4">
 					<div>
