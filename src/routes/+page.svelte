@@ -262,6 +262,7 @@
 		checkSelection();
 
 		showLetters = false;
+
 		tick().then(() => {
 			setTimeout(() => (showLetters = true), 200);
 		});
@@ -335,16 +336,45 @@
 			<div class="flex h-full w-full flex-col items-center justify-center">
 				{#if win}
 					<div class="flex w-full flex-col items-center justify-center gap-4">
-						<h1 class="text-6xl font-bold text-emerald-500 uppercase">you won!</h1>
-						<button class="rounded-full bg-black px-4 py-2 text-white" on:click={shareResults}
-							>Share your result</button
-						>
+						{#if showLetters}
+							<h2 transition:fly={{ y: 100, delay: 10 }}>The Cipher Was:</h2>
+						{/if}
+						<div class="flex w-11/12 items-center justify-center gap-2">
+							{#each word.split('') as letter, i (`${letter}-${i}`)}
+								{#if showLetters}
+									<div
+										transition:fly={{ y: -100, delay: i * 80, duration: 400 }}
+										class="w-12 border-2 border-emerald-500 p-2 text-center text-emerald-500 uppercase"
+									>
+										<p>{letter}</p>
+									</div>
+								{/if}
+								{#if !showLetters}
+									<div class="opacity-0"><p>{letter}</p></div>
+								{/if}
+							{/each}
+						</div>
+						{#if showLetters}
+							<h1
+								transition:fly={{ y: 100, delay: 200 }}
+								class="text-center text-4xl font-bold uppercase"
+							>
+								congrats! you cracked it 🥹
+							</h1>
+
+							<button
+								transition:fly={{ y: 100, delay: 300 }}
+								class="rounded-full bg-black px-4 py-2 text-white"
+								on:click={shareResults}>Share your result</button
+							>
+						{/if}
 					</div>
 				{/if}
 				{#if lose}
 					<div class="flex w-full flex-col items-center justify-center gap-4">
-						<h2>The Cipher Was:</h2>
-
+						{#if showLetters}
+							<h2 transition:fly={{ y: 100, delay: 10 }}>The Cipher Was:</h2>
+						{/if}
 						<div class="flex w-11/12 justify-center gap-1">
 							{#each word.split('') as letter, i (`${letter}-${i}`)}
 								{#if showLetters}
@@ -360,10 +390,19 @@
 								{/if}
 							{/each}
 						</div>
-						<h1 class="text-center text-6xl font-bold uppercase">better luck next time 😩!</h1>
-						<button class="rounded-full bg-black px-4 py-2 text-white" on:click={shareResults}
-							>Share your result</button
-						>
+						{#if showLetters}
+							<h1
+								transition:fly={{ y: 100, delay: 1000, duration: 400 }}
+								class="text-center text-4xl font-bold uppercase"
+							>
+								better luck next time 😩!
+							</h1>
+							<button
+								transition:fly={{ y: 100, delay: 1200, duration: 400 }}
+								class="rounded-full bg-black px-4 py-2 text-white"
+								on:click={shareResults}>Share your result</button
+							>
+						{/if}
 					</div>
 				{/if}
 			</div>
