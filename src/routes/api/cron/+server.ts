@@ -1,4 +1,4 @@
-import { OPENAI_API_KEY } from '$env/static/private';
+import { OPENAI_API_KEY, SECRET_KEY } from '$env/static/private';
 import { db } from '$lib/server/db';
 import { cipherPuzzle } from '$lib/server/db/schema';
 import { json, type RequestHandler } from '@sveltejs/kit';
@@ -18,7 +18,16 @@ const DAYS_OF_THE_WEEK = [
 	'Saturday'
 ];
 
-export const GET: RequestHandler = async () => {
+export const GET: RequestHandler = async (request) => {
+	const secret = request.url.searchParams.get('token');
+
+	if (!secret) {
+		return new Response();
+	}
+	if (secret.toString() !== SECRET_KEY) {
+		return new Response();
+	}
+
 	async function getCipher(day: string) {
 		const response = await client.responses.parse({
 			model: 'gpt-4o-2024-08-06',
@@ -29,17 +38,18 @@ export const GET: RequestHandler = async () => {
 				You are generating a daily puzzle for a word-based logic game.
 
 				The rules:
-				- Choose one real, common 5-letter English word.
+				- Choose one real, common but clever 7-letter to 8-letter English word.
 				- Shuffle its letters to create a new cipher that is not identical to the original word.
-				- Estimate a reasonable number of maximum attempts (4–10) a player would need to solve it.
+				- Estimate a reasonable number of maximum attempts (3–6) a player would need to solve it.
 				This should roughly scale with how scrambled the word is (more jumbled → more attempts).
 				- Do NOT include any explanation or reasoning — just return structured data.
 				- Response should always be lowercase
+				- Do not reuse words
 				Example:
 				{
-				"word": "stone",
-				"cipher": "tnose",
-				"maxAttempts": 7,
+				"word": "function",
+				"cipher": "tnucionf",
+				"maxAttempts": 6,
                 "date": 12/24/2025,
                 "dayOfWeek": ${day},
 				}`
@@ -55,8 +65,7 @@ export const GET: RequestHandler = async () => {
 
 	const today = new Date();
 	const startOfWeek = new Date(today);
-	startOfWeek.setDate(today.getDate() - today.getDay());
-
+	startOfWeek.setDate(today.getDate() + 1);
 	const cipherPuzzlePerDay = await Promise.all(
 		DAYS_OF_THE_WEEK.map(async (day, i) => {
 			const date = new Date(startOfWeek);
@@ -79,7 +88,7 @@ export const GET: RequestHandler = async () => {
 				.values({
 					...puzzle
 				})
-				.onConflictDoNothing({ target: cipherPuzzle.date });
+				.onConflictDoUpdate({ target: cipherPuzzle.date, set: { ...puzzle } });
 		})
 	);
 
