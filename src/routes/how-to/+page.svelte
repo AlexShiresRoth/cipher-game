@@ -48,7 +48,7 @@
 
 		<h3 class="text-lg font-semibold text-amber-500">Objective</h3>
 		<p class="mb-4">
-			You’ll be given a <strong>shuffled 5–7 letter word</strong> (the
+			You’ll be given a <strong>shuffled 5–8 letter word</strong> (the
 			<em>cipher</em>). Your job is to rearrange the letters back into the correct word using
 			<strong>real word guesses</strong>.
 		</p>
@@ -71,30 +71,35 @@
 			<li>Each guess counts as one move — and you only get a few!</li>
 			<li>
 				<b>Duplicate letters: </b>
-				if there are duplicate letters in a word, you will be able to select which one to start from.
-				An animation will indicate this.
+				if there are duplicate letters in a word, you will be able to select one as the starting point.
+				An animation will indicate this, and allow you click on the letter.
 			</li>
 		</ol>
 
 		<h3 class="text-lg font-semibold text-amber-500">Example</h3>
 		<p>The cipher is:</p>
-		<pre class="rounded border border-black bg-black px-3 py-2 text-white">DISQU</pre>
-		<p class="mb-2">The real word is <strong>SQUID</strong> (but you don’t know that yet).</p>
+		<pre class="rounded border border-black bg-black px-3 py-2 text-white">ACTPREU</pre>
+		<p class="mb-2">The real word is <strong>CAPTURE</strong> (but you don’t know that yet).</p>
 
-		<p>If you guess <strong>"dream"</strong>:</p>
+		<p>If you guess <strong>"crafty"</strong>:</p>
 		<ul class="mb-4 ml-4 list-inside list-disc">
-			<li>First letter: <strong>D</strong> (index 0)</li>
-			<li>Word length: 5</li>
+			<li>First letter: <strong>C</strong> (index 1)</li>
+			<li>Word length: 6</li>
 			<li>
-				The letter <strong>D</strong> shifts 5 forward — wraps around to the start.
+				The letter <strong>C</strong> moves 6 spaces to the right — wraps around to the start and ends
+				up as the first letter. The C is then swapped with the first letter "A".
 			</li>
 		</ul>
 
-		<p>If you guess <strong>"star"</strong>:</p>
+		<p>Now the Cipher is CATPREU</p>
+		<p>If you guess <strong>"places"</strong>:</p>
 		<ul class="mb-4 ml-4 list-inside list-disc">
-			<li>First letter: <strong>S</strong> (index 2)</li>
-			<li>Word length: 4</li>
-			<li><strong>S</strong> swaps with letter 4 ahead (wraps to index 1)</li>
+			<li>First letter: <strong>P</strong> (index 3)</li>
+			<li>Word length: 6</li>
+			<li><strong>P</strong> swaps with letter at index 2 "T" (wraps to index 2)</li>
+			<li>
+				Now the <strong>C A P T</strong> are in the correct locations, so the Cipher looks like CAPTREU.
+			</li>
 		</ul>
 
 		<h3 class="text-lg font-semibold text-amber-500">Rules</h3>
