@@ -88,6 +88,7 @@
 		selected = [];
 		indexToSwap = -1;
 		startIndex = -1;
+		allowChooseIndex = false;
 	}
 
 	// remove all stored data
@@ -101,6 +102,7 @@
 		localStorage.removeItem('gameStatus');
 		localStorage.removeItem('cipher');
 		localStorage.removeItem('moves');
+		localStorage.removeItem('guesses');
 	}
 
 	// handle if user has already completed todays game
@@ -109,6 +111,10 @@
 		const savedGuesses = localStorage.getItem('guesses');
 		const moves = localStorage.getItem('moves');
 
+		if (savedGuesses && moves) {
+			guesses = JSON.parse(savedGuesses);
+			moveAmount = parseInt(moves);
+		}
 		if (formattedDate !== data.date) {
 			resetStorage();
 		}
@@ -126,10 +132,6 @@
 			modalOpen = true;
 			moveAmount = moveLimit;
 		}
-		if (savedGuesses && moves) {
-			guesses = JSON.parse(savedGuesses);
-			moveAmount = parseInt(moves);
-		}
 	}
 
 	// check for when user has either won or lost game
@@ -146,7 +148,6 @@
 			localStorage.setItem('cipher', word);
 			localStorage.setItem('date', formattedDate);
 		}
-
 		if (moves) {
 			moveAmount = parseInt(moves);
 		}
@@ -259,7 +260,7 @@
 	// reactive effects
 	$: (() => {
 		(startIndex, indexToSwap, selected, allowChooseIndex, guesses, win, lose, gameOver);
-		(moveAmount, modalOpen, showNavModal, loading);
+		(moveAmount, modalOpen, showNavModal, loading, date);
 
 		if (typeof window === 'undefined') return;
 
