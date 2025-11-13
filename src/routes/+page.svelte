@@ -130,7 +130,7 @@
 		const moves = localStorage.getItem('moves');
 		const storedCipher = localStorage.getItem('cipher');
 
-		if (!gameOver && cipherState.join('') === word && moveAmount <= moveLimit) {
+		if (!gameOver && cipherState.join('') === word) {
 			win = true;
 			gameOver = true;
 			modalOpen = true;
@@ -139,13 +139,7 @@
 			localStorage.setItem('cipher', word);
 			localStorage.setItem('date', formattedDate);
 		}
-		if (!gameOver && moveAmount > moveLimit) {
-			lose = true;
-			gameOver = true;
-			modalOpen = true;
-			localStorage.setItem('gameStatus', 'lose');
-			localStorage.setItem('date', formattedDate);
-		}
+
 		if (moves) {
 			moveAmount = parseInt(moves);
 		}
@@ -236,7 +230,7 @@
 	// social results game sharing
 	async function shareResults() {
 		const shareText = win
-			? `I cracked the Cipher in ${moveAmount}/${moveLimit} moves 😉`
+			? `I cracked the Cipher in ${moveAmount} moves 😉`
 			: `The Cipher stumped me today 😩`;
 
 		navigator.share({
@@ -312,11 +306,9 @@
 
 	<!-- Moves row -->
 	<div class="flex w-full items-center justify-between px-4 py-2 text-sm">
+		<div><p></p></div>
 		<div>
-			<p>Current: {moveAmount}</p>
-		</div>
-		<div>
-			<p>Max Moves: {moveLimit}</p>
+			<p>Moves: {moveAmount}</p>
 		</div>
 	</div>
 
@@ -441,12 +433,13 @@
 					class={clsx(
 						'relative flex w-12 items-center justify-center border-2 p-2 transition-all md:w-20',
 						{
-							'animate-bounce': allowChooseIndex && cipherState.filter((l) => l === key).length > 1,
+							'animate-bounce border-amber-500 text-amber-500 hover:cursor-pointer':
+								allowChooseIndex && cipherState.filter((l) => l === key).length > 1,
 							'border-amber-500 text-amber-500': startIndex === i,
 							'border-indigo-500 text-indigo-500 shadow-[3px_3px_0px_1px_rgba(0,0,0,.2)]':
 								indexToSwap === i,
 							'border-emerald-500 text-emerald-500': word.split('')[i] === cipherState[i],
-							'border-black': startIndex !== i
+							'border-black': startIndex !== i && !allowChooseIndex
 						}
 					)}
 				>
@@ -456,15 +449,15 @@
 							class="absolute -bottom-10 z-10 flex flex-col items-center justify-center"
 							transition:fly={{ y: 20 }}
 						>
-							<span class="text-xs text-amber-500 uppercase">Start here?</span>
+							<span class="text-xs text-amber-500 uppercase">Press here</span>
 						</div>
 					{/if}
-					{#if startIndex === i}
+					{#if startIndex === i && !allowChooseIndex}
 						<div class="absolute -bottom-6 z-10" transition:fly={{ y: 20 }}>
 							<span class="text-xs text-amber-500 uppercase">{cipherState[indexToSwap]}</span>
 						</div>
 					{/if}
-					{#if indexToSwap === i}
+					{#if indexToSwap === i && !allowChooseIndex}
 						<div class="absolute -bottom-6 z-10" transition:fly={{ y: 20 }}>
 							<span class="text-xs text-indigo-500 uppercase">{selected[0]}</span>
 						</div>
