@@ -21,7 +21,10 @@
 	const alpha = 'qwertyuiopasdfghjklzxcvbnm'.split('');
 	const today = format(new Date().toLocaleDateString(), 'EEE d, yyyy');
 	const date = new Date();
-	const formattedDate = format(date.toLocaleDateString(), 'yyyy-MM-dd');
+
+	let formattedDate = format(date.toLocaleDateString(), 'yyyy-MM-dd');
+
+	$: formattedDate = format(new Date().toLocaleDateString(), 'yyyy-MM-dd');
 
 	let selected: string[] = [];
 	let guesses: string[] = [];
@@ -98,16 +101,14 @@
 		gameOver = false;
 		modalOpen = false;
 		clearSelection();
-		localStorage.removeItem('date');
-		localStorage.removeItem('gameStatus');
-		localStorage.removeItem('cipher');
-		localStorage.removeItem('moves');
-		localStorage.removeItem('guesses');
+		guesses = [];
+		moveAmount = 0;
+		cipherState = data.cipherWord.split('');
+		localStorage.clear();
 	}
 
 	// handle if user has already completed todays game
 	function checkTodaysPuzzle() {
-		const savedGame = localStorage.getItem('date');
 		const savedGuesses = localStorage.getItem('guesses');
 		const moves = localStorage.getItem('moves');
 
@@ -116,9 +117,6 @@
 			moveAmount = parseInt(moves);
 		}
 		if (formattedDate !== data.date) {
-			resetStorage();
-		}
-		if (savedGame && formattedDate !== savedGame) {
 			resetStorage();
 		}
 		if (localStorage.getItem('gameStatus') === 'win') {
@@ -255,6 +253,8 @@
 
 	onMount(() => {
 		checkTodaysPuzzle();
+		const interval = setInterval(checkTodaysPuzzle, 60 * 1000); // every minute
+		return () => clearInterval(interval);
 	});
 
 	// reactive effects
