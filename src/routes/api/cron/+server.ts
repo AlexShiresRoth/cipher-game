@@ -21,12 +21,17 @@ const DAYS_OF_THE_WEEK = [
 export const GET: RequestHandler = async (request) => {
 	const secret = request.url.searchParams.get('token');
 
-	if (!secret) {
-		return new Response();
+	if (!secret || secret.toString() !== SECRET_KEY) {
+		const blob = new Blob();
+
+		return new Response(blob, { status: 404, statusText: 'Uh oh!' });
 	}
-	if (secret.toString() !== SECRET_KEY) {
-		return new Response();
-	}
+
+	const puzzles = await db.select().from(cipherPuzzle);
+
+	const usedWords = puzzles
+		.map((p) => p.word)
+		.slice(puzzles.length - 30 > 0 ? puzzles.length - 30 : 0, puzzles.length);
 
 	async function getCipher(day: string) {
 		const response = await client.responses.parse({
@@ -44,7 +49,8 @@ export const GET: RequestHandler = async (request) => {
 				This should roughly scale with how scrambled the word is (more jumbled → more attempts).
 				- Do NOT include any explanation or reasoning — just return structured data.
 				- Response should always be lowercase
-				- Do not reuse words
+				- BANNED WORDS (do NOT use any of these):
+				${usedWords.join(', ')}
 				Example:
 				{
 				"word": "function",
@@ -66,8 +72,21 @@ export const GET: RequestHandler = async (request) => {
 	const today = new Date();
 	const startOfWeek = new Date(today);
 	startOfWeek.setDate(today.getDate() + 1);
+
+	let dayIndex = today.getDay();
+	const DAYS: typeof DAYS_OF_THE_WEEK = [];
+	DAYS_OF_THE_WEEK.forEach(() => {
+		today.setDate(today.getDate() + dayIndex);
+		if (dayIndex < DAYS_OF_THE_WEEK.length - 1) {
+			dayIndex++;
+		} else {
+			dayIndex = 0;
+		}
+		DAYS.push(DAYS_OF_THE_WEEK[dayIndex]);
+	});
+
 	const cipherPuzzlePerDay = await Promise.all(
-		DAYS_OF_THE_WEEK.map(async (day, i) => {
+		DAYS.map(async (day, i) => {
 			const date = new Date(startOfWeek);
 			date.setDate(startOfWeek.getDate() + i);
 			const res = await getCipher(day);
