@@ -7,7 +7,7 @@ export const prerender = false;
 
 export const load = async ({ setHeaders }) => {
 	setHeaders({
-		'cache-control': 'no-store',
+		'cache-control': 'no-store, max-age=0, must-revalidate',
 		pragma: 'no-cache',
 		expires: '0'
 	});
@@ -22,5 +22,5 @@ export const load = async ({ setHeaders }) => {
 	if (cipher.length === 0) {
 		return null;
 	}
-	return cipher[0];
+	return { ...cipher[0] };
 };
