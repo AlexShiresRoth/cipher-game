@@ -17,6 +17,8 @@ export const load = async ({ setHeaders }) => {
 
 	const cipher = await db.select().from(cipherPuzzle).where(eq(cipherPuzzle.date, tzTime));
 
+	console.log('cipher', cipher, tzTime);
+
 	if (cipher.length === 0) {
 		return null;
 	}
