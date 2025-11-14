@@ -7,7 +7,9 @@ export const prerender = false;
 
 export const load = async ({ setHeaders }) => {
 	setHeaders({
-		'cache-control': 'no-store'
+		'cache-control': 'no-store',
+		pragma: 'no-cache',
+		expires: '0'
 	});
 
 	const today = new Date();
