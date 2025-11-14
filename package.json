@@ -46,6 +46,7 @@
 		"vitest": "^3.0.0"
 	},
 	"dependencies": {
+		"@sveltejs/adapter-vercel": "^6.1.1",
 		"clsx": "^2.1.1",
 		"date-fns": "^4.1.0",
 		"date-fns-tz": "^3.2.0",
