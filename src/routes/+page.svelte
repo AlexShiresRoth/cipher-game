@@ -111,13 +111,14 @@
 	function checkTodaysPuzzle() {
 		const savedGuesses = localStorage.getItem('guesses');
 		const moves = localStorage.getItem('moves');
-
+		const puzzle = localStorage.getItem('puzzle');
 		if (savedGuesses && moves) {
 			guesses = JSON.parse(savedGuesses);
 			moveAmount = parseInt(moves);
 		}
-		if (formattedDate !== data.date) {
+		if (puzzle !== data.word) {
 			resetStorage();
+			return;
 		}
 		if (localStorage.getItem('gameStatus') === 'win') {
 			win = true;
@@ -130,6 +131,10 @@
 			modalOpen = true;
 			moveAmount = moveLimit;
 		}
+	}
+
+	function addTodaysPuzzleToStorage() {
+		localStorage.setItem('puzzle', word);
 	}
 
 	// check for when user has either won or lost game
@@ -253,6 +258,7 @@
 
 	onMount(() => {
 		checkTodaysPuzzle();
+		addTodaysPuzzleToStorage();
 		const interval = setInterval(checkTodaysPuzzle, 60 * 1000); // every minute
 		return () => clearInterval(interval);
 	});
