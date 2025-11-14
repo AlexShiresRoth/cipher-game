@@ -2,7 +2,7 @@
 	import '../app.css';
 
 	let { children } = $props();
-	const version = `0.3.3`;
+	const version = `0.4.0`;
 </script>
 
 {@render children()}

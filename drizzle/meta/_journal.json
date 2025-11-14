@@ -15,6 +15,13 @@
       "when": 1762797666540,
       "tag": "0001_free_silver_sable",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1763141126243,
+      "tag": "0002_previous_jazinda",
+      "breakpoints": true
     }
   ]
 }
