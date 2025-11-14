@@ -3,7 +3,13 @@ import { cipherPuzzle } from '$lib/server/db/schema';
 import { formatInTimeZone } from 'date-fns-tz';
 import { eq } from 'drizzle-orm';
 
-export const load = async () => {
+export const prerender = false;
+
+export const load = async ({ setHeaders }) => {
+	setHeaders({
+		'cache-control': 'no-store'
+	});
+
 	const today = new Date();
 	const tzTime = formatInTimeZone(today, 'America/New_York', 'yyyy-MM-dd');
 
