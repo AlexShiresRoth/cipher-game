@@ -1,4 +1,6 @@
 <script lang="ts">
+	import HowTo from '$lib/components/how-to.svelte';
+	import Nav from '$lib/components/nav.svelte';
 	import clsx from 'clsx';
 	import { format } from 'date-fns';
 	import { onMount, tick } from 'svelte';
@@ -33,6 +35,8 @@
 	let allowChooseIndex = false;
 	let showLetters = false;
 	let loading = true;
+	let showTutorial = false;
+
 	// user action for selecting letters
 	function onSelect(letter: string) {
 		if (gameOver) return;
@@ -135,6 +139,16 @@
 
 	function addTodaysPuzzleToStorage() {
 		localStorage.setItem('puzzle', word);
+	}
+
+	function shouldShowTutorial() {
+		const hasViewedGame = localStorage.getItem('viewed');
+		if (hasViewedGame) {
+			return;
+		} else {
+			showTutorial = true;
+			localStorage.setItem('viewed', 'true');
+		}
 	}
 
 	// check for when user has either won or lost game
@@ -256,9 +270,31 @@
 		});
 	}
 
+	// check if duplicate letters should highlight
+	$: handleSelectedLetter = (key: string) => {
+		return allowChooseIndex && cipherState.filter((l) => key === selected[0]).length > 1;
+	};
+
+	$: highlightAtStartIndex = (i: number) => {
+		return startIndex === i;
+	};
+
+	$: highlightAtSwapIndex = (i: number) => {
+		return indexToSwap === i;
+	};
+
+	$: highlightAtCorrectPosition = (i: number) => {
+		return word.split('')[i] === cipherState[i] && !allowChooseIndex;
+	};
+
+	$: defaultCipherDisplay = (i: number) => {
+		return startIndex !== i && word.split('')[i] !== cipherState[i] && indexToSwap !== i;
+	};
+
 	onMount(() => {
 		checkTodaysPuzzle();
 		addTodaysPuzzleToStorage();
+		shouldShowTutorial();
 		const interval = setInterval(checkTodaysPuzzle, 60 * 1000); // every minute
 		return () => clearInterval(interval);
 	});
@@ -282,278 +318,256 @@
 	})();
 </script>
 
-<main class="mb-28 flex min-h-[80vh] w-screen flex-col items-center">
-	<nav class="grid w-full grid-cols-3 justify-between border-b border-b-black">
-		<div class="flex items-center justify-start px-4 text-sm text-black/50">
-			<p>{today}</p>
-		</div>
-		<div class="flex items-center justify-center">
-			<h2 class="text-3xl font-bold uppercase">CIPHER</h2>
-		</div>
-		<div
-			class="relative flex items-center justify-end"
-			on:mouseleave={() => {
-				showNavModal = false;
-			}}
-			role="button"
-			tabindex="0"
+<Nav {gameOver} {modalOpen} {showNavModal} />
+
+{#if showTutorial}
+	<div
+		class="fixed top-0 z-20 flex max-h-full w-full flex-col items-end gap-4 overflow-y-scroll bg-white/40 px-4 pt-10 dark:bg-black/40"
+	>
+		<button
+			on:click={() => (showTutorial = false)}
+			class="bg-black p-4"
+			transition:fly={{ y: -200 }}>close</button
 		>
+		<div class="bg-white dark:bg-black" transition:fly={{ y: 200 }}>
+			<HowTo />
+		</div>
+	</div>
+{/if}
+
+{#if gameOver && modalOpen}
+	<div
+		transition:fade
+		class="fixed top-0 left-0 z-10 flex h-screen w-screen flex-col items-center bg-white dark:bg-black"
+	>
+		<div class="mt-2 flex w-full items-center justify-end px-4">
 			<button
+				class="text-lg font-bold text-black dark:text-white"
 				on:click={() => {
-					showNavModal = !showNavModal;
-				}}
-				class="bg-black px-4 py-2 text-white transition-colors hover:cursor-pointer hover:bg-black/80"
-				>{'menu'}</button
+					modalOpen = false;
+				}}>X</button
 			>
-			{#if showNavModal}
-				<div
-					class="absolute top-full right-0 z-10 flex w-full max-w-36 flex-col items-start bg-black text-white"
-				>
-					<a href="/how-to" class="w-full px-2 py-1">how to play</a>
-					{#if gameOver}
+		</div>
+
+		<div class="flex h-full w-full flex-col items-center justify-center">
+			{#if win}
+				<div class="flex w-full flex-col items-center justify-center gap-4">
+					{#if showLetters}
+						<h2 transition:fly={{ y: 100, delay: 10 }}>The Cipher Was:</h2>
+					{/if}
+					<div class="flex w-11/12 items-center justify-center gap-2">
+						{#each word.split('') as letter, i (`${letter}-${i}`)}
+							{#if showLetters}
+								<div
+									transition:fly={{ y: -100, delay: i * 80, duration: 400 }}
+									class="w-12 border-2 border-emerald-500 p-2 text-center text-emerald-500 uppercase"
+								>
+									<p>{letter}</p>
+								</div>
+							{/if}
+							{#if !showLetters}
+								<div class="opacity-0"><p>{letter}</p></div>
+							{/if}
+						{/each}
+					</div>
+					{#if showLetters}
+						<h1
+							transition:fly={{ y: 100, delay: 200 }}
+							class="text-center text-4xl font-bold uppercase"
+						>
+							congrats! you cracked it 🥹
+						</h1>
+
 						<button
-							class="w-full border-t border-t-white/40 px-2 py-1 text-left"
-							on:click={() => {
-								modalOpen = true;
-							}}>share</button
+							transition:fly={{ y: 100, delay: 300 }}
+							class="rounded-full bg-black px-4 py-2 text-white dark:bg-emerald-500 dark:text-black"
+							on:click={shareResults}>Share your result</button
+						>
+					{/if}
+				</div>
+			{/if}
+			{#if lose}
+				<div class="flex w-full flex-col items-center justify-center gap-4">
+					{#if showLetters}
+						<h2 transition:fly={{ y: 100, delay: 10 }}>The Cipher Was:</h2>
+					{/if}
+					<div class="flex w-11/12 justify-center gap-1">
+						{#each word.split('') as letter, i (`${letter}-${i}`)}
+							{#if showLetters}
+								<div
+									transition:fly={{ y: -100, delay: i * 80, duration: 400 }}
+									class="w-12 border-2 border-black p-2 text-center uppercase"
+								>
+									<p>{letter}</p>
+								</div>
+							{/if}
+							{#if !showLetters}
+								<div class="opacity-0"><p>{letter}</p></div>
+							{/if}
+						{/each}
+					</div>
+					{#if showLetters}
+						<h1
+							transition:fly={{ y: 100, delay: 1000, duration: 400 }}
+							class="text-center text-4xl font-bold uppercase"
+						>
+							better luck next time 😩!
+						</h1>
+						<button
+							transition:fly={{ y: 100, delay: 1200, duration: 400 }}
+							class="rounded-full bg-black px-4 py-2 text-white"
+							on:click={shareResults}>Share your result</button
 						>
 					{/if}
 				</div>
 			{/if}
 		</div>
-	</nav>
+	</div>
+{/if}
 
-	{#if gameOver && modalOpen}
-		<div
-			transition:fade
-			class="fixed top-0 left-0 z-10 flex h-screen w-screen flex-col items-center bg-white"
+<div class="absolute top-10 flex flex-col gap-2">
+	{#each errors as error, i (`${error}-${i}`)}
+		<button transition:fly={{ y: -100 }} class="bg-black p-2 text-sm text-white shadow-lg"
+			>{error}</button
 		>
-			<div class="mt-2 flex w-full items-center justify-end px-4">
-				<button
-					class="text-lg font-bold text-black"
-					on:click={() => {
-						modalOpen = false;
-					}}>X</button
-				>
-			</div>
-			<div class="flex h-full w-full flex-col items-center justify-center">
-				{#if win}
-					<div class="flex w-full flex-col items-center justify-center gap-4">
-						{#if showLetters}
-							<h2 transition:fly={{ y: 100, delay: 10 }}>The Cipher Was:</h2>
-						{/if}
-						<div class="flex w-11/12 items-center justify-center gap-2">
-							{#each word.split('') as letter, i (`${letter}-${i}`)}
-								{#if showLetters}
-									<div
-										transition:fly={{ y: -100, delay: i * 80, duration: 400 }}
-										class="w-12 border-2 border-emerald-500 p-2 text-center text-emerald-500 uppercase"
-									>
-										<p>{letter}</p>
-									</div>
-								{/if}
-								{#if !showLetters}
-									<div class="opacity-0"><p>{letter}</p></div>
-								{/if}
-							{/each}
-						</div>
-						{#if showLetters}
-							<h1
-								transition:fly={{ y: 100, delay: 200 }}
-								class="text-center text-4xl font-bold uppercase"
-							>
-								congrats! you cracked it 🥹
-							</h1>
+	{/each}
+</div>
 
-							<button
-								transition:fly={{ y: 100, delay: 300 }}
-								class="rounded-full bg-black px-4 py-2 text-white"
-								on:click={shareResults}>Share your result</button
-							>
-						{/if}
-					</div>
-				{/if}
-				{#if lose}
-					<div class="flex w-full flex-col items-center justify-center gap-4">
-						{#if showLetters}
-							<h2 transition:fly={{ y: 100, delay: 10 }}>The Cipher Was:</h2>
-						{/if}
-						<div class="flex w-11/12 justify-center gap-1">
-							{#each word.split('') as letter, i (`${letter}-${i}`)}
-								{#if showLetters}
-									<div
-										transition:fly={{ y: -100, delay: i * 80, duration: 400 }}
-										class="w-12 border-2 border-black p-2 text-center uppercase"
-									>
-										<p>{letter}</p>
-									</div>
-								{/if}
-								{#if !showLetters}
-									<div class="opacity-0"><p>{letter}</p></div>
-								{/if}
-							{/each}
-						</div>
-						{#if showLetters}
-							<h1
-								transition:fly={{ y: 100, delay: 1000, duration: 400 }}
-								class="text-center text-4xl font-bold uppercase"
-							>
-								better luck next time 😩!
-							</h1>
-							<button
-								transition:fly={{ y: 100, delay: 1200, duration: 400 }}
-								class="rounded-full bg-black px-4 py-2 text-white"
-								on:click={shareResults}>Share your result</button
-							>
-						{/if}
-					</div>
-				{/if}
+<div class="flex w-11/12 flex-col items-center md:w-1/2 lg:w-1/3">
+	{#if !loading}
+		<!-- Moves row -->
+		<div class="flex w-full items-center justify-between py-2 text-sm">
+			<div><p></p></div>
+			<div>
+				<p class="dark:text-white/80">Moves: {moveAmount}</p>
 			</div>
 		</div>
-	{/if}
+		<!-- Current user selection row -->
+		<div class="my-4 flex w-full justify-center">
+			{#if selected.length === 0}
+				<p class="text-3xl opacity-0">{`p`}</p>
+			{/if}
+			{#each selected as s}
+				<p class="text-3xl font-bold uppercase dark:text-white">{s}</p>
+			{/each}
+		</div>
 
-	<div class="absolute top-10 flex flex-col gap-2">
-		{#each errors as error, i (`${error}-${i}`)}
-			<button transition:fly={{ y: -100 }} class="bg-black p-2 text-sm text-white shadow-lg"
-				>{error}</button
-			>
-		{/each}
-	</div>
-
-	<div class="flex w-11/12 flex-col items-center md:w-1/2 lg:w-1/3">
-		{#if !loading}
-			<!-- Moves row -->
-			<div class="flex w-full items-center justify-between py-2 text-sm">
-				<div><p></p></div>
-				<div>
-					<p>Moves: {moveAmount}</p>
-				</div>
-			</div>
-			<!-- Current user selection row -->
-			<div class="my-4 flex w-full justify-center">
-				{#if selected.length === 0}
-					<p class="text-3xl opacity-0">{`p`}</p>
-				{/if}
-				{#each selected as s}
-					<p class="text-3xl font-bold uppercase">{s}</p>
-				{/each}
-			</div>
-
-			<!-- Cipher blocks row -->
-
-			<div class="mb-8 flex w-full justify-center gap-2">
-				{#each cipherState as key, i (`${key}-${i}`)}
-					<button
-						on:click={() => {
-							if (allowChooseIndex) {
-								chooseStartingIndex(i);
-							}
-						}}
-						transition:fly={{ y: 100, duration: 700, delay: 100 * (i + 1) }}
-						class={clsx(
-							'relative flex w-12 items-center justify-center border-2 p-2 transition-all md:w-20',
-							{
-								'animate-bounce border-amber-500 text-amber-500 hover:cursor-pointer':
-									allowChooseIndex && cipherState.filter((l) => l === key).length > 1,
-								'border-amber-500 text-amber-500': startIndex === i,
-								'border-indigo-500 text-indigo-500 shadow-[3px_3px_0px_1px_rgba(0,0,0,.2)]':
-									indexToSwap === i,
-								'border-emerald-500 text-emerald-500': word.split('')[i] === cipherState[i],
-								'border-black': startIndex !== i && !allowChooseIndex
-							}
-						)}
-					>
-						<p class="text-2xl font-bold uppercase md:text-5xl">{key}</p>
-						{#if allowChooseIndex && cipherState.filter((l) => l === key).length > 1}
-							<div
-								class="absolute -bottom-10 z-10 flex flex-col items-center justify-center"
-								transition:fly={{ y: 20 }}
-							>
-								<span class="text-xs text-amber-500 uppercase">Press here</span>
-							</div>
-						{/if}
-						{#if startIndex === i && !allowChooseIndex}
-							<div class="absolute -bottom-6 z-10" transition:fly={{ y: 20 }}>
-								<span class="text-xs text-amber-500 uppercase">{cipherState[indexToSwap]}</span>
-							</div>
-						{/if}
-						{#if indexToSwap === i && !allowChooseIndex}
-							<div class="absolute -bottom-6 z-10" transition:fly={{ y: 20 }}>
-								<span class="text-xs text-indigo-500 uppercase">{selected[0]}</span>
-							</div>
-						{/if}
-					</button>
-				{/each}
-			</div>
-
-			<!-- Letter selection box -->
-			<div class="flex w-full justify-center">
-				<div class="flex flex-wrap items-center justify-center gap-2 md:gap-4">
-					{#each alpha as l}
-						<button
-							on:click={() => onSelect(l)}
-							class={clsx(
-								'flex w-12 items-center justify-center rounded p-1 text-2xl uppercase hover:cursor-pointer md:text-4xl',
-								{
-									'bg-amber-300': selected.includes(l),
-									'bg-gray-100': !selected.includes(l)
-								}
-							)}>{l}</button
-						>
-					{/each}
-				</div>
-			</div>
-
-			<!-- Action buttons -->
-			{#if !gameOver}
-				<div
-					data-testid="button-rows"
-					class="my-8 flex w-full items-center justify-between gap-4 md:justify-end"
+		<!-- Cipher blocks row -->
+		<div class="mb-8 flex w-full justify-center gap-2">
+			{#each cipherState as key, i (`${key}-${i}`)}
+				<button
+					on:click={() => {
+						if (allowChooseIndex) {
+							chooseStartingIndex(i);
+						}
+					}}
+					transition:fly={{ y: 100, duration: 700, delay: 100 * (i + 1) }}
+					class={clsx(
+						'relative flex w-12 items-center justify-center border-2 p-2 transition-all md:w-20',
+						{
+							'border-emerald-500 text-emerald-500': highlightAtCorrectPosition(i),
+							'border-black dark:border-white dark:text-white': defaultCipherDisplay(i),
+							'animate-bounce border-amber-500 text-amber-500 hover:cursor-pointer':
+								handleSelectedLetter(key),
+							'border-amber-500 text-amber-500': highlightAtStartIndex(i),
+							'border-indigo-500 text-indigo-500 shadow-[3px_3px_0px_1px_rgba(0,0,0,.2)]':
+								highlightAtSwapIndex(i)
+						}
+					)}
 				>
-					<div class="flex items-center gap-4">
-						<div>
-							<button
-								on:click={clearSelection}
-								class={clsx('rounded-full px-4 py-2 text-sm transition-colors md:text-lg', {
-									'bg-gray-100 text-black/80': selected.length === 0,
-									'bg-black text-white': selected.length > 0
-								})}>Clear</button
-							>
+					<p class="text-2xl font-bold uppercase md:text-5xl">{key}</p>
+					{#if allowChooseIndex && cipherState.filter((l) => l === key).length > 1}
+						<div
+							class="absolute -bottom-10 z-10 flex flex-col items-center justify-center"
+							transition:fly={{ y: 20 }}
+						>
+							<span class="text-xs text-amber-500 uppercase">Press here</span>
 						</div>
-						<div>
-							<button
-								on:click={removeLetterFromSelection}
-								class={clsx('rounded-full px-4 py-2 text-sm transition-colors md:text-lg', {
-									'bg-gray-100 text-black/80': selected.length === 0,
-									'bg-black text-white': selected.length > 0
-								})}>Delete</button
-							>
+					{/if}
+					{#if startIndex === i && !allowChooseIndex}
+						<div class="absolute -bottom-6 z-10" transition:fly={{ y: 20 }}>
+							<span class="text-xs text-amber-500 uppercase">{cipherState[indexToSwap]}</span>
 						</div>
+					{/if}
+					{#if indexToSwap === i && !allowChooseIndex}
+						<div class="absolute -bottom-6 z-10" transition:fly={{ y: 20 }}>
+							<span class="text-xs text-indigo-500 uppercase">{selected[0]}</span>
+						</div>
+					{/if}
+				</button>
+			{/each}
+		</div>
+
+		<!-- Letter selection box -->
+		<div class="flex w-full justify-center">
+			<div class="flex flex-wrap items-center justify-center gap-2 md:gap-4 dark:text-black">
+				{#each alpha as l}
+					<button
+						on:click={() => onSelect(l)}
+						class={clsx(
+							'flex w-12 items-center justify-center rounded p-1 text-2xl uppercase hover:cursor-pointer md:text-4xl',
+							{
+								'bg-amber-300': selected.includes(l),
+								'bg-gray-100 dark:bg-gray-100/80': !selected.includes(l)
+							}
+						)}>{l}</button
+					>
+				{/each}
+			</div>
+		</div>
+
+		<!-- Action buttons -->
+		{#if !gameOver}
+			<div
+				data-testid="button-rows"
+				class="my-8 flex w-full items-center justify-between gap-4 md:justify-end"
+			>
+				<div class="flex items-center gap-4">
+					<div>
+						<button
+							on:click={clearSelection}
+							class={clsx('rounded-full px-4 py-2 text-sm transition-colors md:text-lg', {
+								'bg-gray-100 text-black/80 dark:bg-gray-100/50 dark:text-black/60':
+									selected.length === 0,
+								'bg-black text-white dark:bg-indigo-500': selected.length > 0
+							})}>Clear</button
+						>
 					</div>
 					<div>
 						<button
+							on:click={removeLetterFromSelection}
 							class={clsx('rounded-full px-4 py-2 text-sm transition-colors md:text-lg', {
-								'bg-gray-100 text-black/80': selected.length <= 1,
-								'bg-black text-white': selected.length > 1
-							})}
-							on:click={guess}
-							disabled={selected.length <= 1}>Guess</button
+								'bg-gray-100 text-black/80 dark:bg-gray-100/50 dark:text-black/60':
+									selected.length === 0,
+								'bg-black text-white dark:bg-indigo-500': selected.length > 0
+							})}>Delete</button
 						>
 					</div>
 				</div>
-			{/if}
-		{/if}
-		{#if loading}
-			<div class="flex h-[80vh] items-center justify-center gap-2">
-				{#each 'CIPHER'.split('') as key, i (`${key}-${i}`)}
-					<div
-						transition:fly={{ y: 100, duration: 700, delay: 100 * (i + 1) }}
-						class="relative flex w-12 animate-bounce items-center justify-center border-2 border-black p-2 transition-all md:w-20"
+				<div>
+					<button
+						class={clsx('rounded-full px-4 py-2 text-sm transition-colors md:text-lg', {
+							'bg-gray-100 text-black/80 dark:bg-gray-100/50 dark:text-black/60':
+								selected.length <= 1,
+							'bg-black text-white dark:bg-emerald-500 dark:text-black': selected.length > 1
+						})}
+						on:click={guess}
+						disabled={selected.length <= 1}>Guess</button
 					>
-						<p class="font-bold">{key}</p>
-					</div>
-				{/each}
+				</div>
 			</div>
 		{/if}
-	</div>
-</main>
+	{/if}
+	{#if loading}
+		<div class="flex h-[80vh] items-center justify-center gap-2">
+			{#each 'CIPHER'.split('') as key, i (`${key}-${i}`)}
+				<div
+					transition:fly={{ y: 100, duration: 700, delay: 100 * (i + 1) }}
+					class="relative flex w-12 animate-bounce items-center justify-center border-2 border-black p-2 transition-all md:w-20"
+				>
+					<p class="font-bold">{key}</p>
+				</div>
+			{/each}
+		</div>
+	{/if}
+</div>
