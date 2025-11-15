@@ -1,8 +1,8 @@
 <script lang="ts">
 	export let showNavModal = false;
 	export let gameOver = false;
-	export let modalOpen = false;
 	export let showHome = false;
+	export let toggleModalOpen: (val: boolean) => void;
 </script>
 
 <nav class="flex w-full justify-between border-b border-b-black dark:border-b-white/50">
@@ -36,9 +36,9 @@
 
 				{#if gameOver}
 					<button
-						class="w-full border-t border-t-white/40 px-2 py-1 text-left"
+						class="w-full border-t border-t-white/40 px-2 py-1 text-left uppercase"
 						on:click={() => {
-							modalOpen = true;
+							toggleModalOpen(true);
 						}}>share</button
 					>
 				{/if}

@@ -21,7 +21,6 @@
 	export let showNavModal = false;
 
 	const alpha = 'qwertyuiopasdfghjklzxcvbnm'.split('');
-	const today = format(new Date().toLocaleDateString(), 'EEE d, yyyy');
 	const date = new Date();
 
 	let formattedDate = format(date.toLocaleDateString(), 'yyyy-MM-dd');
@@ -36,6 +35,10 @@
 	let showLetters = false;
 	let loading = true;
 	let showTutorial = false;
+
+	function toggleModalOpen(val: boolean) {
+		modalOpen = val;
+	}
 
 	// user action for selecting letters
 	function onSelect(letter: string) {
@@ -318,7 +321,7 @@
 	})();
 </script>
 
-<Nav {gameOver} {modalOpen} {showNavModal} />
+<Nav {gameOver} {showNavModal} {toggleModalOpen} />
 
 {#if showTutorial}
 	<div
