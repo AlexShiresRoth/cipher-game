@@ -4,6 +4,6 @@
 	let showNavModal = false;
 </script>
 
-<Nav {showNavModal} showHome />
+<Nav {showNavModal} showHome toggleModalOpen={() => {}} />
 
 <HowTo />
