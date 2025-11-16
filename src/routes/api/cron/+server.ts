@@ -1,4 +1,4 @@
-import { CRON_SECRET, OPENAI_API_KEY } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 import { db } from '$lib/server/db';
 import { cipherPuzzle } from '$lib/server/db/schema';
 import { json } from '@sveltejs/kit';
@@ -6,7 +6,11 @@ import OpenAI from 'openai';
 import { zodTextFormat } from 'openai/helpers/zod';
 import { Cipher } from '../../../types';
 
-const client = new OpenAI({ apiKey: OPENAI_API_KEY });
+export const config = {
+	runtime: 'nodejs20.x'
+};
+
+const client = new OpenAI({ apiKey: env.OPENAI_API_KEY });
 
 const DAYS_OF_THE_WEEK = [
 	'Sunday',
@@ -21,12 +25,10 @@ const DAYS_OF_THE_WEEK = [
 export const GET = async ({ request, url }) => {
 	const secret = url.searchParams.get('token')?.toString() || request.headers.get('Authorization');
 
-	const isAuthed = secret === CRON_SECRET || secret === `Bearer ${CRON_SECRET}`;
+	const isAuthed = secret === env.CRON_SECRET || secret === `Bearer ${env.CRON_SECRET}`;
 
 	if (!isAuthed) {
-		const blob = new Blob();
-
-		return new Response(blob, { status: 400, statusText: 'Unauthorized' });
+		return new Response('Unauthorized', { status: 401, statusText: 'Unauthorized' });
 	}
 
 	const puzzles = await db.select().from(cipherPuzzle);
