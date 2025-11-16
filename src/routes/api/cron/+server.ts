@@ -1,4 +1,4 @@
-import { OPENAI_API_KEY, SECRET_KEY } from '$env/static/private';
+import { CRON_SECRET, OPENAI_API_KEY } from '$env/static/private';
 import { db } from '$lib/server/db';
 import { cipherPuzzle } from '$lib/server/db/schema';
 import { json, type RequestHandler } from '@sveltejs/kit';
@@ -19,12 +19,12 @@ const DAYS_OF_THE_WEEK = [
 ];
 
 export const GET: RequestHandler = async (request) => {
-	const secret = request.url.searchParams.get('token');
+	const secret = request.url.searchParams.get('token')?.toString() || CRON_SECRET;
 
-	if (!secret || secret.toString() !== SECRET_KEY) {
+	if (!secret || secret !== CRON_SECRET) {
 		const blob = new Blob();
 
-		return new Response(blob, { status: 404, statusText: 'Uh oh!' });
+		return new Response(blob, { status: 400, statusText: 'Unauthorized' });
 	}
 
 	const puzzles = await db.select().from(cipherPuzzle);
