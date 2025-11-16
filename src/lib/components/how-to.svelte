@@ -10,7 +10,7 @@
 
 	<h3 class="text-lg font-semibold text-amber-500">Objective</h3>
 	<p class="mb-4">
-		You’ll be given a <strong>shuffled 5–8 letter word</strong> (the
+		You’ll be given a <strong>shuffled 7 letter word</strong> (the
 		<em>cipher</em>). Your job is to rearrange the letters back into the correct word, letter by
 		letter.
 	</p>
@@ -30,7 +30,7 @@
 			</ul>
 		</li>
 		<li>If the shift goes past the end, it <strong>wraps around</strong>.</li>
-		<li>Each guess counts as one move — and you only get a few!</li>
+		<li>Each guess counts as one move — and you only get 6!</li>
 		<li>
 			<b>Duplicate letters: </b>
 			if there are duplicate letters in a word, you will be able to select one as the starting point.
@@ -71,7 +71,7 @@
 		<li>Each guess must start with a letter in the cipher.</li>
 		<li>Repeating the same guess won’t count again.</li>
 		<li>When the cipher matches the original word — <strong>you win!</strong></li>
-		<li>Run out of moves, and it’s <strong>game over</strong> 😩</li>
+		<li>Run out of moves(6), and it’s <strong>game over</strong> 😩</li>
 	</ul>
 
 	<h3 class="text-lg font-semibold text-amber-500">Tips</h3>
