@@ -11,15 +11,15 @@
 	<h3 class="text-lg font-semibold text-amber-500">Objective</h3>
 	<p class="mb-4">
 		You’ll be given a <strong>shuffled 5–8 letter word</strong> (the
-		<em>cipher</em>). Your job is to rearrange the letters back into the correct word using
-		<strong>real word guesses</strong>.
+		<em>cipher</em>). Your job is to rearrange the letters back into the correct word, letter by
+		letter.
 	</p>
 
 	<h3 class="text-lg font-semibold text-amber-500">How It Works</h3>
 	<ol class="mb-4 list-inside list-decimal space-y-2">
 		<li>Choose a minimum 3 letter word that starts with a letter found in the cipher.</li>
 		<li>
-			When you guess, one letter in the cipher, that matches the first letter of your guess, will
+			When you guess, one letter in the cipher that matches the first letter of your guess will
 			move:
 			<ul class="ml-4 list-inside list-disc">
 				<li>
