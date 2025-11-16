@@ -1,7 +1,7 @@
 import { CRON_SECRET, OPENAI_API_KEY } from '$env/static/private';
 import { db } from '$lib/server/db';
 import { cipherPuzzle } from '$lib/server/db/schema';
-import { json, type RequestHandler } from '@sveltejs/kit';
+import { json } from '@sveltejs/kit';
 import OpenAI from 'openai';
 import { zodTextFormat } from 'openai/helpers/zod';
 import { Cipher } from '../../../types';
@@ -18,10 +18,12 @@ const DAYS_OF_THE_WEEK = [
 	'Saturday'
 ];
 
-export const GET: RequestHandler = async (request) => {
-	const secret = request.url.searchParams.get('token')?.toString() || CRON_SECRET;
+export const GET = async ({ request, url }) => {
+	const secret = url.searchParams.get('token')?.toString() || request.headers.get('Authorization');
 
-	if (!secret || secret !== CRON_SECRET) {
+	const isAuthed = secret === CRON_SECRET || secret === `Bearer ${CRON_SECRET}`;
+
+	if (!isAuthed) {
 		const blob = new Blob();
 
 		return new Response(blob, { status: 400, statusText: 'Unauthorized' });
