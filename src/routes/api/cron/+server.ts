@@ -45,12 +45,14 @@ export const GET: RequestHandler = async (request) => {
 				The rules:
 				- Choose one real, common but clever 7-letter to 8-letter English word.
 				- Shuffle its letters to create a new cipher that is not identical to the original word.
+				- None of the letters in the cipher should be in the correct position when shuffled
 				- Estimate a reasonable number of maximum attempts (3–6) a player would need to solve it.
 				This should roughly scale with how scrambled the word is (more jumbled → more attempts).
 				- Do NOT include any explanation or reasoning — just return structured data.
 				- Response should always be lowercase
 				- BANNED WORDS (do NOT use any of these):
 				${usedWords.join(', ')}
+				- The word and cipher MUST contain the same letters.
 				Example:
 				{
 				"word": "function",
@@ -94,8 +96,11 @@ export const GET: RequestHandler = async (request) => {
 			return {
 				...res,
 				dayOfWeek: day,
-				date: date.toISOString().split('T')[0],
-				index: i
+				cipherWord: res?.cipherWord
+					.split('')
+					.filter((l) => res.word.includes(l))
+					.join(''),
+				date: date.toISOString().split('T')[0]
 			};
 		})
 	);
