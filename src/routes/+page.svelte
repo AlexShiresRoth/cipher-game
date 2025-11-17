@@ -15,10 +15,28 @@
 	export let win = false;
 	export let lose = false;
 	export let gameOver = false;
-	export let moveLimit = 6;
 	export let moveAmount = 0;
 	export let modalOpen = false;
 	export let showNavModal = false;
+
+	const tiers = {
+		diamond: {
+			moves: 5,
+			emoji: '💎'
+		},
+		gold: {
+			moves: 6,
+			emoji: '🥇'
+		},
+		silver: {
+			moves: 7,
+			emoji: '🥈'
+		},
+		bronze: {
+			moves: 8,
+			emoji: '🥉'
+		}
+	};
 
 	const alpha = 'qwertyuiopasdfghjklzxcvbnm'.split('');
 	const date = new Date();
@@ -39,6 +57,21 @@
 	function toggleModalOpen(val: boolean) {
 		modalOpen = val;
 	}
+
+	$: getTierByMoves = () => {
+		if (moveAmount <= tiers['diamond'].moves) {
+			return tiers['diamond'];
+		}
+		if (moveAmount === tiers['gold'].moves) {
+			return tiers['gold'];
+		}
+		if (moveAmount === tiers['silver'].moves) {
+			return tiers['silver'];
+		}
+		if (moveAmount >= tiers['bronze'].moves) {
+			return tiers['bronze'];
+		}
+	};
 
 	// user action for selecting letters
 	function onSelect(letter: string) {
@@ -132,12 +165,6 @@
 			gameOver = true;
 			modalOpen = true;
 		}
-		if (localStorage.getItem('gameStatus') === 'lose') {
-			lose = true;
-			gameOver = true;
-			modalOpen = true;
-			moveAmount = moveLimit;
-		}
 	}
 
 	function addTodaysPuzzleToStorage() {
@@ -168,16 +195,6 @@
 			localStorage.setItem('cipher', word);
 			localStorage.setItem('date', formattedDate);
 			return;
-		}
-		if (!gameOver && moveAmount >= moveLimit) {
-			win = false;
-			lose = true;
-			gameOver = true;
-			modalOpen = true;
-			localStorage.setItem('gameStatus', 'lose');
-			localStorage.setItem('moves', String(moveAmount));
-			localStorage.setItem('cipher', cipherState.join(''));
-			localStorage.setItem('date', formattedDate);
 		}
 		if (moves) {
 			moveAmount = parseInt(moves);
@@ -256,8 +273,6 @@
 			return;
 		}
 
-		// TODO - how can we make this mechanic more interesting
-		// should we shift the letters one space after a guess, must not include the swapped letter
 		(function () {
 			const newState = [...cipherState];
 			[newState[startIndex], newState[moveIndex]] = [newState[moveIndex], newState[startIndex]];
@@ -275,11 +290,7 @@
 
 	// social results game sharing
 	async function shareResults() {
-		const shareText = win
-			? `Cipher #${data.id}
-			  I cracked the Cipher in ${moveAmount}/${moveLimit} moves 😉`
-			: `Cipher #${data.id} 
-			The Cipher stumped me today 😩`;
+		const shareText = `Cipher #${data.id} ${getTierByMoves()?.emoji} I cracked the Cipher in ${moveAmount} moves`;
 
 		navigator.share({
 			text: shareText,
@@ -371,6 +382,9 @@
 			{#if win}
 				<div class="flex w-full flex-col items-center justify-center gap-4">
 					{#if showLetters}
+						<div class="flex w-full justify-center">
+							<p class="text-7xl dark:text-white">{getTierByMoves()?.emoji}</p>
+						</div>
 						<h2 transition:fly={{ y: 100, delay: 10 }}>The Cipher Was:</h2>
 					{/if}
 					<div class="flex w-11/12 items-center justify-center gap-2">
@@ -398,42 +412,7 @@
 
 						<button
 							transition:fly={{ y: 100, delay: 300 }}
-							class="rounded-full bg-black px-4 py-2 text-white dark:bg-emerald-500 dark:text-black"
-							on:click={shareResults}>Share your result</button
-						>
-					{/if}
-				</div>
-			{/if}
-			{#if lose}
-				<div class="flex w-full flex-col items-center justify-center gap-4">
-					{#if showLetters}
-						<h2 transition:fly={{ y: 100, delay: 10 }}>The Cipher Was:</h2>
-					{/if}
-					<div class="flex w-11/12 justify-center gap-2">
-						{#each word.split('') as letter, i (`${letter}-${i}`)}
-							{#if showLetters}
-								<div
-									transition:fly={{ y: -100, delay: i * 80, duration: 400 }}
-									class="w-12 border-2 border-black p-2 text-center uppercase dark:border-white"
-								>
-									<p>{letter}</p>
-								</div>
-							{/if}
-							{#if !showLetters}
-								<div class="opacity-0"><p>{letter}</p></div>
-							{/if}
-						{/each}
-					</div>
-					{#if showLetters}
-						<h1
-							transition:fly={{ y: 100, delay: 1000, duration: 400 }}
-							class="text-center text-4xl font-bold uppercase"
-						>
-							better luck next time 😩!
-						</h1>
-						<button
-							transition:fly={{ y: 100, delay: 1200, duration: 400 }}
-							class="rounded-full bg-black px-4 py-2 text-white dark:bg-indigo-500"
+							class="rounded-full bg-black px-4 py-2 text-white hover:cursor-pointer dark:bg-emerald-500 dark:text-black"
 							on:click={shareResults}>Share your result</button
 						>
 					{/if}
@@ -455,7 +434,7 @@
 	{#if !loading}
 		<!-- Moves row -->
 		<div class="flex w-full items-center justify-between py-2 text-sm">
-			<div><p class="dark:text-white/80">Max: {moveLimit}</p></div>
+			<div><p class="dark:text-white/80">Status: {getTierByMoves()?.emoji}</p></div>
 			<div>
 				<p class="dark:text-white/80">Moves: {moveAmount}</p>
 			</div>
