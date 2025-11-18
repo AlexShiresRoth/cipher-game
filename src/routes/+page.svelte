@@ -460,7 +460,7 @@
 					}}
 					transition:fly={{ y: 100, duration: 700, delay: 100 * (i + 1) }}
 					class={clsx(
-						'relative flex w-12 items-center justify-center border-2 p-2 transition-all md:w-20',
+						'relative flex min-w-8 items-center justify-center border-2 p-2 transition-all md:min-w-16',
 						{
 							'border-emerald-500 text-emerald-500': highlightAtCorrectPosition(i),
 							'border-black dark:border-white dark:text-white': defaultCipherDisplay(i),
@@ -472,7 +472,7 @@
 						}
 					)}
 				>
-					<p class="text-2xl font-bold uppercase md:text-5xl">{key}</p>
+					<p class="text-3xl font-bold uppercase md:text-5xl">{key}</p>
 					{#if allowChooseIndex && cipherState.filter((l) => l === key).length > 1}
 						<div
 							class="absolute -bottom-10 z-10 flex flex-col items-center justify-center"

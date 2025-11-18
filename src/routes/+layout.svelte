@@ -5,7 +5,7 @@
 	const version = `0.5.0`;
 </script>
 
-<main class="mb-28 flex min-h-[90vh] w-screen flex-col items-center">
+<main class="mb-28 flex min-h-[90vh] w-screen flex-col items-center overflow-x-hidden">
 	{@render children()}
 </main>
 
