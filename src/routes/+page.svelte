@@ -4,7 +4,9 @@
 	import clsx from 'clsx';
 	import { format } from 'date-fns';
 	import { onMount, tick } from 'svelte';
-	import { fade, fly } from 'svelte/transition';
+	import { flip } from 'svelte/animate';
+	import { quintOut } from 'svelte/easing';
+	import { crossfade, fade, fly } from 'svelte/transition';
 	import type { CipherPuzzle } from '../types';
 
 	export let data: CipherPuzzle & { id: string };
@@ -57,6 +59,25 @@
 	function toggleModalOpen(val: boolean) {
 		modalOpen = val;
 	}
+
+	export const [send, receive] = crossfade({
+		duration: (d) => Math.sqrt(d * 200),
+
+		fallback(node, params) {
+			const style = getComputedStyle(node);
+			const transform = style.transform === 'none' ? '' : style.transform;
+
+			return {
+				duration: (params.duration as number) || 600,
+				delay: params.delay,
+				easing: quintOut,
+				css: (t) => `
+				transform: ${transform} scale(${t});
+				opacity: ${t}
+			`
+			};
+		}
+	});
 
 	$: getTierByMoves = () => {
 		if (moveAmount <= tiers['diamond'].moves) {
@@ -229,9 +250,19 @@
 
 	// word guess validation check
 	async function isValidWord(word: string) {
-		const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
+		try {
+			const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
 
-		return res.ok;
+			return res.ok;
+		} catch (error) {
+			console.error(error);
+			errors = [
+				...errors,
+				`The dictionary service we rely on is temporarily down due to a global outage.
+        Your game data is safe — this should be resolved soon!`
+			];
+			clearSelection();
+		}
 	}
 
 	// guess input event
@@ -450,7 +481,7 @@
 		</div>
 
 		<!-- Cipher blocks row -->
-		<div class="mb-8 flex w-full justify-center gap-2">
+		<div class="mb-8 flex w-full max-w-full justify-center gap-2">
 			{#each cipherState as key, i (`${key}-${i}`)}
 				<button
 					on:click={() => {
@@ -458,9 +489,11 @@
 							chooseStartingIndex(i);
 						}
 					}}
-					transition:fly={{ y: 100, duration: 700, delay: 100 * (i + 1) }}
+					in:receive={{ key: `${key}-${i}`, delay: i * 200, duration: i * 300 }}
+					out:send={{ key: `${key}-${i}`, delay: 0, duration: i * 100 }}
+					animate:flip
 					class={clsx(
-						'relative flex w-12 items-center justify-center border-2 p-2 transition-all md:w-20',
+						'relative flex min-w-8 items-center justify-center border-2 p-2 transition-all md:min-w-16',
 						{
 							'border-emerald-500 text-emerald-500': highlightAtCorrectPosition(i),
 							'border-black dark:border-white dark:text-white': defaultCipherDisplay(i),
@@ -472,8 +505,8 @@
 						}
 					)}
 				>
-					<p class="text-2xl font-bold uppercase md:text-5xl">{key}</p>
-					{#if allowChooseIndex && cipherState.filter((l) => l === key).length > 1}
+					<p class="text-3xl font-bold uppercase md:text-5xl">{key}</p>
+					{#if handleSelectedLetter(key)}
 						<div
 							class="absolute -bottom-10 z-10 flex flex-col items-center justify-center"
 							transition:fly={{ y: 20 }}
