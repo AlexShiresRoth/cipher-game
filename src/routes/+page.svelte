@@ -72,7 +72,7 @@
 				delay: params.delay,
 				easing: quintOut,
 				css: (t) => `
-				transform: ${transform} scale(${t});
+				transform: ${transform} scale(${t}) rotateY(${t});
 				opacity: ${t}
 			`
 			};
@@ -382,7 +382,7 @@
 
 {#if showTutorial && !loading}
 	<div
-		class="fixed top-0 z-20 flex max-h-full w-full flex-col items-end gap-4 overflow-y-scroll bg-white/40 px-4 pt-10 dark:bg-black/40"
+		class="fixed top-0 z-20 flex max-h-full w-screen flex-col items-end gap-4 overflow-y-scroll bg-white/40 px-4 pt-10 dark:bg-black/40"
 	>
 		<button
 			on:click={() => (showTutorial = false)}
@@ -489,7 +489,7 @@
 							chooseStartingIndex(i);
 						}
 					}}
-					in:receive={{ key: `${key}-${i}`, delay: i * 200, duration: i * 300 }}
+					in:receive={{ key: `${key}-${i}`, delay: i * 100, duration: i * 100 }}
 					out:send={{ key: `${key}-${i}`, delay: 0, duration: i * 100 }}
 					animate:flip
 					class={clsx(
