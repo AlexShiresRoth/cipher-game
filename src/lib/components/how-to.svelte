@@ -4,94 +4,91 @@
 >
 	<h2 class="mb-4 border-b-2 border-black pb-2 text-xl font-bold">How to Play Cipher</h2>
 
-	<p><strong>Goal:</strong> Decipher the jumbled word before you run out of moves!</p>
+	<p><strong>Goal:</strong> Unscramble the shuffled 7–8 letter word (the <em>cipher</em>).</p>
 
 	<hr class="my-4 border-black" />
 
-	<h3 class="text-lg font-semibold text-amber-500">Objective</h3>
-	<p class="mb-4">
-		You’ll be given a <strong>shuffled 7-8 letter word</strong> (the
-		<em>cipher</em>). Your job is to rearrange the letters back into the correct word, letter by
-		letter.
+	<h3 class="text-lg font-semibold text-amber-500">How it works</h3>
+	<p>
+		Each guess rearranges two letters in the cipher, by swapping places. Make a guess to move a
+		letter forward in the cipher — it might wrap around to the front.
 	</p>
 
-	<h3 class="text-lg font-semibold text-amber-500">How It Works</h3>
 	<ol class="mb-4 list-inside list-decimal space-y-2">
-		<li>Choose a minimum 3 letter word that starts with a letter found in the cipher.</li>
 		<li>
-			When you guess, one letter in the cipher that matches the first letter of your guess will
-			move:
-			<ul class="ml-4 list-inside list-disc">
-				<li>
-					The starting letter of your guessed word
-					<strong>swaps with</strong> the letter in the cipher at
-					<strong>the end of your guessed word</strong>.
-				</li>
+			Your guess must be:
+			<ul class="ml-4 list-disc">
+				<li>a real word</li>
+				<li>at least <strong>3 letters</strong></li>
+				<li>start with a letter that appears in the cipher</li>
 			</ul>
 		</li>
-		<li>If the shift goes past the end, it <strong>wraps around</strong>.</li>
-		<li>Each guess counts as one move</li>
+
 		<li>
-			<b>Duplicate letters: </b>
-			if there are duplicate letters in a word, you will be able to select one as the starting point.
-			An animation will indicate this, and allow you click on the letter.
+			What the guess does:
+			<ul class="ml-4 list-disc">
+				<li>
+					The <strong>first letter</strong> of your guess selects a matching letter in the cipher.
+				</li>
+				<li>That letter moves forward by <strong>the length of your guess</strong>.</li>
+				<li>If it goes past the end, it <strong>wraps to the front</strong>.</li>
+				<li>It <strong>swaps</strong> places with the letter at the destination position.</li>
+			</ul>
+		</li>
+
+		<li>Each guess counts as one move.</li>
+
+		<li>
+			Duplicate letters: if a letter appears more than once in the cipher, you will be able to
+			choose which duplicate letter to move.
 		</li>
 	</ol>
 
 	<h3 class="text-lg font-semibold text-amber-500">Example</h3>
+
 	<p>The cipher is:</p>
 	<pre
 		class="rounded border border-black bg-black px-3 py-2 text-white dark:bg-indigo-500">ACTPREU</pre>
-	<p class="mb-2">The real word is <strong>CAPTURE</strong> (but you don’t know that yet).</p>
 
-	<p>If you guess <strong>"crafty"</strong>:</p>
+	<p><strong>Hidden word (unknown to the player):</strong> <em>CAPTURE</em></p>
+
+	<p><strong>Guess:</strong> <code>crafty</code> (6 letters)</p>
 	<ul class="mb-4 ml-4 list-inside list-disc">
-		<li>First letter: <strong>C</strong> (index 1)</li>
-		<li>Word length: 6</li>
+		<li>First letter = <strong>C</strong></li>
 		<li>
-			The letter <strong>C</strong> moves 6 spaces to the right — wraps around to the start and ends
-			up as the first letter. The C is then swapped with the first letter "A".
+			C moves forward <strong>6</strong> positions (wraps if needed) and swaps with the letter at that
+			destination
 		</li>
+		<li>New cipher becomes: <strong>CATPREU</strong></li>
 	</ul>
 
-	<p>Now the Cipher is CATPREU</p>
-	<p>If you guess <strong>"places"</strong>:</p>
+	<p><strong>Next guess:</strong> <code>places</code> (6 letters)</p>
 	<ul class="mb-4 ml-4 list-inside list-disc">
-		<li>First letter: <strong>P</strong> (index 3)</li>
-		<li>Word length: 6</li>
-		<li><strong>P</strong> swaps with letter at index 2 "T" (wraps to index 2)</li>
-		<li>
-			Now the <strong>C A P T</strong> are in the correct locations, so the Cipher looks like CAPTREU.
-		</li>
+		<li>First letter = <strong>P</strong></li>
+		<li>P moves forward 6 positions and swaps → new cipher: <strong>CAPTREU</strong></li>
+		<li>Now the letters <strong>C A P T</strong> are in their correct spots.</li>
 	</ul>
 
-	<h3 class="text-lg font-semibold text-amber-500">Rules</h3>
+	<h3 class="text-lg font-semibold text-amber-500">Win & scoring</h3>
 	<ul class="mb-4 ml-4 list-inside list-disc">
-		<li>Guesses must be atleast 3-letter words.</li>
-		<li>Each guess must start with a letter in the cipher.</li>
-		<li>Repeating the same guess won’t count again.</li>
-		<li>When the cipher matches the original word — <strong>you win!</strong></li>
+		<li>When the cipher exactly matches the original word, you win.</li>
 		<li>
-			Depending on how many moves you make, you will earn a certain tier.
-			<ul class="ml-12 list-disc">
-				<li><strong>Moves equal to 6 is 🥇</strong></li>
-				<li><strong>7 moves is 🥈</strong></li>
-				<li>
-					<strong>8 or more is 🥉</strong>
-				</li>
+			Move tiers:
+			<ul class="ml-6 list-disc">
+				<li><strong>6 moves</strong> — 🥇 Gold</li>
+				<li><strong>7 moves</strong> — 🥈 Silver</li>
+				<li><strong>8+ moves</strong> — 🥉 Bronze</li>
 			</ul>
 		</li>
 	</ul>
 
 	<h3 class="text-lg font-semibold text-amber-500">Tips</h3>
 	<ul class="mb-4 ml-4 list-inside list-disc">
-		<li>Use shorter words to move letters precisely.</li>
-		<li>Watch how guesses change the cipher pattern.</li>
-		<li>There’s a new cipher every day.</li>
+		<li>Use shorter guesses for finer control of a single letter.</li>
+		<li>Watch how each guess reshapes the pattern — plan your next move accordingly.</li>
+		<li>There’s a new cipher every day — enjoy!</li>
 	</ul>
 
-	<h3 class="text-lg font-semibold text-amber-500">Share Your Results</h3>
-	<p>
-		After finishing, tap <strong>Share Results</strong> to post your Cipher stats with friends!
-	</p>
+	<h3 class="text-lg font-semibold text-amber-500">Share</h3>
+	<p>After finishing, tap <strong>Share Results</strong> to post your Cipher stats with friends!</p>
 </section>
