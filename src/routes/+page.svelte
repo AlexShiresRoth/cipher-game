@@ -344,7 +344,7 @@
 	};
 
 	$: highlightAtCorrectPosition = (i: number) => {
-		return word.split('')[i] === cipherState[i] && !allowChooseIndex;
+		return word.split('')[i] === cipherState[i];
 	};
 
 	$: defaultCipherDisplay = (i: number) => {
@@ -386,7 +386,7 @@
 	>
 		<button
 			on:click={() => (showTutorial = false)}
-			class="bg-black p-4"
+			class="bg-white p-4 text-black dark:bg-black dark:text-white"
 			transition:fly={{ y: -200 }}>close</button
 		>
 		<div class="bg-white dark:bg-black" transition:fly={{ y: 200 }}>
@@ -493,19 +493,22 @@
 					out:send={{ key: `${key}-${i}`, delay: 0, duration: i * 100 }}
 					animate:flip
 					class={clsx(
-						'relative flex min-w-8 items-center justify-center border-2 p-2 transition-all md:min-w-16',
+						'relative flex items-center justify-center border-2 p-2 transition-all md:min-w-16',
 						{
-							'border-emerald-500 text-emerald-500': highlightAtCorrectPosition(i),
+							'border-emerald-500 text-emerald-500':
+								highlightAtCorrectPosition(i) && !handleSelectedLetter(key),
 							'border-black dark:border-white dark:text-white': defaultCipherDisplay(i),
 							'animate-bounce border-amber-500 text-amber-500 hover:cursor-pointer':
 								handleSelectedLetter(key),
 							'border-amber-500 text-amber-500': highlightAtStartIndex(i),
-							'border-indigo-500 text-indigo-500 shadow-[3px_3px_0px_1px_rgba(0,0,0,.2)]':
-								highlightAtSwapIndex(i)
+							'border-indigo-500 text-indigo-500':
+								highlightAtSwapIndex(i) && !handleSelectedLetter(key),
+							'min-w-10': cipherState.length <= 7,
+							'min-w-8': cipherState.length > 7
 						}
 					)}
 				>
-					<p class="text-3xl font-bold uppercase md:text-5xl">{key}</p>
+					<p class="text-2xl font-bold uppercase md:text-5xl">{key}</p>
 					{#if handleSelectedLetter(key)}
 						<div
 							class="absolute -bottom-10 z-10 flex flex-col items-center justify-center"
