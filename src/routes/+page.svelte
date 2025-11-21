@@ -382,7 +382,7 @@
 	<title>CIPHER|Play</title>
 	<meta
 		name="description"
-		content="Cipher word puzzle game, where you unscramble a shuffled word in order win the game."
+		content="Play Cipher, the interactive word-scramble puzzle game. Decode the shuffled word using clever moves, swapping mechanics, and logic-based strategy."
 	/>
 </svelte:head>
 
