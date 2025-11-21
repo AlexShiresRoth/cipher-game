@@ -378,6 +378,14 @@
 	})();
 </script>
 
+<svelte:head>
+	<title>CIPHER|Play</title>
+	<meta
+		name="description"
+		content="Cipher word puzzle game, where you unscramble a shuffled word in order win the game."
+	/>
+</svelte:head>
+
 <Nav {gameOver} {showNavModal} {toggleModalOpen} />
 
 {#if showTutorial && !loading}
