@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@lucide/svelte':
+        specifier: ^0.554.0
+        version: 0.554.0(svelte@5.43.4)
       '@sveltejs/adapter-vercel':
         specifier: ^6.1.1
         version: 6.1.1(@sveltejs/kit@2.48.4(@sveltejs/vite-plugin-svelte@5.1.1(svelte@5.43.4)(vite@6.4.1(@types/node@22.19.0)(jiti@2.6.1)(lightningcss@1.30.2)))(svelte@5.43.4)(vite@6.4.1(@types/node@22.19.0)(jiti@2.6.1)(lightningcss@1.30.2)))(rollup@4.53.1)
@@ -545,6 +548,11 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
+
+  '@lucide/svelte@0.554.0':
+    resolution: {integrity: sha512-CM6wLEH8uk3WBpC42t8R0hF7SlQrsYEL6qGuXdB99xKZwKglpWmX5XgYu7FIYOCBYOyC1rm4dNhIe6uF9pOXqw==}
+    peerDependencies:
+      svelte: ^5
 
   '@mapbox/node-pre-gyp@2.0.0':
     resolution: {integrity: sha512-llMXd39jtP0HpQLVI37Bf1m2ADlEb35GYSh1SDSLsBhR+5iCxiNGlT31yqbNtVHygHAtMy6dWFERpU2JgufhPg==}
@@ -2628,6 +2636,10 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
+
+  '@lucide/svelte@0.554.0(svelte@5.43.4)':
+    dependencies:
+      svelte: 5.43.4
 
   '@mapbox/node-pre-gyp@2.0.0':
     dependencies:
