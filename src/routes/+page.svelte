@@ -1,6 +1,7 @@
 <script lang="ts">
 	import HowTo from '$lib/components/how-to.svelte';
 	import Nav from '$lib/components/nav.svelte';
+	import { ArrowLeft, RotateCcw, Trash } from '@lucide/svelte';
 	import clsx from 'clsx';
 	import { format } from 'date-fns';
 	import { onMount, tick } from 'svelte';
@@ -49,15 +50,22 @@
 
 	let selected: string[] = [];
 	let guesses: string[] = [];
+	let usedLetters: string[] = [];
 	let indexToSwap: number;
 	let startIndex: number = -1;
 	let allowChooseIndex = false;
 	let showLetters = false;
 	let loading = true;
 	let showTutorial = false;
+	let showUpdatePopup = false;
+	let replenishAmt = 0;
 
 	function toggleModalOpen(val: boolean) {
 		modalOpen = val;
+	}
+
+	function toggleUpdatePopup() {
+		showUpdatePopup = !showUpdatePopup;
 	}
 
 	export const [send, receive] = crossfade({
@@ -155,6 +163,15 @@
 		allowChooseIndex = false;
 	}
 
+	function clearUsedLetters() {
+		usedLetters = [];
+		moveAmount++;
+		replenishAmt++;
+		localStorage.removeItem('usedLetters');
+		localStorage.setItem('moves', JSON.stringify(moveAmount));
+		localStorage.setItem('replenishAmt', JSON.stringify(replenishAmt));
+	}
+
 	// remove all stored data
 	function resetStorage() {
 		win = false;
@@ -165,6 +182,8 @@
 		guesses = [];
 		moveAmount = 0;
 		cipherState = data.cipherWord.split('');
+		usedLetters = [];
+		replenishAmt = 0;
 		localStorage.clear();
 	}
 
@@ -198,6 +217,7 @@
 			return;
 		} else {
 			showTutorial = true;
+			showUpdatePopup = true;
 			localStorage.setItem('viewed', 'true');
 		}
 	}
@@ -206,7 +226,8 @@
 	function checkForGameStatus() {
 		const moves = localStorage.getItem('moves');
 		const storedCipher = localStorage.getItem('cipher');
-
+		const lettersUsed = localStorage.getItem('usedLetters');
+		const replenishAmount = localStorage.getItem('replenishAmt');
 		if (!gameOver && cipherState.join('') === word) {
 			win = true;
 			gameOver = true;
@@ -222,6 +243,12 @@
 		}
 		if (storedCipher) {
 			cipherState = storedCipher.split('');
+		}
+		if (lettersUsed) {
+			usedLetters = JSON.parse(lettersUsed);
+		}
+		if (replenishAmount) {
+			replenishAmt = JSON.parse(replenishAmount);
 		}
 		loading = false;
 	}
@@ -311,17 +338,22 @@
 		})();
 
 		guesses = [...guesses, selected.join('')];
+		usedLetters = [...usedLetters, ...selected.filter((l) => !cipherState.includes(l))];
 		clearSelection();
 		moveAmount++;
 		// save current play if window refresh
 		localStorage.setItem('guesses', JSON.stringify(guesses));
 		localStorage.setItem('moves', JSON.stringify(moveAmount));
 		localStorage.setItem('cipher', cipherState.join(''));
+		localStorage.setItem('usedLetters', JSON.stringify(usedLetters));
 	}
 
 	// social results game sharing
 	async function shareResults() {
-		const shareText = `Cipher #${data.id} ${getTierByMoves()?.emoji} I cracked the Cipher in ${moveAmount} moves`;
+		const shareText = `
+		🔐 Cipher #${data.id}  ${getTierByMoves()?.emoji}
+		⬇️ ${moveAmount} moves
+		🔄 ${replenishAmt} reps used`;
 
 		navigator.share({
 			text: shareText,
@@ -362,7 +394,7 @@
 	// reactive effects
 	$: (() => {
 		(startIndex, indexToSwap, selected, allowChooseIndex, guesses, win, lose, gameOver);
-		(moveAmount, modalOpen, showNavModal, loading, date);
+		(moveAmount, modalOpen, showNavModal, loading, usedLetters, showUpdatePopup, date);
 
 		if (typeof window === 'undefined') return;
 
@@ -472,10 +504,29 @@
 <div class="flex w-11/12 flex-col items-center md:w-1/2 lg:w-1/3">
 	{#if !loading}
 		<!-- Moves row -->
-		<div class="flex w-full items-center justify-between py-2 text-sm">
-			<div><p class="dark:text-white/80">Status: {getTierByMoves()?.emoji}</p></div>
-			<div>
-				<p class="dark:text-white/80">Moves: {moveAmount}</p>
+		<div class="flex w-full flex-col gap-2 py-2 text-sm">
+			<div class="flex w-full items-center justify-between">
+				<div><p class="dark:text-white/80">Status {getTierByMoves()?.emoji}</p></div>
+				<div class="flex gap-2">
+					<p class=" dark:text-white/80">Moves</p>
+					<span class="relative inline-block w-[1ch]">
+						{#key moveAmount}
+							<span class="absolute top-0 left-0" transition:fly={{ y: -40 }}>
+								{moveAmount}
+							</span>
+						{/key}
+					</span>
+				</div>
+			</div>
+			<div class="flex gap-2">
+				<p class="dark:text-white/80">Reps</p>
+				<span class="relative inline-block w-[1ch]">
+					{#key replenishAmt}
+						<span class="absolute top-0 left-0" transition:fly={{ y: -40 }}>
+							{replenishAmt}
+						</span>
+					{/key}
+				</span>
 			</div>
 		</div>
 		<!-- Current user selection row -->
@@ -543,51 +594,87 @@
 		<div class="flex w-full justify-center">
 			<div class="flex flex-wrap items-center justify-center gap-2 md:gap-4 dark:text-black">
 				{#each alpha as l}
-					<button
-						on:click={() => onSelect(l)}
-						class={clsx(
-							'flex w-12 items-center justify-center rounded p-1 text-2xl uppercase hover:cursor-pointer md:text-4xl',
-							{
-								'bg-amber-300': selected.includes(l),
-								'bg-gray-100 dark:bg-gray-100/80': !selected.includes(l)
-							}
-						)}>{l}</button
-					>
+					{#if !usedLetters.includes(l)}
+						<button
+							on:click={() => onSelect(l)}
+							class={clsx(
+								'flex w-12 items-center justify-center rounded p-1 text-2xl uppercase transition-colors hover:cursor-pointer md:text-4xl',
+								{
+									'bg-amber-300': selected.includes(l),
+									'bg-gray-100 dark:bg-gray-100/80': !selected.includes(l)
+								}
+							)}>{l}</button
+						>
+					{:else}
+						<button
+							disabled
+							class={clsx(
+								'flex w-12 items-center justify-center rounded p-1 text-2xl text-gray-400/50 uppercase transition-colors hover:cursor-pointer md:text-4xl dark:bg-gray-100/10'
+							)}>{l}</button
+						>
+					{/if}
 				{/each}
 			</div>
 		</div>
 
 		<!-- Action buttons -->
 		{#if !gameOver}
-			<div
-				data-testid="button-rows"
-				class="my-8 flex w-full items-center justify-between gap-4 md:justify-end"
-			>
+			<div data-testid="button-rows" class="my-8 flex w-full items-center justify-between gap-4">
 				<div class="flex items-center gap-4">
+					<div class="relative flex items-center">
+						<button
+							on:click={clearUsedLetters}
+							class={clsx('rounded p-2 transition-colors md:text-lg', {
+								'bg-gray-100 text-black/80 dark:bg-gray-100/50 dark:text-black/60':
+									usedLetters.length === 0,
+								' bg-amber-500 text-white': usedLetters.length > 0
+							})}><RotateCcw size={23} /></button
+						>
+						{#if showUpdatePopup}
+							<button
+								transition:fade
+								class="absolute bottom-full w-[250px] rounded border border-black/10 bg-white p-4 shadow-md after:absolute
+							after:top-full after:left-4 after:-translate-x-1/2 after:border-8
+							after:border-transparent after:border-t-white
+							hover:cursor-pointer dark:border-gray-100/50 dark:bg-black after:dark:border-t-black"
+								on:click={toggleUpdatePopup}
+							>
+								<p
+									class="absolute -top-3 -right-2 flex h-6 w-6 items-center justify-center rounded-full border border-gray-100/50 bg-white text-xs dark:bg-black"
+								>
+									X
+								</p>
+								<p class="text-xs">
+									<strong class="text-amber-500">UPDATE</strong>:{` `} New Replenish button—use this
+									to regain unavailable letters. Using it costs a move.
+								</p>
+							</button>
+						{/if}
+					</div>
 					<div>
 						<button
 							on:click={clearSelection}
-							class={clsx('rounded-full px-4 py-2 text-sm transition-colors md:text-lg', {
+							class={clsx('rounded p-2 transition-colors md:text-lg', {
 								'bg-gray-100 text-black/80 dark:bg-gray-100/50 dark:text-black/60':
 									selected.length === 0,
 								'bg-black text-white dark:bg-indigo-500': selected.length > 0
-							})}>Clear</button
+							})}><Trash size={23} /></button
 						>
 					</div>
 					<div>
 						<button
 							on:click={removeLetterFromSelection}
-							class={clsx('rounded-full px-4 py-2 text-sm transition-colors md:text-lg', {
+							class={clsx('rounded p-2 transition-colors md:text-lg', {
 								'bg-gray-100 text-black/80 dark:bg-gray-100/50 dark:text-black/60':
 									selected.length === 0,
 								'bg-black text-white dark:bg-indigo-500': selected.length > 0
-							})}>Delete</button
+							})}><ArrowLeft size={23} /></button
 						>
 					</div>
 				</div>
 				<div>
 					<button
-						class={clsx('rounded-full px-4 py-2 text-sm transition-colors md:text-lg', {
+						class={clsx('rounded p-2 text-base uppercase transition-colors', {
 							'bg-gray-100 text-black/80 dark:bg-gray-100/50 dark:text-black/60':
 								selected.length <= 1,
 							'bg-black text-white dark:bg-emerald-500 dark:text-black': selected.length > 1

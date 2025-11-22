@@ -42,6 +42,13 @@
 			Duplicate letters: if a letter appears more than once in the cipher, you will be able to
 			choose which duplicate letter to move.
 		</li>
+		<li>
+			For each word that you guess, letters will become unavailable to use if they have letters not
+			in the Cipher. Any letter in the Cipher will always be available in the keyboard.
+		</li>
+		<li>
+			You can get these back by replenishing the keyboard, this costs a move though, so be aware!
+		</li>
 	</ol>
 
 	<h3 class="text-lg font-semibold text-amber-500">Example</h3>
