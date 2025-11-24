@@ -1,6 +1,5 @@
 <script lang="ts">
 	import '../app.css';
-
 	let { children } = $props();
 	const version = `0.6.0`;
 </script>
