@@ -1,0 +1,1 @@
+ALTER TABLE "cipherPuzzle" ADD COLUMN "maxAttempts" integer;
