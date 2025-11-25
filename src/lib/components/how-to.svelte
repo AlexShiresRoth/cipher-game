@@ -4,7 +4,7 @@
 >
 	<h2 class="mb-4 border-b-2 border-black pb-2 text-xl font-bold">How to Play Cipher</h2>
 
-	<p><strong>Goal:</strong> Unscramble the shuffled 7–8 letter word (the <em>cipher</em>).</p>
+	<p><strong>Goal:</strong> Unscramble the shuffled 8 letter word (the <em>cipher</em>).</p>
 
 	<hr class="my-4 border-black" />
 

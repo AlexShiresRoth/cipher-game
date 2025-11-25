@@ -1,6 +1,6 @@
 import { env } from '$env/dynamic/private';
 import { db } from '$lib/server/db';
-import { cipherPuzzle } from '$lib/server/db/schema';
+import { cipherPuzzleProd } from '$lib/server/db/schema';
 import { json } from '@sveltejs/kit';
 import OpenAI from 'openai';
 import { zodTextFormat } from 'openai/helpers/zod';
@@ -31,7 +31,7 @@ export const GET = async ({ request, url }) => {
 		return new Response('Unauthorized', { status: 401, statusText: 'Unauthorized' });
 	}
 
-	const puzzles = await db.select().from(cipherPuzzle);
+	const puzzles = (await db.select().from(cipherPuzzleProd)) || [];
 
 	const usedWords = puzzles
 		.map((p) => p.word)
@@ -46,25 +46,25 @@ export const GET = async ({ request, url }) => {
 					content: `
 				You are generating a daily puzzle for a word-based logic game.
 
-				The rules:
-				- Choose one real, common but clever 7-letter to 8-letter English word.
-				- Shuffle its letters to create a new cipher that is not identical to the original word.
-				- None of the letters in the cipher should be in the correct position when shuffled
-				- Estimate a reasonable number of maximum attempts (3–6) a player would need to solve it.
-				This should roughly scale with how scrambled the word is (more jumbled → more attempts).
-				- Do NOT include any explanation or reasoning — just return structured data.
-				- Response should always be lowercase
-				- BANNED WORDS (do NOT use any of these):
-				${usedWords.join(', ')}
-				- The word and cipher MUST contain the same letters.
-				Example:
-				{
-				"word": "function",
-				"cipher": "tnucionf",
-				"maxAttempts": 6,
-                "date": 12/24/2025,
-                "dayOfWeek": ${day},
-				}`
+					Rules:
+					- Choose one real, common but clever 8 letter English word.
+					- Generate a cipher that is a *derangement* of the word.
+					A derangement means: **no letter may remain in the same index**.
+					(For every index i: cipher[i] != word[i])
+					- The cipher must contain exactly the same letters as the word.
+					- Do NOT output any reasoning — only structured data.
+					- Response must be lowercase.
+					- Do not use any banned words:
+					${usedWords.join(', ')}
+
+					Example output:
+					{
+					"word": "function",
+					"cipher": "tnucionf",
+					"maxAttempts": 6,
+					"date": "12/24/2025",
+					"dayOfWeek": ${day}
+					}`
 				}
 			],
 			text: {
@@ -77,7 +77,7 @@ export const GET = async ({ request, url }) => {
 
 	const today = new Date();
 	const startOfWeek = new Date(today);
-	startOfWeek.setDate(today.getDate() + 1);
+	startOfWeek.setDate(today.getDate());
 
 	let dayIndex = today.getDay();
 	const DAYS: typeof DAYS_OF_THE_WEEK = [];
@@ -112,11 +112,11 @@ export const GET = async ({ request, url }) => {
 	await Promise.all(
 		cipherPuzzlePerDay.map(async (puzzle) => {
 			await db
-				.insert(cipherPuzzle)
+				.insert(cipherPuzzleProd)
 				.values({
 					...puzzle
 				})
-				.onConflictDoUpdate({ target: cipherPuzzle.date, set: { ...puzzle } });
+				.onConflictDoUpdate({ target: cipherPuzzleProd.date, set: { ...puzzle } });
 		})
 	);
 

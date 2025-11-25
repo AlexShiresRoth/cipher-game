@@ -7,7 +7,7 @@
 
 <nav class="flex w-full justify-between border-b border-b-black dark:border-b-white/50">
 	<div class="flex w-full items-center justify-start border-r px-4 dark:border-white/50">
-		<h2 class="text-3xl font-bold uppercase dark:text-white">CIPHER</h2>
+		<a href="/" class="text-3xl font-bold uppercase dark:text-white">CIPHER</a>
 	</div>
 	<div
 		class="relative flex w-full items-center justify-end"

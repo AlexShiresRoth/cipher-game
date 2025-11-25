@@ -688,14 +688,7 @@
 	{/if}
 	{#if loading}
 		<div class="flex h-[80vh] items-center justify-center gap-2">
-			{#each 'CIPHER'.split('') as key, i (`${key}-${i}`)}
-				<div
-					transition:fly={{ y: 100, duration: 700, delay: 100 * (i + 1) }}
-					class="relative flex w-12 animate-bounce items-center justify-center border-2 border-black p-2 transition-all md:w-20"
-				>
-					<p class="font-bold">{key}</p>
-				</div>
-			{/each}
+			<img src="/logo.svg" alt="logo" height="300" width="300" />
 		</div>
 	{/if}
 </div>

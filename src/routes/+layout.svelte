@@ -2,20 +2,25 @@
 	import '../app.css';
 
 	let { children } = $props();
-	const version = `0.6.0`;
+	const version = `0.6.1`;
 </script>
 
 <main class="mb-28 flex min-h-[90vh] w-screen flex-col items-center overflow-x-hidden">
 	{@render children()}
 </main>
 
-<footer class="flex w-full flex-col items-center bg-gray-100 dark:bg-gray-100/20">
-	<div class="flex w-full items-center border-b border-b-gray-200/50 px-4 py-2">
+<footer class="flex w-full flex-col items-center bg-gray-100 dark:bg-black">
+	<div
+		class="flex w-full items-center border-b border-b-gray-200/50 px-4 py-2 dark:border-b-gray-100/10"
+	>
+		<img src="/logo.svg" alt="logo" height="40" width="40" />
 		<p class="text-xs text-gray-400">
 			&copy; {new Date().getFullYear()} Alex Rothenberg. All rights reserved.
 		</p>
 	</div>
-	<div class="flex w-full items-center justify-between border-b border-b-gray-200/50 px-4 py-2">
+	<div
+		class="flex w-full items-center justify-between border-b border-b-gray-200/50 px-4 py-2 dark:border-b-gray-100/10"
+	>
 		<div>
 			<p class="text-xs text-gray-400">
 				created by <a
