@@ -361,13 +361,16 @@
 		}
 
 		const rows = getRows();
-		const shareText = `🔐 Cipher #${data.id} ${getTierByMoves()?.emoji}
-		${rows
+		const rowsText = rows
 			.map((row) => {
-				return row.map((b) => (b ? '🟩' : '🟥')).join('');
+				return row.map((b) => (b ? '🟩' : '⬜️')).join('');
 			})
-			.join('\n')}
-		🔄 ${replenishAmt} reps used`;
+			.join('\n');
+
+		const shareText = `🔐 Cipher #${data.id} ${getTierByMoves()?.emoji}
+		⬆️ ${moveAmount} moves
+		${rowsText}
+		🔄 ${replenishAmt} reps used`.trim();
 
 		navigator.share({
 			text: shareText,
