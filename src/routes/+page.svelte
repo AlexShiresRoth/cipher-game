@@ -60,7 +60,7 @@
 	let showTutorial = false;
 	let showUpdatePopup = false;
 	let replenishAmt = 0;
-	let correctPositions = 0;
+	let correctPositions = cipherState.filter((l, i) => l === word[i]).length;
 
 	function toggleModalOpen(val: boolean) {
 		modalOpen = val;
