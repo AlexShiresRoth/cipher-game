@@ -90,7 +90,7 @@
 	});
 
 	$: getTierByMoves = () => {
-		return tiers[swaps.filter((b) => !b).length];
+		return tiers[swaps.filter((b) => !b).length + replenishAmt];
 	};
 
 	// user action for selecting letters
@@ -339,7 +339,7 @@
 		swaps = [...swaps, isCorrectGuess];
 		correctPositions = cipherState.filter((l, i) => l === word[i]).length;
 		guesses = [...guesses, selected.join('')];
-		usedLetters = [...usedLetters, ...selected.filter((l) => !cipherState.includes(l))];
+		usedLetters = [...usedLetters, ...selected];
 		clearSelection();
 		moveAmount++;
 		// save current play if window refresh
@@ -367,15 +367,16 @@
 			})
 			.join('\n');
 
-		const shareText = `🔐 Cipher #${data.id} ${getTierByMoves()?.emoji}
+		const shareText = `
+		🔐 Cipher #${data.id} ${getTierByMoves()?.emoji}
 		⬆️ ${moveAmount} moves
-		${rowsText}
+		   ${rowsText}
 		🔄 ${replenishAmt} reps used`.trim();
 
 		navigator.share({
 			text: shareText,
 			title: `Cipher #${data.id}`,
-			url: 'https://cipher-game-alpha.vercel.app/'
+			url: 'https://play-cipher.com'
 		});
 	}
 
@@ -403,6 +404,16 @@
 			indexToSwap !== i &&
 			cipherState.filter(() => key === selected[0]).length === 1
 		);
+	};
+
+	$: isAvailable = (l: string) => {
+		if (!usedLetters.includes(l)) return true;
+
+		if (cipherState.includes(l) && selected.length < 1) return true;
+
+		if (selected[0] === l && usedLetters.includes(l)) return true;
+
+		return false;
 	};
 
 	onMount(() => {
@@ -616,7 +627,7 @@
 		<div class="flex w-full justify-center">
 			<div class="flex flex-wrap items-center justify-center gap-2 md:gap-4 dark:text-black">
 				{#each alpha as l}
-					{#if !usedLetters.includes(l)}
+					{#if isAvailable(l)}
 						<button
 							on:click={() => onSelect(l)}
 							class={clsx(
@@ -631,7 +642,11 @@
 						<button
 							disabled
 							class={clsx(
-								'flex w-12 items-center justify-center rounded p-1 text-2xl text-gray-400/50 uppercase transition-colors hover:cursor-pointer md:text-4xl dark:bg-gray-100/10'
+								'flex w-12 items-center justify-center rounded p-1 text-2xl  uppercase transition-colors hover:cursor-pointer md:text-4xl',
+								{
+									'text-gray-400/50 dark:bg-gray-100/10': !selected.includes(l),
+									'bg-amber-300 text-black': selected.includes(l)
+								}
 							)}>{l}</button
 						>
 					{/if}
