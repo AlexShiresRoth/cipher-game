@@ -362,9 +362,11 @@
 
 		const rows = getRows();
 		const shareText = `🔐 Cipher #${data.id} ${getTierByMoves()?.emoji}
-		${rows.map((row) => {
-			return row.map((b) => (b ? '🟩' : '🟥')).join('');
-		})}
+		${rows
+			.map((row) => {
+				return row.map((b) => (b ? '🟩' : '🟥')).join('');
+			})
+			.join('\n')}
 		🔄 ${replenishAmt} reps used`;
 
 		navigator.share({
