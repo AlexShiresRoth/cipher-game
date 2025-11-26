@@ -60,6 +60,7 @@
 	let showTutorial = false;
 	let showUpdatePopup = false;
 	let replenishAmt = 0;
+	let correctPositions = 0;
 
 	function toggleModalOpen(val: boolean) {
 		modalOpen = val;
@@ -332,11 +333,11 @@
 			cipherState = [...newState];
 		})();
 
-		const indexOfSelected = word.indexOf(selected[0]);
+		const isCorrectGuess =
+			cipherState.filter((l, i) => l === word[i]).length > correctPositions ? true : false;
 
-		// tracking user moves for sharing results to friends and enemies
-		swaps = [...swaps, cipherState[indexOfSelected] === word[indexOfSelected] ? true : false];
-
+		swaps = [...swaps, isCorrectGuess];
+		correctPositions = cipherState.filter((l, i) => l === word[i]).length;
 		guesses = [...guesses, selected.join('')];
 		usedLetters = [...usedLetters, ...selected.filter((l) => !cipherState.includes(l))];
 		clearSelection();
@@ -351,9 +352,19 @@
 
 	// social results game sharing
 	async function shareResults() {
-		const shareText = `
-		🔐 Cipher #${data.id}  ${getTierByMoves()?.emoji}
-		${swaps.map((b) => (b ? '🟩' : '🟥')).join('')}
+		function getRows() {
+			let rows: boolean[][] = [];
+			for (let i = 0; i < swaps.length; i += 4) {
+				rows.push(swaps.slice(i, i + 4));
+			}
+			return rows;
+		}
+
+		const rows = getRows();
+		const shareText = `🔐 Cipher #${data.id} ${getTierByMoves()?.emoji}
+		${rows.map((row) => {
+			return row.map((b) => (b ? '🟩' : '🟥')).join('');
+		})}
 		🔄 ${replenishAmt} reps used`;
 
 		navigator.share({
