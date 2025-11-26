@@ -60,7 +60,7 @@
 	let showTutorial = false;
 	let showUpdatePopup = false;
 	let replenishAmt = 0;
-	let correctPositions = 0;
+	let correctPositions = cipherState.filter((l, i) => l === word[i]).length;
 
 	function toggleModalOpen(val: boolean) {
 		modalOpen = val;
@@ -363,7 +363,7 @@
 		const rows = getRows();
 		const rowsText = rows
 			.map((row) => {
-				return row.map((b) => (b ? '🟩' : '⬜️')).join('');
+				return row.map((b) => (b ? '🟩' : '🟥')).join('');
 			})
 			.join('\n');
 
