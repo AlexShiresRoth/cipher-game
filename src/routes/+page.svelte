@@ -363,7 +363,7 @@
 		const rows = getRows();
 		const rowsText = rows
 			.map((row) => {
-				return row.map((b) => (b ? '🟩' : '⬜️')).join('');
+				return row.map((b) => (b ? '🟩' : '🟥')).join('');
 			})
 			.join('\n');
 
