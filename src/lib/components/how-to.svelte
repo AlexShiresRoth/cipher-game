@@ -11,7 +11,7 @@
 	<h3 class="text-lg font-semibold text-amber-500">How it works</h3>
 	<p>
 		Each guess rearranges two letters in the cipher, by swapping places. Make a guess to move a
-		letter forward in the cipher — it might wrap around to the front.
+		letter a certain amount of places in the cipher — it might wrap around to the front.
 	</p>
 
 	<ol class="mb-4 list-inside list-decimal space-y-2">
@@ -79,12 +79,14 @@
 	<h3 class="text-lg font-semibold text-amber-500">Win & scoring</h3>
 	<ul class="mb-4 ml-4 list-inside list-disc">
 		<li>When the cipher exactly matches the original word, you win.</li>
+		<li>If you move a letter into the wrong position, it counts as a mistake.</li>
 		<li>
-			Move tiers:
+			Result tiers:
 			<ul class="ml-6 list-disc">
-				<li><strong>6 moves</strong> — 🥇 Gold</li>
-				<li><strong>7 moves</strong> — 🥈 Silver</li>
-				<li><strong>8+ moves</strong> — 🥉 Bronze</li>
+				<li><strong>No mistakes</strong> — 💎 Diamond</li>
+				<li><strong>1 mistake</strong> — 🥇 Gold</li>
+				<li><strong>2 mistakes</strong> — 🥈 Silver</li>
+				<li><strong>3+ mistakes</strong> — 🥉 Bronze</li>
 			</ul>
 		</li>
 	</ul>

@@ -22,21 +22,21 @@
 	export let modalOpen = false;
 	export let showNavModal = false;
 
-	const tiers = {
-		diamond: {
-			moves: 5,
+	const tiers: Record<number, { mistakes: number; emoji: string }> = {
+		0: {
+			mistakes: 0,
 			emoji: '💎'
 		},
-		gold: {
-			moves: 6,
+		1: {
+			mistakes: 1,
 			emoji: '🥇'
 		},
-		silver: {
-			moves: 7,
+		2: {
+			mistakes: 2,
 			emoji: '🥈'
 		},
-		bronze: {
-			moves: 8,
+		3: {
+			mistakes: 3,
 			emoji: '🥉'
 		}
 	};
@@ -51,6 +51,7 @@
 	let selected: string[] = [];
 	let guesses: string[] = [];
 	let usedLetters: string[] = [];
+	let swaps: boolean[] = [];
 	let indexToSwap: number;
 	let startIndex: number = -1;
 	let allowChooseIndex = false;
@@ -88,18 +89,7 @@
 	});
 
 	$: getTierByMoves = () => {
-		if (moveAmount <= tiers['diamond'].moves) {
-			return tiers['diamond'];
-		}
-		if (moveAmount === tiers['gold'].moves) {
-			return tiers['gold'];
-		}
-		if (moveAmount === tiers['silver'].moves) {
-			return tiers['silver'];
-		}
-		if (moveAmount >= tiers['bronze'].moves) {
-			return tiers['bronze'];
-		}
+		return tiers[swaps.filter((b) => !b).length];
 	};
 
 	// user action for selecting letters
@@ -184,6 +174,7 @@
 		cipherState = data.cipherWord.split('');
 		usedLetters = [];
 		replenishAmt = 0;
+		swaps = [];
 		localStorage.clear();
 	}
 
@@ -227,6 +218,7 @@
 		const moves = localStorage.getItem('moves');
 		const storedCipher = localStorage.getItem('cipher');
 		const lettersUsed = localStorage.getItem('usedLetters');
+		const correctGuesses = localStorage.getItem('swaps');
 		const replenishAmount = localStorage.getItem('replenishAmt');
 		if (!gameOver && cipherState.join('') === word) {
 			win = true;
@@ -249,6 +241,9 @@
 		}
 		if (replenishAmount) {
 			replenishAmt = JSON.parse(replenishAmount);
+		}
+		if (correctGuesses) {
+			swaps = JSON.parse(correctGuesses);
 		}
 		loading = false;
 	}
@@ -337,6 +332,11 @@
 			cipherState = [...newState];
 		})();
 
+		const indexOfSelected = word.indexOf(selected[0]);
+
+		// tracking user moves for sharing results to friends and enemies
+		swaps = [...swaps, cipherState[indexOfSelected] === word[indexOfSelected] ? true : false];
+
 		guesses = [...guesses, selected.join('')];
 		usedLetters = [...usedLetters, ...selected.filter((l) => !cipherState.includes(l))];
 		clearSelection();
@@ -346,13 +346,14 @@
 		localStorage.setItem('moves', JSON.stringify(moveAmount));
 		localStorage.setItem('cipher', cipherState.join(''));
 		localStorage.setItem('usedLetters', JSON.stringify(usedLetters));
+		localStorage.setItem('swaps', JSON.stringify(swaps));
 	}
 
 	// social results game sharing
 	async function shareResults() {
 		const shareText = `
 		🔐 Cipher #${data.id}  ${getTierByMoves()?.emoji}
-		⬇️ ${moveAmount} moves
+		${swaps.map((b) => (b ? '🟩' : '🟥')).join('')}
 		🔄 ${replenishAmt} reps used`;
 
 		navigator.share({
@@ -364,7 +365,7 @@
 
 	// check if duplicate letters should highlight
 	$: handleSelectedLetter = (key: string) => {
-		return allowChooseIndex && cipherState.filter((l) => key === selected[0]).length > 1;
+		return allowChooseIndex && cipherState.filter(() => key === selected[0]).length > 1;
 	};
 
 	$: highlightAtStartIndex = (i: number) => {
@@ -379,8 +380,13 @@
 		return word.split('')[i] === cipherState[i];
 	};
 
-	$: defaultCipherDisplay = (i: number) => {
-		return startIndex !== i && word.split('')[i] !== cipherState[i] && indexToSwap !== i;
+	$: defaultCipherDisplay = (i: number, key: string) => {
+		return (
+			startIndex !== i &&
+			word.split('')[i] !== cipherState[i] &&
+			indexToSwap !== i &&
+			cipherState.filter(() => key === selected[0]).length === 1
+		);
 	};
 
 	onMount(() => {
@@ -394,7 +400,7 @@
 	// reactive effects
 	$: (() => {
 		(startIndex, indexToSwap, selected, allowChooseIndex, guesses, win, lose, gameOver);
-		(moveAmount, modalOpen, showNavModal, loading, usedLetters, showUpdatePopup, date);
+		(moveAmount, modalOpen, showNavModal, loading, usedLetters, showUpdatePopup, swaps, date);
 
 		if (typeof window === 'undefined') return;
 
@@ -556,7 +562,7 @@
 						{
 							'border-emerald-500 text-emerald-500':
 								highlightAtCorrectPosition(i) && !handleSelectedLetter(key),
-							'border-black dark:border-white dark:text-white': defaultCipherDisplay(i),
+							'border-black dark:border-white dark:text-white': defaultCipherDisplay(i, key),
 							'animate-bounce border-amber-500 text-amber-500 hover:cursor-pointer':
 								handleSelectedLetter(key),
 							'border-amber-500 text-amber-500': highlightAtStartIndex(i),
