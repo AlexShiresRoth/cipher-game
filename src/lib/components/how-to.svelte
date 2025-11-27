@@ -47,8 +47,8 @@
 			choose which duplicate letter to move.
 		</li>
 		<li>
-			When you guess a word, the letters you used will become unavailable. However, if a used letter
-			also appears in the Cipher, you can still use it — but only as the first letter of your guess.
+			When you guess a word, the letters you used will become unavailable, except for letters in the
+			Cipher.
 		</li>
 		<li>
 			You can get these back by replenishing the keyboard, this costs a move though, so be aware!
@@ -138,13 +138,6 @@
 				</tr>
 			</tbody>
 		</table>
-	</ul>
-
-	<h3 class="text-lg font-semibold text-amber-500">Tips</h3>
-	<ul class="mb-4 ml-4 list-inside list-disc">
-		<li>Use shorter guesses for finer control of a single letter.</li>
-		<li>Watch how each guess reshapes the pattern — plan your next move accordingly.</li>
-		<li>There’s a new cipher every day — enjoy!</li>
 	</ul>
 
 	<h3 class="text-lg font-semibold text-amber-500">Share</h3>
