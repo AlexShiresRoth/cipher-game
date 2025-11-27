@@ -407,11 +407,7 @@
 	};
 
 	$: isAvailable = (l: string) => {
-		if (!usedLetters.includes(l)) return true;
-
-		if (cipherState.includes(l) && selected.length < 1) return true;
-
-		if (selected[0] === l && usedLetters.includes(l)) return true;
+		if (!usedLetters.includes(l) || cipherState.includes(l)) return true;
 
 		return false;
 	};
@@ -444,10 +440,10 @@
 </script>
 
 <svelte:head>
-	<title>CIPHER|Play</title>
+	<title>CIPHER | Play</title>
 	<meta
 		name="description"
-		content="Play Cipher, the interactive word-scramble puzzle game. Decode the shuffled word using clever moves, swapping mechanics, and logic-based strategy."
+		content="Play Cipher, the daily interactive word-scramble puzzle game. Decode the shuffled word using clever moves, swapping mechanics, and logic-based strategy."
 	/>
 </svelte:head>
 

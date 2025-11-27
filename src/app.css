@@ -5,3 +5,8 @@
 @theme {
 	--font-sans: 'Stack Sans Notch', sans-serif;
 }
+
+html,
+body {
+	touch-action: manipulation;
+}
