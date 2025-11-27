@@ -90,19 +90,7 @@
 	});
 
 	$: getTierByMoves = () => {
-		const mTally = swaps.filter((b) => !b).length + replenishAmt;
-		switch (mTally) {
-			case 0:
-				return tiers[mTally];
-			case 1:
-				return tiers[mTally];
-			case 2:
-				return tiers[mTally];
-			case 3:
-				return tiers[mTally];
-			default:
-				return tiers[3];
-		}
+		return tiers[swaps.filter((b) => !b).length + replenishAmt] || tiers[3];
 	};
 
 	// user action for selecting letters
@@ -383,7 +371,7 @@
 ⬆️ ${moveAmount} moves
 ${rowsText}
 🔄 ${replenishAmt} reps used`.trim();
-
+		console.log('safasf', shareText);
 		navigator.share({
 			text: shareText,
 			title: `Cipher #${data.id}`,
