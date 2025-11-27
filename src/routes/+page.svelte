@@ -90,7 +90,19 @@
 	});
 
 	$: getTierByMoves = () => {
-		return tiers[swaps.filter((b) => !b).length + replenishAmt];
+		const mTally = swaps.filter((b) => !b).length + replenishAmt;
+		switch (mTally) {
+			case 0:
+				return tiers[mTally];
+			case 1:
+				return tiers[mTally];
+			case 2:
+				return tiers[mTally];
+			case 3:
+				return tiers[mTally];
+			default:
+				return tiers[3];
+		}
 	};
 
 	// user action for selecting letters
@@ -367,11 +379,10 @@
 			})
 			.join('\n');
 
-		const shareText = `
-		🔐 Cipher #${data.id} ${getTierByMoves()?.emoji}
-		⬆️ ${moveAmount} moves
-		   ${rowsText}
-		🔄 ${replenishAmt} reps used`.trim();
+		const shareText = `🔐 Cipher #${data.id} ${getTierByMoves()?.emoji}
+⬆️ ${moveAmount} moves
+${rowsText}
+🔄 ${replenishAmt} reps used`.trim();
 
 		navigator.share({
 			text: shareText,
