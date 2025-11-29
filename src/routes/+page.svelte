@@ -7,7 +7,14 @@
 	import Nav from '$lib/components/nav.svelte';
 	import Selection from '$lib/components/selection.svelte';
 	import Stats from '$lib/components/stats.svelte';
-	import { clearSelection, clearUsedLetters } from '$lib/logic';
+	import {
+		clearSelection,
+		clearUsedLetters,
+		guess,
+		isValidWord,
+		removeLetterFromSelection,
+		toggleUpdatePopup
+	} from '$lib/logic';
 	import { format } from 'date-fns';
 	import { onMount, tick } from 'svelte';
 	import { fly } from 'svelte/transition';
@@ -16,7 +23,10 @@
 	const StorageKeys = {
 		usedLetters: 'usedLetters',
 		moves: 'moves',
-		replenishAmt: 'replenishAmt'
+		replenishAmt: 'replenishAmt',
+		guesses: 'guesses',
+		cipher: 'cipher',
+		swaps: 'swaps'
 	};
 
 	export let data: CipherPuzzle & { id: string };
@@ -74,10 +84,6 @@
 		modalOpen = val;
 	}
 
-	function toggleUpdatePopup() {
-		showUpdatePopup = !showUpdatePopup;
-	}
-
 	$: getTierByMoves = () => {
 		return tiers[swaps.filter((b) => !b).length + replenishAmt] || tiers[3];
 	};
@@ -118,12 +124,6 @@
 		return moveIndex;
 	}
 
-	// delete one letter from guess
-	function removeLetterFromSelection() {
-		selected.pop();
-		selected = [...selected];
-	}
-
 	// remove all stored data
 	function resetStorage() {
 		win = false;
@@ -154,7 +154,6 @@
 			moveAmount = parseInt(moves);
 		}
 		if (puzzle !== data.word) {
-			console.log('da fuck?');
 			resetStorage();
 			return;
 		}
@@ -252,111 +251,38 @@
 		}
 	}
 
-	// word guess validation check
-	async function isValidWord(word: string) {
-		try {
-			const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
+	async function handleGuess() {
+		const result = await guess({
+			errors,
+			swaps,
+			selected,
+			startIndex,
+			isValidWord,
+			moveAmount,
+			usedLetters,
+			cipherState,
+			getMoveToIndex,
+			guesses,
+			word,
+			correctPositions
+		});
+		errors = result.errors;
+		swaps = result.swaps;
+		selected = result.selected;
+		startIndex = result.startIndex;
+		indexToSwap = result.indexToSwap;
+		guesses = result.guesses;
+		correctPositions = result.correctPositions;
+		cipherState = result.cipherState;
+		moveAmount = result.moveAmount;
+		usedLetters = result.usedLetters;
+		allowChooseIndex = result.allowChooseIndex;
 
-			return res.ok;
-		} catch (error) {
-			console.error(error);
-			errors = [
-				...errors,
-				`The dictionary service we rely on is temporarily down due to a global outage.
-        Your game data is safe — this should be resolved soon!`
-			];
-			const cleared = clearSelection();
-			selected = cleared.selected;
-			indexToSwap = cleared.indexToSwap;
-			startIndex = cleared.startIndex;
-			allowChooseIndex = cleared.allowChooseIndex;
-		}
-	}
-
-	// guess input event
-	async function guess() {
-		if (guesses.filter((guess) => guess === selected.join('')).length > 0) {
-			errors = [...errors, 'Already guessed'];
-			console.error('Already guessed!');
-			const cleared = clearSelection();
-			selected = cleared.selected;
-			indexToSwap = cleared.indexToSwap;
-			startIndex = cleared.startIndex;
-			allowChooseIndex = cleared.allowChooseIndex;
-			return;
-		}
-		if (selected.length <= 2) {
-			errors = [...errors, 'Too short'];
-			console.error('Too short!');
-			const cleared = clearSelection();
-			selected = cleared.selected;
-			indexToSwap = cleared.indexToSwap;
-			startIndex = cleared.startIndex;
-			allowChooseIndex = cleared.allowChooseIndex;
-			return;
-		}
-		if (!cipherState.includes(selected[0])) {
-			errors = [...errors, 'Not in cipher'];
-			console.error('Not in cipher!');
-			const cleared = clearSelection();
-			selected = cleared.selected;
-			indexToSwap = cleared.indexToSwap;
-			startIndex = cleared.startIndex;
-			allowChooseIndex = cleared.allowChooseIndex;
-			return;
-		}
-
-		const isValidGuess = await isValidWord(selected.join(''));
-
-		if (!isValidGuess) {
-			errors = [...errors, 'Not a valid guess'];
-			console.error('Not a valid word in list');
-			const cleared = clearSelection();
-			selected = cleared.selected;
-			indexToSwap = cleared.indexToSwap;
-			startIndex = cleared.startIndex;
-			allowChooseIndex = cleared.allowChooseIndex;
-			return;
-		}
-
-		const moveIndex = getMoveToIndex();
-
-		if (moveIndex === startIndex) {
-			errors = [...errors, 'Same position'];
-			console.error('Move equates to same position');
-			const cleared = clearSelection();
-			selected = cleared.selected;
-			indexToSwap = cleared.indexToSwap;
-			startIndex = cleared.startIndex;
-			allowChooseIndex = cleared.allowChooseIndex;
-			return;
-		}
-
-		(function () {
-			const newState = [...cipherState];
-			[newState[startIndex], newState[moveIndex]] = [newState[moveIndex], newState[startIndex]];
-			cipherState = [...newState];
-		})();
-
-		const isCorrectGuess =
-			cipherState.filter((l, i) => l === word[i]).length > correctPositions ? true : false;
-
-		swaps = [...swaps, isCorrectGuess];
-		correctPositions = cipherState.filter((l, i) => l === word[i]).length;
-		guesses = [...guesses, selected.join('')];
-		usedLetters = [...usedLetters, ...selected];
-		const cleared = clearSelection();
-		selected = cleared.selected;
-		indexToSwap = cleared.indexToSwap;
-		startIndex = cleared.startIndex;
-		allowChooseIndex = cleared.allowChooseIndex;
-		moveAmount++;
-		// save current play if window refresh
-		localStorage.setItem('guesses', JSON.stringify(guesses));
+		localStorage.setItem(StorageKeys.guesses, JSON.stringify(guesses));
 		localStorage.setItem(StorageKeys.moves, JSON.stringify(moveAmount));
-		localStorage.setItem('cipher', cipherState.join(''));
-		localStorage.setItem('usedLetters', JSON.stringify(usedLetters));
-		localStorage.setItem('swaps', JSON.stringify(swaps));
+		localStorage.setItem(StorageKeys.cipher, cipherState.join(''));
+		localStorage.setItem(StorageKeys.usedLetters, JSON.stringify(usedLetters));
+		localStorage.setItem(StorageKeys.swaps, JSON.stringify(swaps));
 	}
 
 	// social results game sharing
@@ -380,7 +306,6 @@
 ⬆️ ${moveAmount} moves
 ${rowsText}
 🔄 ${replenishAmt} reps used`.trim();
-		console.log('safasf', shareText);
 		navigator.share({
 			text: shareText,
 			title: `Cipher #${data.id}`,
@@ -412,24 +337,6 @@ ${rowsText}
 
 		tick().then(() => {
 			setTimeout(() => (showLetters = true), 200);
-		});
-		console.table({
-			startIndex,
-			indexToSwap,
-			selected,
-			allowChooseIndex,
-			guesses,
-			win,
-			lose,
-			gameOver,
-			moveAmount,
-			modalOpen,
-			showNavModal,
-			loading,
-			usedLetters,
-			showUpdatePopup,
-			swaps,
-			date
 		});
 	})();
 </script>
@@ -523,11 +430,15 @@ ${rowsText}
 					localStorage.setItem(StorageKeys.moves, JSON.stringify(moveAmount));
 					localStorage.setItem(StorageKeys.replenishAmt, JSON.stringify(replenishAmt));
 				}}
+				toggleUpdatePopup={() => {
+					showUpdatePopup = toggleUpdatePopup(showUpdatePopup);
+				}}
+				removeLetterFromSelection={() => {
+					selected = removeLetterFromSelection(selected);
+				}}
+				guess={handleGuess}
 				{selected}
 				{showUpdatePopup}
-				{removeLetterFromSelection}
-				{guess}
-				{toggleUpdatePopup}
 				{usedLetters}
 			/>
 		{/if}
