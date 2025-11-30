@@ -57,6 +57,11 @@ export function removeLetterFromSelection(selected: string[]) {
 	return newSelection;
 }
 
+/**
+ *
+ * @param word
+ * @description - checks dictionary api for valid words
+ */
 export async function isValidWord(word: string) {
 	try {
 		const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
@@ -67,6 +72,37 @@ export async function isValidWord(word: string) {
 	}
 }
 
+/**
+ *
+ * @param selected, startIndex, cipherState
+ * @returns index distant from starting point of selected letter
+ */
+// find index to swap with based on word guess
+type GetMoveToParams = {
+	selected: string[];
+	startIndex: number;
+	cipherState: string[];
+};
+export function getMoveToIndex({ selected, startIndex, cipherState }: GetMoveToParams) {
+	const selectionLength = selected.length;
+
+	let moveIndex: number = startIndex + selectionLength;
+
+	(function getMoveAmount() {
+		if (moveIndex >= cipherState.length) {
+			moveIndex = moveIndex - cipherState.length;
+			return getMoveAmount();
+		}
+	})();
+
+	return moveIndex;
+}
+
+/**
+ *
+ * @params GuessParams
+ * @returns
+ */
 type GuessParams = {
 	guesses: string[];
 	selected: string[];
@@ -82,11 +118,6 @@ type GuessParams = {
 	getMoveToIndex: () => number;
 };
 
-/**
- *
- * @params GuessParams
- * @returns
- */
 export async function guess({
 	guesses,
 	selected,
@@ -107,7 +138,7 @@ export async function guess({
 
 	const conditions = {
 		guessed: guesses.includes(joined),
-		tooShort: selected.length < 3,
+		tooShort: selected.length < 3, // this should not really be called, extra precaution
 		notInCipher: !cipherState.includes(selected[0]),
 		samePosition: moveIndex === startIndex
 	};

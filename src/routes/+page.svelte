@@ -10,6 +10,7 @@
 	import {
 		clearSelection,
 		clearUsedLetters,
+		getMoveToIndex,
 		guess,
 		isValidWord,
 		removeLetterFromSelection,
@@ -106,22 +107,6 @@
 		if (selected.length > 1) {
 			allowChooseIndex = false;
 		}
-	}
-
-	// find index to swap with based on word guess
-	function getMoveToIndex() {
-		let selectionLength = selected.length;
-
-		let moveIndex: number = startIndex + selectionLength;
-
-		(function getMoveAmount() {
-			if (moveIndex >= cipherState.length) {
-				moveIndex = moveIndex - cipherState.length;
-				return getMoveAmount();
-			}
-		})();
-
-		return moveIndex;
 	}
 
 	// remove all stored data
@@ -228,7 +213,7 @@
 	// handle user selection & interaction
 	function checkSelection() {
 		if (selected.length > 0) {
-			const moveIndex = getMoveToIndex();
+			const moveIndex = handleGetMoveToIndex();
 			indexToSwap = moveIndex;
 		}
 		if (selected.length === 0) {
@@ -246,9 +231,13 @@
 		if (cipherState[index] === selected[0]) {
 			startIndex = index;
 			allowChooseIndex = false;
-			const moveIndex = getMoveToIndex();
+			const moveIndex = handleGetMoveToIndex();
 			indexToSwap = moveIndex;
 		}
+	}
+
+	function handleGetMoveToIndex() {
+		return getMoveToIndex({ selected, startIndex, cipherState });
 	}
 
 	async function handleGuess() {
@@ -261,7 +250,7 @@
 			moveAmount,
 			usedLetters,
 			cipherState,
-			getMoveToIndex,
+			getMoveToIndex: handleGetMoveToIndex,
 			guesses,
 			word,
 			correctPositions
@@ -394,7 +383,7 @@ ${rowsText}
 
 		<!-- Cipher blocks row -->
 		<Cipher
-			{getMoveToIndex}
+			getMoveToIndex={handleGetMoveToIndex}
 			{word}
 			{cipherState}
 			{allowChooseIndex}

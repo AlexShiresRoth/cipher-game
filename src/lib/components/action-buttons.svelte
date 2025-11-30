@@ -10,7 +10,9 @@
 	export let clearSelection;
 	export let selected: string[];
 	export let removeLetterFromSelection: () => void;
-	export let guess: () => void;
+	export let guess;
+
+	console.log('selecte', selected);
 </script>
 
 <div data-testid="button-rows" class="my-8 flex w-full items-center justify-between gap-4">
@@ -80,11 +82,16 @@
 		<button
 			data-testid="guess-btn"
 			class={clsx('rounded p-2 text-base uppercase transition-colors', {
-				'bg-gray-100 text-black/80 dark:bg-gray-100/50 dark:text-black/60': selected.length <= 1,
-				'bg-black text-white dark:bg-emerald-500 dark:text-black': selected.length > 1
+				'bg-gray-100 text-black/80 dark:bg-gray-100/50 dark:text-black/60': selected.length <= 2,
+				'bg-black text-white dark:bg-emerald-500 dark:text-black': selected.length > 2
 			})}
-			on:click={guess}
-			disabled={selected.length <= 1}>Guess</button
+			on:click={() => {
+				if (selected.length > 2) {
+					console.log('cleadfasd');
+					guess();
+				}
+			}}
+			disabled={selected.length <= 2}>Guess</button
 		>
 	</div>
 </div>

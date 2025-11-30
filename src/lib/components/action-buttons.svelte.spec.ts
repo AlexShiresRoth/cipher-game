@@ -1,6 +1,7 @@
 import {
 	clearSelection,
 	clearUsedLetters,
+	getMoveToIndex,
 	guess,
 	isValidWord,
 	toggleUpdatePopup
@@ -20,6 +21,7 @@ const clearSelectionMock = vi.fn(() => clearSelection());
 const clearUsedLettersMock = vi.fn((args) => clearUsedLetters(args));
 const isValidWordMock = vi.fn((args) => isValidWord(args));
 const getMoveToIndexMock = vi.fn();
+const getMoveToIndexMockWithArgs = vi.fn((args) => getMoveToIndex(args));
 const guessParams = {
 	errors: [],
 	swaps: [],
@@ -195,7 +197,7 @@ describe('Action Buttons', () => {
 	});
 
 	describe('guess', () => {
-		it('should call the guess button', async () => {
+		it('should call the guess button with invalid guess error', async () => {
 			const result = render(ActionButtons, {
 				props: {
 					clearSelection: () => clearSelectionMock(),
@@ -203,8 +205,8 @@ describe('Action Buttons', () => {
 					clearUsedLetters: () => clearUsedLettersMock({ moveAmount: 10, replenishAmt: 0 }),
 					showUpdatePopup: true,
 					toggleUpdatePopup: () => toggleUpdatePopupMock(true),
-					selected: [],
-					guess: () => guessMock(guessParams),
+					selected: ['t', 'r', 's'],
+					guess: () => guessMock({ ...guessParams }),
 					removeLetterFromSelection
 				}
 			});
@@ -214,7 +216,259 @@ describe('Action Buttons', () => {
 			fireEvent.click(guessBtn);
 			expect(guessBtn).toBeInTheDocument();
 			expect(guessMock).toHaveBeenCalled();
-			console.log('plop', guessMock.mock.results);
+			const results = await guessMock.mock.results[0].value;
+			expect(results).toEqual({
+				selected: [],
+				indexToSwap: -1,
+				startIndex: -1,
+				allowChooseIndex: false,
+				errors: ['Not a valid guess'],
+				swaps: [],
+				correctPositions: 0,
+				guesses: [],
+				usedLetters: [],
+				moveAmount: 0,
+				cipherState: []
+			});
+		});
+		it('should not call guess if selected is too short', async () => {
+			const result = render(ActionButtons, {
+				props: {
+					clearSelection: () => clearSelectionMock(),
+					usedLetters,
+					clearUsedLetters: () => clearUsedLettersMock({ moveAmount: 10, replenishAmt: 0 }),
+					showUpdatePopup: true,
+					toggleUpdatePopup: () => toggleUpdatePopupMock(true),
+					selected: ['t', 'o'],
+					guess: () =>
+						guessMock({
+							...guessParams,
+							selected: ['t', 'o'],
+							cipherState: ['t', 'i', 'r', 'a', 'l', 'e', 'n', 'g'],
+							getMoveToIndex: () =>
+								getMoveToIndexMockWithArgs({
+									selected: ['t', 'o'],
+									cipherState: ['t', 'i', 'r', 'a', 'l', 'e', 'n', 'g'],
+									startIndex: 0
+								})
+						}),
+
+					removeLetterFromSelection
+				}
+			});
+
+			const guessBtn = await result.findByTestId('guess-btn');
+
+			fireEvent.click(guessBtn);
+
+			expect(guessMock).not.toHaveBeenCalled();
+		});
+
+		it('should call guess button with a not in cipher error', async () => {
+			const result = render(ActionButtons, {
+				props: {
+					clearSelection: () => clearSelectionMock(),
+					usedLetters,
+					clearUsedLetters: () => clearUsedLettersMock({ moveAmount: 10, replenishAmt: 0 }),
+					showUpdatePopup: true,
+					toggleUpdatePopup: () => toggleUpdatePopupMock(true),
+					selected: ['z', 'e', 's', 't'],
+					guess: () =>
+						guessMock({
+							...guessParams,
+							selected: ['z', 'e', 's', 't'],
+							cipherState: ['t', 'i', 'r', 'a', 'l', 'e', 'n', 'g']
+						}),
+					removeLetterFromSelection
+				}
+			});
+
+			const guessBtn = await result.findByTestId('guess-btn');
+
+			fireEvent.click(guessBtn);
+
+			const results = await guessMock.mock.results[0].value;
+			expect(results).toEqual({
+				selected: [],
+				indexToSwap: -1,
+				startIndex: -1,
+				allowChooseIndex: false,
+				errors: ['Not in cipher'],
+				swaps: [],
+				correctPositions: 0,
+				guesses: [],
+				usedLetters: [],
+				moveAmount: 0,
+				cipherState: ['t', 'i', 'r', 'a', 'l', 'e', 'n', 'g']
+			});
+		});
+
+		it('should call guess button with a not valid guess error', async () => {
+			const result = render(ActionButtons, {
+				props: {
+					clearSelection: () => clearSelectionMock(),
+					usedLetters,
+					clearUsedLetters: () => clearUsedLettersMock({ moveAmount: 10, replenishAmt: 0 }),
+					showUpdatePopup: true,
+					toggleUpdatePopup: () => toggleUpdatePopupMock(true),
+					selected: ['t', 'u', 'r', 'p'],
+					guess: () =>
+						guessMock({
+							...guessParams,
+							selected: ['t', 'u', 'r', 'p'],
+							cipherState: ['t', 'i', 'r', 'a', 'l', 'e', 'n', 'g']
+						}),
+					removeLetterFromSelection
+				}
+			});
+
+			const guessBtn = await result.findByTestId('guess-btn');
+
+			fireEvent.click(guessBtn);
+
+			const results = await guessMock.mock.results[0].value;
+			expect(results).toEqual({
+				selected: [],
+				indexToSwap: -1,
+				startIndex: -1,
+				allowChooseIndex: false,
+				errors: ['Not a valid guess'],
+				swaps: [],
+				correctPositions: 0,
+				guesses: [],
+				usedLetters: [],
+				moveAmount: 0,
+				cipherState: ['t', 'i', 'r', 'a', 'l', 'e', 'n', 'g']
+			});
+		});
+
+		it('should call guess button with a same position error', async () => {
+			const result = render(ActionButtons, {
+				props: {
+					clearSelection: () => clearSelectionMock(),
+					usedLetters,
+					clearUsedLetters: () => clearUsedLettersMock({ moveAmount: 10, replenishAmt: 0 }),
+					showUpdatePopup: true,
+					toggleUpdatePopup: () => toggleUpdatePopupMock(true),
+					selected: ['t', 'r', 'i', 'a', 'n', 'g', 'l', 'e'],
+					guess: () =>
+						guessMock({
+							...guessParams,
+							selected: ['t', 'r', 'i', 'a', 'n', 'g', 'l', 'e'],
+							cipherState: ['t', 'i', 'r', 'a', 'l', 'e', 'n', 'g'],
+							word: 'triangle',
+							startIndex: 0,
+							getMoveToIndex: () =>
+								getMoveToIndexMockWithArgs({
+									selected: ['t', 'r', 'i', 'a', 'n', 'g', 'l', 'e'],
+									cipherState: ['t', 'i', 'r', 'a', 'l', 'e', 'n', 'g'],
+									startIndex: 0
+								})
+						}),
+					removeLetterFromSelection
+				}
+			});
+
+			const guessBtn = await result.findByTestId('guess-btn');
+
+			fireEvent.click(guessBtn);
+
+			const results = await guessMock.mock.results[0].value;
+
+			expect(results).toEqual({
+				selected: [],
+				indexToSwap: -1,
+				startIndex: -1,
+				allowChooseIndex: false,
+				errors: ['Same position'],
+				swaps: [],
+				correctPositions: 0,
+				guesses: [],
+				usedLetters: [],
+				moveAmount: 0,
+				cipherState: ['t', 'i', 'r', 'a', 'l', 'e', 'n', 'g']
+			});
+		});
+		it('should call guess button with success', async () => {
+			const result = render(ActionButtons, {
+				props: {
+					clearSelection: () => clearSelectionMock(),
+					usedLetters,
+					clearUsedLetters: () => clearUsedLettersMock({ moveAmount: 10, replenishAmt: 0 }),
+					showUpdatePopup: true,
+					toggleUpdatePopup: () => toggleUpdatePopupMock(true),
+					selected: ['r', 'e', 'a', 's', 'o', 'n', 's'],
+					guess: () =>
+						guessMock({
+							...guessParams,
+							selected: ['r', 'e', 'a', 's', 'o', 'n', 's'],
+							cipherState: ['t', 'i', 'r', 'a', 'l', 'e', 'n', 'g'],
+							word: 'triangle',
+							startIndex: 2,
+							getMoveToIndex: () =>
+								getMoveToIndexMockWithArgs({
+									selected: ['r', 'e', 'a', 's', 'o', 'n', 's'],
+									cipherState: ['t', 'i', 'r', 'a', 'l', 'e', 'n', 'g'],
+									startIndex: 2
+								})
+						}),
+					removeLetterFromSelection
+				}
+			});
+
+			const guessBtn = await result.findByTestId('guess-btn');
+
+			fireEvent.click(guessBtn);
+
+			const results = await guessMock.mock.results[0].value;
+
+			expect(results).toEqual({
+				swaps: [true],
+				correctPositions: 4,
+				guesses: ['reasons'],
+				usedLetters: ['r', 'e', 'a', 's', 'o', 'n', 's'],
+				selected: [],
+				indexToSwap: -1,
+				startIndex: -1,
+				allowChooseIndex: false,
+				moveAmount: 1,
+				cipherState: ['t', 'r', 'i', 'a', 'l', 'e', 'n', 'g'],
+				errors: []
+			});
+		});
+
+		it('should not call guess button with selected as empty', async () => {
+			const result = render(ActionButtons, {
+				props: {
+					clearSelection: () => clearSelectionMock(),
+					usedLetters,
+					clearUsedLetters: () => clearUsedLettersMock({ moveAmount: 10, replenishAmt: 0 }),
+					showUpdatePopup: true,
+					toggleUpdatePopup: () => toggleUpdatePopupMock(true),
+					selected: [],
+					guess: () =>
+						guessMock({
+							...guessParams,
+							selected: [],
+							cipherState: ['t', 'i', 'r', 'a', 'l', 'e', 'n', 'g'],
+							word: 'triangle',
+							startIndex: 0,
+							getMoveToIndex: () =>
+								getMoveToIndexMockWithArgs({
+									selected: [],
+									cipherState: ['t', 'i', 'r', 'a', 'l', 'e', 'n', 'g'],
+									startIndex: 0
+								})
+						}),
+					removeLetterFromSelection
+				}
+			});
+
+			const guessBtn = await result.findByTestId('guess-btn');
+
+			fireEvent.click(guessBtn);
+
+			expect(guessMock).not.toHaveBeenCalled();
 		});
 	});
 });
