@@ -53,6 +53,19 @@
 		<li>
 			You can get these back by replenishing the keyboard, this costs a move though, so be aware!
 		</li>
+
+		<strong>Each letter has a certain amount of availability</strong>
+		<ul class="ml-4">
+			<li class="list-disc">
+				Letters in the cipher(Marked in green) have <strong class="text-emerald-500">three</strong> uses
+			</li>
+			<li class="list-disc">
+				Vowels(Marked in orange) have <strong class="text-orange-500">two</strong> uses
+			</li>
+			<li class="list-disc">
+				All other letters(Marked in greypn) have <strong class="text-gray-500">one</strong> use
+			</li>
+		</ul>
 	</ol>
 
 	<h3 class="text-lg font-semibold text-amber-500">Example</h3>
