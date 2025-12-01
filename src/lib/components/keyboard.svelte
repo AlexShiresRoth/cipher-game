@@ -20,7 +20,7 @@
 		return 'aeiouy'.includes(l) && !selected.includes(l);
 	};
 	$: checkAlphaColorIsUsable = (l: string) => {
-		return (checkAlphaColorIsVowel(l) || checkAlphaKeyColorInCipher(l)) && !selected.includes(l);
+		return checkAlphaColorIsVowel(l) || checkAlphaKeyColorInCipher(l);
 	};
 
 	$: isAvailable = (l: string) => {
@@ -36,18 +36,20 @@
 				<button
 					on:click={() => handleSelect(l)}
 					class={clsx(
-						'flex w-12 flex-col items-center justify-center rounded p-1 text-2xl uppercase transition-colors hover:cursor-pointer md:text-4xl',
+						'flex w-12 flex-col items-center justify-center rounded p-1 text-2xl uppercase transition-colors hover:cursor-pointer md:text-4xl ',
 						{
-							'bg-gray-100 dark:bg-gray-100/80':
-								checkAlphaKeyColorDefault(l) && alphaState.get(l) === 1,
-							'bg-orange-500': checkAlphaColorIsUsable(l) && alphaState.get(l) === 3,
-							'bg-orange-400': checkAlphaColorIsUsable(l) && alphaState.get(l) === 2,
-							'bg-orange-300': checkAlphaColorIsUsable(l) && alphaState.get(l) === 1,
+							'bg-gray-100 dark:bg-gray-100/80': !checkAlphaKeyColorIncluded(l),
 							'bg-amber-300': checkAlphaKeyColorIncluded(l)
 						}
 					)}
 					><p>{l}</p>
-					<span class="text-xs">{alphaState.get(l)}</span></button
+					<span
+						class={clsx('text-xs', {
+							'text-orange-500': checkAlphaColorIsUsable(l) && alphaState.get(l) === 3,
+							'text-orange-400': checkAlphaColorIsUsable(l) && alphaState.get(l) === 2,
+							'text-orange-300': checkAlphaColorIsUsable(l) && alphaState.get(l) === 1
+						})}>{alphaState.get(l)}</span
+					></button
 				>
 			{:else}
 				<button

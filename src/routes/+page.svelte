@@ -99,23 +99,50 @@
 
 	$: alphaState = defaultAlphaState();
 
-	function toggleModalOpen(val: boolean) {
-		modalOpen = val;
-	}
-
 	$: getTierByMoves = () => {
 		return tiers[swaps.filter((b) => !b).length + replenishAmt] || tiers[3];
 	};
 
-	// user action for selecting letters
-	function onSelect(letter: string) {
-		if (gameOver) return;
-		if (selected.length >= 12) return;
+	function toggleModalOpen(val: boolean) {
+		modalOpen = val;
+	}
+
+	function resetAlphaStateFromSelection(selected: string[], alphaState: Map<string, number>) {
+		const newAlphaState = new Map(alphaState);
+		selected.forEach((s) => {
+			newAlphaState.set(s, (newAlphaState.get(s) as number) + 1);
+		});
+		return newAlphaState;
+	}
+
+	function addBackAmountToAlphaState(letter: string | undefined, alphaState: Map<string, number>) {
+		if (!letter) return alphaState;
+		const newAlphaState = new Map(alphaState);
+		newAlphaState.set(letter, (newAlphaState.get(letter) as number) + 1);
+
+		return newAlphaState;
+	}
+
+	function onSelect(letter: string, alphaState: Map<string, number>) {
+		if (gameOver) return alphaState;
+		if (selected.length >= 12) return alphaState;
+		const newAlphaState = new Map(alphaState);
+
+		const currentCount = newAlphaState.get(letter) ?? 0;
+		const nextCount = currentCount - 1;
+
+		newAlphaState.set(letter, nextCount);
+
+		const aState = newAlphaState;
+
+		console.log('letters', letter, nextCount);
+
 		selected = [...selected, letter];
-		// set starting index to the first letter of selection
+
 		if (selected.length <= 1) {
 			startIndex = cipherState.indexOf(selected[0]);
 		}
+
 		// we need to allow selecting starting index if there are duplicate letters
 		if (selected[0] === letter) {
 			if (cipherState.filter((l) => l === letter).length > 1) {
@@ -125,6 +152,8 @@
 		if (selected.length > 1) {
 			allowChooseIndex = false;
 		}
+
+		return aState;
 	}
 
 	// remove all stored data
@@ -153,6 +182,10 @@
 		const savedGuesses = localStorage.getItem(StorageKeys.guesses);
 		const moves = localStorage.getItem(StorageKeys.moves);
 		const puzzle = localStorage.getItem(StorageKeys.puzzle);
+		const storedCipher = localStorage.getItem(StorageKeys.cipher);
+		const lettersUsed = localStorage.getItem(StorageKeys.usedLetters);
+		const correctGuesses = localStorage.getItem(StorageKeys.swaps);
+		const replenishAmount = localStorage.getItem(StorageKeys.replenishAmt);
 		if (savedGuesses && moves) {
 			guesses = JSON.parse(savedGuesses);
 			moveAmount = parseInt(moves);
@@ -165,6 +198,22 @@
 			win = true;
 			gameOver = true;
 			modalOpen = true;
+		}
+		if (moves) {
+			moveAmount = parseInt(moves);
+		}
+		if (storedCipher) {
+			cipherState = storedCipher.split('');
+		}
+		if (lettersUsed) {
+			usedLetters = JSON.parse(lettersUsed);
+			alphaState = handleUpdateAlphaMap(alpha, usedLetters, defaultAlphaState());
+		}
+		if (replenishAmount) {
+			replenishAmt = JSON.parse(replenishAmount);
+		}
+		if (correctGuesses) {
+			swaps = JSON.parse(correctGuesses);
 		}
 	}
 
@@ -185,11 +234,6 @@
 
 	// check for when user has either won or lost game
 	function checkForGameStatus() {
-		const moves = localStorage.getItem(StorageKeys.moves);
-		const storedCipher = localStorage.getItem(StorageKeys.cipher);
-		const lettersUsed = localStorage.getItem(StorageKeys.usedLetters);
-		const correctGuesses = localStorage.getItem(StorageKeys.swaps);
-		const replenishAmount = localStorage.getItem(StorageKeys.replenishAmt);
 		if (!gameOver && cipherState.join('') === word) {
 			win = true;
 			gameOver = true;
@@ -200,22 +244,7 @@
 			localStorage.setItem(StorageKeys.date, formattedDate);
 			return;
 		}
-		if (moves) {
-			moveAmount = parseInt(moves);
-		}
-		if (storedCipher) {
-			cipherState = storedCipher.split('');
-		}
-		if (lettersUsed) {
-			usedLetters = JSON.parse(lettersUsed);
-			alphaState = handleUpdateAlphaMap(alpha, usedLetters, defaultAlphaState());
-		}
-		if (replenishAmount) {
-			replenishAmt = JSON.parse(replenishAmount);
-		}
-		if (correctGuesses) {
-			swaps = JSON.parse(correctGuesses);
-		}
+
 		loading = false;
 	}
 
@@ -358,7 +387,15 @@ ${rowsText}
 	// reactive effects
 	$: (() => {
 		(startIndex, indexToSwap, selected, allowChooseIndex, guesses, win, lose, gameOver);
-		(moveAmount, modalOpen, showNavModal, loading, usedLetters, showUpdatePopup, swaps, date);
+		(moveAmount,
+			modalOpen,
+			showNavModal,
+			loading,
+			usedLetters,
+			showUpdatePopup,
+			swaps,
+			alphaState,
+			date);
 
 		if (typeof window === 'undefined') return;
 
@@ -445,8 +482,9 @@ ${rowsText}
 		<Keyboard
 			{selected}
 			{cipherState}
-			{usedLetters}
-			handleSelect={(l: string) => onSelect(l)}
+			handleSelect={(l: string) => {
+				alphaState = onSelect(l, alphaState);
+			}}
 			{alpha}
 			{alphaState}
 		/>
@@ -455,6 +493,7 @@ ${rowsText}
 		{#if !gameOver}
 			<ActionButtons
 				clearSelection={() => {
+					alphaState = resetAlphaStateFromSelection(selected, alphaState);
 					const cleared = clearSelection();
 					selected = cleared.selected;
 					indexToSwap = cleared.indexToSwap;
@@ -475,7 +514,9 @@ ${rowsText}
 					showUpdatePopup = toggleUpdatePopup(showUpdatePopup);
 				}}
 				removeLetterFromSelection={() => {
-					selected = removeLetterFromSelection(selected);
+					const { newSelection, removedLetter } = removeLetterFromSelection(selected);
+					selected = newSelection;
+					alphaState = addBackAmountToAlphaState(removedLetter, alphaState);
 				}}
 				guess={handleGuess}
 				{selected}

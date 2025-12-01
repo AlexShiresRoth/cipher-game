@@ -51,10 +51,10 @@ export function toggleUpdatePopup(showUpdatePopup: boolean) {
  * @description remove one letter from selection array
  */
 export function removeLetterFromSelection(selected: string[]) {
-	selected.pop();
+	const removedLetter = selected.pop();
 	const newSelection = [...selected];
 
-	return newSelection;
+	return { newSelection, removedLetter };
 }
 
 /**
