@@ -269,7 +269,14 @@
 		alpha.forEach((l) => {
 			const hasUsedLetters = usedLetters.filter((ul) => l === ul).length;
 			const currentKey = defaultState.get(l) as number;
-			newAlphaState.set(l, hasUsedLetters > 0 ? currentKey - hasUsedLetters : currentKey);
+			newAlphaState.set(
+				l,
+				hasUsedLetters > 0
+					? currentKey - hasUsedLetters > 0
+						? currentKey - hasUsedLetters
+						: 0
+					: currentKey
+			);
 		});
 		return newAlphaState;
 	}
