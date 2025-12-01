@@ -77,7 +77,7 @@ export const GET = async ({ request, url }) => {
 
 	const today = new Date();
 	const startOfWeek = new Date(today);
-	startOfWeek.setDate(today.getDate());
+	startOfWeek.setDate(today.getDate() + 1);
 
 	let dayIndex = today.getDay();
 	const DAYS: typeof DAYS_OF_THE_WEEK = [];
