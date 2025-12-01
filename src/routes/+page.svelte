@@ -27,7 +27,11 @@
 		replenishAmt: 'replenishAmt',
 		guesses: 'guesses',
 		cipher: 'cipher',
-		swaps: 'swaps'
+		swaps: 'swaps',
+		gameStatus: 'gameStatus',
+		puzzle: 'puzzle',
+		viewed: 'viewed',
+		date: 'date'
 	};
 
 	export let data: CipherPuzzle & { id: string };
@@ -81,6 +85,20 @@
 	let replenishAmt = 0;
 	let correctPositions = cipherState.filter((l, i) => l === word[i]).length;
 
+	const alpha = 'qwertyuiopasdfghjklzxcvbnm'.split('');
+	const vowels = 'aeiouy'.split('');
+
+	function defaultAlphaState(): Map<string, number> {
+		const alphaSet = new Map();
+		for (const l of alpha) {
+			const lettersInCipher = cipherState.filter((c) => c === l);
+			alphaSet.set(l, lettersInCipher.length > 0 ? 3 : vowels.includes(l) ? 2 : 1);
+		}
+		return alphaSet;
+	}
+
+	$: alphaState = defaultAlphaState();
+
 	function toggleModalOpen(val: boolean) {
 		modalOpen = val;
 	}
@@ -126,14 +144,15 @@
 		usedLetters = [];
 		replenishAmt = 0;
 		swaps = [];
+		alphaState = defaultAlphaState();
 		localStorage.clear();
 	}
 
 	// handle if user has already completed todays game
 	function checkTodaysPuzzle() {
-		const savedGuesses = localStorage.getItem('guesses');
-		const moves = localStorage.getItem('moves');
-		const puzzle = localStorage.getItem('puzzle');
+		const savedGuesses = localStorage.getItem(StorageKeys.guesses);
+		const moves = localStorage.getItem(StorageKeys.moves);
+		const puzzle = localStorage.getItem(StorageKeys.puzzle);
 		if (savedGuesses && moves) {
 			guesses = JSON.parse(savedGuesses);
 			moveAmount = parseInt(moves);
@@ -142,7 +161,7 @@
 			resetStorage();
 			return;
 		}
-		if (localStorage.getItem('gameStatus') === 'win') {
+		if (localStorage.getItem(StorageKeys.gameStatus) === 'win') {
 			win = true;
 			gameOver = true;
 			modalOpen = true;
@@ -150,35 +169,35 @@
 	}
 
 	function addTodaysPuzzleToStorage() {
-		localStorage.setItem('puzzle', word);
+		localStorage.setItem(StorageKeys.puzzle, word);
 	}
 
 	function shouldShowTutorial() {
-		const hasViewedGame = localStorage.getItem('viewed');
+		const hasViewedGame = localStorage.getItem(StorageKeys.viewed);
 		if (hasViewedGame) {
 			return;
 		} else {
 			showTutorial = true;
 			showUpdatePopup = true;
-			localStorage.setItem('viewed', 'true');
+			localStorage.setItem(StorageKeys.viewed, 'true');
 		}
 	}
 
 	// check for when user has either won or lost game
 	function checkForGameStatus() {
-		const moves = localStorage.getItem('moves');
-		const storedCipher = localStorage.getItem('cipher');
-		const lettersUsed = localStorage.getItem('usedLetters');
-		const correctGuesses = localStorage.getItem('swaps');
-		const replenishAmount = localStorage.getItem('replenishAmt');
+		const moves = localStorage.getItem(StorageKeys.moves);
+		const storedCipher = localStorage.getItem(StorageKeys.cipher);
+		const lettersUsed = localStorage.getItem(StorageKeys.usedLetters);
+		const correctGuesses = localStorage.getItem(StorageKeys.swaps);
+		const replenishAmount = localStorage.getItem(StorageKeys.replenishAmt);
 		if (!gameOver && cipherState.join('') === word) {
 			win = true;
 			gameOver = true;
 			modalOpen = true;
-			localStorage.setItem('gameStatus', 'win');
-			localStorage.setItem('moves', String(moveAmount));
-			localStorage.setItem('cipher', word);
-			localStorage.setItem('date', formattedDate);
+			localStorage.setItem(StorageKeys.gameStatus, 'win');
+			localStorage.setItem(StorageKeys.moves, String(moveAmount));
+			localStorage.setItem(StorageKeys.cipher, word);
+			localStorage.setItem(StorageKeys.date, formattedDate);
 			return;
 		}
 		if (moves) {
@@ -189,6 +208,7 @@
 		}
 		if (lettersUsed) {
 			usedLetters = JSON.parse(lettersUsed);
+			alphaState = handleUpdateAlphaMap(alpha, usedLetters, defaultAlphaState());
 		}
 		if (replenishAmount) {
 			replenishAmt = JSON.parse(replenishAmount);
@@ -240,6 +260,20 @@
 		return getMoveToIndex({ selected, startIndex, cipherState });
 	}
 
+	function handleUpdateAlphaMap(
+		alpha: string[],
+		usedLetters: string[],
+		defaultState: Map<string, number>
+	) {
+		const newAlphaState = new Map<string, number>();
+		alpha.forEach((l) => {
+			const hasUsedLetters = usedLetters.filter((ul) => l === ul).length;
+			const currentKey = defaultState.get(l) as number;
+			newAlphaState.set(l, hasUsedLetters > 0 ? currentKey - hasUsedLetters : currentKey);
+		});
+		return newAlphaState;
+	}
+
 	async function handleGuess() {
 		const result = await guess({
 			errors,
@@ -266,6 +300,9 @@
 		moveAmount = result.moveAmount;
 		usedLetters = result.usedLetters;
 		allowChooseIndex = result.allowChooseIndex;
+
+		// We need to update map of letters based on their usage
+		alphaState = handleUpdateAlphaMap(alpha, usedLetters, defaultAlphaState());
 
 		localStorage.setItem(StorageKeys.guesses, JSON.stringify(guesses));
 		localStorage.setItem(StorageKeys.moves, JSON.stringify(moveAmount));
@@ -398,7 +435,14 @@ ${rowsText}
 		/>
 
 		<!-- Letter selection box -->
-		<Keyboard {selected} {cipherState} {usedLetters} handleSelect={(l: string) => onSelect(l)} />
+		<Keyboard
+			{selected}
+			{cipherState}
+			{usedLetters}
+			handleSelect={(l: string) => onSelect(l)}
+			{alpha}
+			{alphaState}
+		/>
 
 		<!-- Action buttons -->
 		{#if !gameOver}
@@ -415,6 +459,7 @@ ${rowsText}
 					usedLetters = clearedLetters.usedLetters;
 					moveAmount = clearedLetters.moveAmount;
 					replenishAmt = clearedLetters.replenishAmt;
+					alphaState = defaultAlphaState();
 					localStorage.removeItem(StorageKeys.usedLetters);
 					localStorage.setItem(StorageKeys.moves, JSON.stringify(moveAmount));
 					localStorage.setItem(StorageKeys.replenishAmt, JSON.stringify(replenishAmt));
