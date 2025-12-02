@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { ArrowLeft, RotateCcw, Trash } from '@lucide/svelte';
 	import clsx from 'clsx';
-	import { fade } from 'svelte/transition';
+	import UpdatePopup from './update-popup.svelte';
 
 	export let clearUsedLetters: () => void;
 	export let usedLetters: string[];
@@ -11,8 +11,6 @@
 	export let selected: string[];
 	export let removeLetterFromSelection: () => void;
 	export let guess;
-
-	console.log('selecte', selected);
 </script>
 
 <div data-testid="button-rows" class="my-8 flex w-full items-center justify-between gap-4">
@@ -32,25 +30,12 @@
 				})}><RotateCcw size={23} /></button
 			>
 			{#if showUpdatePopup}
-				<button
-					data-testid="update-popup-reps"
-					transition:fade
-					class="absolute bottom-full w-[250px] rounded border border-black/10 bg-white p-4 shadow-md after:absolute
-							after:top-full after:left-4 after:-translate-x-1/2 after:border-8
-							after:border-transparent after:border-t-white
-							hover:cursor-pointer dark:border-gray-100/50 dark:bg-black after:dark:border-t-black"
-					on:click={() => toggleUpdatePopup(showUpdatePopup)}
-				>
-					<p
-						class="absolute -top-3 -right-2 flex h-6 w-6 items-center justify-center rounded-full border border-gray-100/50 bg-white text-xs dark:bg-black"
-					>
-						X
-					</p>
+				<UpdatePopup toggleUpdatePopup={() => toggleUpdatePopup(showUpdatePopup)} alignClasses="">
 					<p class="text-xs">
 						<strong class="text-amber-500">UPDATE</strong>:{` `} New Replenish button—use this to regain
 						unavailable letters. Using it costs a move.
 					</p>
-				</button>
+				</UpdatePopup>
 			{/if}
 		</div>
 		<div>
@@ -87,7 +72,6 @@
 			})}
 			on:click={() => {
 				if (selected.length > 2) {
-					console.log('cleadfasd');
 					guess();
 				}
 			}}

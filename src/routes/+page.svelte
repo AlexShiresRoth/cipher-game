@@ -34,17 +34,10 @@
 		date: 'date'
 	};
 
-	export let data: CipherPuzzle & { id: string };
-	export let word = data.word;
-	export let cipher = data.cipherWord;
-	export let cipherState = cipher.split('');
-	export let errors: string[] = [];
-	export let win = false;
-	export let lose = false;
-	export let gameOver = false;
-	export let moveAmount = 0;
-	export let modalOpen = false;
-	export let showNavModal = false;
+	const updateNames = {
+		keyboard: 'keyboard',
+		replenish: 'replenish'
+	};
 
 	const tiers: Record<number, { mistakes: number; emoji: string }> = {
 		0: {
@@ -65,12 +58,21 @@
 		}
 	};
 
+	const alpha = 'qwertyuiopasdfghjklzxcvbnm'.split('');
+	const vowels = 'aeiouy'.split('');
 	const date = new Date();
 
-	let formattedDate = format(date.toLocaleDateString(), 'yyyy-MM-dd');
-
-	$: formattedDate = format(new Date().toLocaleDateString(), 'yyyy-MM-dd');
-
+	export let data: CipherPuzzle & { id: string };
+	export let word = data.word;
+	export let cipher = data.cipherWord;
+	export let cipherState = cipher.split('');
+	let errors: string[] = [];
+	let win = false;
+	let lose = false;
+	let gameOver = false;
+	let moveAmount = 0;
+	let modalOpen = false;
+	let showNavModal = false;
 	let selected: string[] = [];
 	let guesses: string[] = [];
 	let usedLetters: string[] = [];
@@ -81,61 +83,48 @@
 	let showLetters = false;
 	let loading = true;
 	let showTutorial = false;
-	let showUpdatePopup = false;
 	let replenishAmt = 0;
 	let correctPositions = cipherState.filter((l, i) => l === word[i]).length;
+	let formattedDate = format(date.toLocaleDateString(), 'yyyy-MM-dd');
 
-	const alpha = 'qwertyuiopasdfghjklzxcvbnm'.split('');
-	const vowels = 'aeiouy'.split('');
-
-	function defaultAlphaState(): Map<string, number> {
-		const alphaSet = new Map();
-		for (const l of alpha) {
-			const lettersInCipher = cipherState.filter((c) => c === l);
-			alphaSet.set(l, lettersInCipher.length > 0 ? 3 : vowels.includes(l) ? 2 : 1);
-		}
-		return alphaSet;
-	}
+	$: formattedDate = format(new Date().toLocaleDateString(), 'yyyy-MM-dd');
 
 	$: alphaState = defaultAlphaState();
+
+	$: updatesState = defaultUpdatesState();
 
 	$: getTierByMoves = () => {
 		return tiers[swaps.filter((b) => !b).length + replenishAmt] || tiers[3];
 	};
 
+	function defaultAlphaState(): Map<string, number> {
+		const alphaSet = new Map();
+		for (const l of alpha) {
+			const lettersInCipher = cipherState.filter((c) => c === l);
+			alphaSet.set(l, lettersInCipher.length > 0 ? Infinity : vowels.includes(l) ? 3 : 1);
+		}
+		return alphaSet;
+	}
+
+	function defaultUpdatesState(): Map<string, boolean> {
+		const updateMap = new Map();
+		for (let item in updateNames) {
+			updateMap.set(item, false);
+		}
+		return updateMap;
+	}
+
+	function getUpdateMapValue(key: string, updatesMap: Map<string, boolean>) {
+		return !!updatesMap.get(key);
+	}
+
 	function toggleModalOpen(val: boolean) {
 		modalOpen = val;
 	}
 
-	function resetAlphaStateFromSelection(selected: string[], alphaState: Map<string, number>) {
-		const newAlphaState = new Map(alphaState);
-		selected.forEach((s) => {
-			newAlphaState.set(s, (newAlphaState.get(s) as number) + 1);
-		});
-		return newAlphaState;
-	}
-
-	function addBackAmountToAlphaState(letter: string | undefined, alphaState: Map<string, number>) {
-		if (!letter) return alphaState;
-		const newAlphaState = new Map(alphaState);
-		newAlphaState.set(letter, (newAlphaState.get(letter) as number) + 1);
-
-		return newAlphaState;
-	}
-
-	function onSelect(letter: string, alphaState: Map<string, number>) {
-		if (gameOver) return alphaState;
-		if (selected.length >= 12) return alphaState;
-		const newAlphaState = new Map(alphaState);
-
-		const currentCount = newAlphaState.get(letter) ?? 0;
-		const nextCount = currentCount - 1;
-
-		newAlphaState.set(letter, nextCount);
-
-		const aState = newAlphaState;
-
-		console.log('letters', letter, nextCount);
+	function onSelect(letter: string) {
+		if (gameOver) return;
+		if (selected.length >= 10) return;
 
 		selected = [...selected, letter];
 
@@ -152,8 +141,6 @@
 		if (selected.length > 1) {
 			allowChooseIndex = false;
 		}
-
-		return aState;
 	}
 
 	// remove all stored data
@@ -227,7 +214,14 @@
 			return;
 		} else {
 			showTutorial = true;
-			showUpdatePopup = true;
+			// show all updates on load
+			const updatesMap = new Map(updatesState);
+
+			updatesMap.forEach((_, key) => {
+				updatesMap.set(key, true);
+			});
+
+			updatesState = updatesMap;
 			localStorage.setItem(StorageKeys.viewed, 'true');
 		}
 	}
@@ -387,15 +381,7 @@ ${rowsText}
 	// reactive effects
 	$: (() => {
 		(startIndex, indexToSwap, selected, allowChooseIndex, guesses, win, lose, gameOver);
-		(moveAmount,
-			modalOpen,
-			showNavModal,
-			loading,
-			usedLetters,
-			showUpdatePopup,
-			swaps,
-			alphaState,
-			date);
+		(moveAmount, modalOpen, showNavModal, loading, usedLetters, swaps, alphaState, date);
 
 		if (typeof window === 'undefined') return;
 
@@ -464,7 +450,6 @@ ${rowsText}
 
 		<!-- Cipher blocks row -->
 		<Cipher
-			getMoveToIndex={handleGetMoveToIndex}
 			{word}
 			{cipherState}
 			{allowChooseIndex}
@@ -482,18 +467,23 @@ ${rowsText}
 		<Keyboard
 			{selected}
 			{cipherState}
-			handleSelect={(l: string) => {
-				alphaState = onSelect(l, alphaState);
-			}}
+			handleSelect={(l: string) => onSelect(l)}
 			{alpha}
 			{alphaState}
+			showUpdatePopup={getUpdateMapValue(updateNames.keyboard, updatesState)}
+			toggleUpdatePopup={() => {
+				updatesState = toggleUpdatePopup(
+					updatesState,
+					updateNames.keyboard,
+					!getUpdateMapValue(updateNames.keyboard, updatesState)
+				);
+			}}
 		/>
 
 		<!-- Action buttons -->
 		{#if !gameOver}
 			<ActionButtons
 				clearSelection={() => {
-					alphaState = resetAlphaStateFromSelection(selected, alphaState);
 					const cleared = clearSelection();
 					selected = cleared.selected;
 					indexToSwap = cleared.indexToSwap;
@@ -510,17 +500,20 @@ ${rowsText}
 					localStorage.setItem(StorageKeys.moves, JSON.stringify(moveAmount));
 					localStorage.setItem(StorageKeys.replenishAmt, JSON.stringify(replenishAmt));
 				}}
-				toggleUpdatePopup={() => {
-					showUpdatePopup = toggleUpdatePopup(showUpdatePopup);
-				}}
 				removeLetterFromSelection={() => {
-					const { newSelection, removedLetter } = removeLetterFromSelection(selected);
+					const { newSelection } = removeLetterFromSelection(selected);
 					selected = newSelection;
-					alphaState = addBackAmountToAlphaState(removedLetter, alphaState);
 				}}
 				guess={handleGuess}
 				{selected}
-				{showUpdatePopup}
+				showUpdatePopup={getUpdateMapValue(updateNames.replenish, updatesState)}
+				toggleUpdatePopup={() => {
+					updatesState = toggleUpdatePopup(
+						updatesState,
+						updateNames.replenish,
+						!getUpdateMapValue(updateNames.replenish, updatesState)
+					);
+				}}
 				{usedLetters}
 			/>
 		{/if}

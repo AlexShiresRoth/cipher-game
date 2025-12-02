@@ -1,17 +1,21 @@
 <script lang="ts">
 	import clsx from 'clsx';
+	import UpdatePopup from './update-popup.svelte';
 
 	export let cipherState: string[];
 	export let selected: string[];
 	export let handleSelect: (l: string) => void;
 	export let alphaState: Map<string, number>;
 	export let alpha: string[];
+	export let showUpdatePopup: boolean;
+	export let toggleUpdatePopup;
+
+	function getAlphaStateNumber(l: string) {
+		return alphaState.get(l) as number;
+	}
 
 	$: checkAlphaKeyColorIncluded = (l: string) => {
 		return selected.includes(l);
-	};
-	$: checkAlphaKeyColorDefault = (l: string) => {
-		return !checkAlphaColorIsUsable(l);
 	};
 	$: checkAlphaKeyColorInCipher = (l: string) => {
 		return cipherState.includes(l) && !selected.includes(l);
@@ -29,14 +33,24 @@
 	};
 </script>
 
-<div class="flex w-full justify-center">
-	<div class="flex flex-wrap items-center justify-center gap-2 md:gap-4 dark:text-black">
-		{#each alpha as l}
+<div class="relative flex w-full justify-center">
+	<div class="relative flex flex-wrap items-center justify-center gap-2 dark:text-black">
+		{#if showUpdatePopup}
+			<UpdatePopup
+				toggleUpdatePopup={() => toggleUpdatePopup(showUpdatePopup)}
+				alignClasses="left-3.5 bottom-full"
+				><p class="text-xs dark:text-white">
+					<strong class="text-amber-500">UPDATE</strong>:{` `} Certain letters now have usage amounts,
+					vowels have three, letters in the cipher are unlimited, and all others have one use.
+				</p></UpdatePopup
+			>
+		{/if}
+		{#each alpha as l, i}
 			{#if isAvailable(l)}
 				<button
 					on:click={() => handleSelect(l)}
 					class={clsx(
-						'flex w-12 flex-col items-center justify-center rounded p-1 text-2xl uppercase transition-colors hover:cursor-pointer md:text-4xl ',
+						'flex w-12 flex-col items-center justify-between rounded p-1 text-2xl uppercase transition-colors hover:cursor-pointer md:w-16 md:p-2 md:text-4xl',
 						{
 							'bg-gray-100 dark:bg-gray-100/80': !checkAlphaKeyColorIncluded(l),
 							'bg-amber-300': checkAlphaKeyColorIncluded(l)
@@ -44,18 +58,24 @@
 					)}
 					><p>{l}</p>
 					<span
-						class={clsx('text-xs', {
-							'text-orange-500': checkAlphaColorIsUsable(l) && alphaState.get(l) === 3,
-							'text-orange-400': checkAlphaColorIsUsable(l) && alphaState.get(l) === 2,
-							'text-orange-300': checkAlphaColorIsUsable(l) && alphaState.get(l) === 1
-						})}>{alphaState.get(l)}</span
-					></button
+						class={clsx('relative text-xs', {
+							'text-orange-500': checkAlphaColorIsUsable(l) && getAlphaStateNumber(l) === 3,
+							'text-orange-400': checkAlphaColorIsUsable(l) && getAlphaStateNumber(l) === 2,
+							'text-orange-300': checkAlphaColorIsUsable(l) && getAlphaStateNumber(l) === 1
+						})}
+					>
+						{#if getAlphaStateNumber(l) === Infinity}
+							<span class="">♾️ </span>
+						{:else}
+							{getAlphaStateNumber(l)}
+						{/if}
+					</span></button
 				>
 			{:else}
 				<button
 					disabled
 					class={clsx(
-						'flex w-12 flex-col items-center justify-center rounded p-1 text-2xl  uppercase transition-colors hover:cursor-pointer md:text-4xl',
+						'flex w-12 flex-col items-center justify-between rounded p-1 text-2xl uppercase transition-colors hover:cursor-pointer md:w-16 md:p-2 md:text-4xl',
 						{
 							'text-gray-400/50 dark:bg-gray-100/10': !selected.includes(l),
 							'bg-amber-300 text-black': selected.includes(l)
