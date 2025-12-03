@@ -57,15 +57,16 @@
 		<strong>Each letter has a certain amount of availability</strong>
 		<ul class="ml-4">
 			<li class="list-disc">
-				Letters in the cipher(Marked with ♾️ symbol) have <strong class="text-emerald-500"
-					>unlimited</strong
-				> uses.
+				Letters in the cipher have <strong>unlimited</strong> uses, and are a neutral color.
 			</li>
 			<li class="list-disc">
-				Vowels have <strong class="text-orange-600">three</strong> uses
+				Vowels have <strong class="text-yellow-500">three</strong> uses
 			</li>
 			<li class="list-disc">
-				All other letters have <strong class="text-gray-500">one</strong> use
+				Letters with two uses left will be in <strong class="text-orange-500">orange</strong>
+			</li>
+			<li class="list-disc">
+				All other letters have <strong class="text-red-500">one</strong> use
 			</li>
 		</ul>
 	</ol>

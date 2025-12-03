@@ -41,7 +41,9 @@
 				alignClasses="left-3.5 bottom-full"
 				><p class="text-xs dark:text-white">
 					<strong class="text-amber-500">UPDATE</strong>:{` `} Certain letters now have usage amounts,
-					vowels have three, letters in the cipher are unlimited, and all others have one use.
+					vowels have <strong class="text-yellow-500">three</strong>, letters in the cipher are
+					<strong class="text-gray-100">unlimited</strong>, and all others have
+					<strong class="text-red-500">one</strong> use.
 				</p></UpdatePopup
 			>
 		{/if}
@@ -52,17 +54,14 @@
 					class={clsx(
 						'flex w-12 flex-col items-center justify-between rounded p-1 text-2xl uppercase transition-colors hover:cursor-pointer md:w-16 md:p-2 md:text-4xl',
 						{
-							'bg-gray-100 dark:bg-gray-100/80':
-								!checkAlphaKeyColorIncluded(l) && getAlphaStateNumber(l) === 1,
 							'dark:bg-amber-300': checkAlphaKeyColorIncluded(l),
-							'bg-emerald-500 dark:bg-emerald-500':
+							'bg-gray-100 dark:bg-gray-100/80':
 								checkAlphaColorIsUsable(l) && getAlphaStateNumber(l) > 3,
-							'bg-yellow-500 dark:bg-yellow-500':
+							'bg-yellow-400 dark:bg-yellow-500':
 								checkAlphaColorIsUsable(l) && getAlphaStateNumber(l) === 3,
-							'bg-orange-500 dark:bg-orange-500':
+							'bg-orange-400 dark:bg-orange-500':
 								checkAlphaColorIsUsable(l) && getAlphaStateNumber(l) === 2,
-							'bg-red-500 dark:bg-red-500':
-								checkAlphaColorIsUsable(l) && getAlphaStateNumber(l) === 1
+							'bg-red-400 dark:bg-red-500': getAlphaStateNumber(l) === 1
 						}
 					)}
 					><p>{l}</p>
