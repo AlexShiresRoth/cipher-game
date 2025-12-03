@@ -52,25 +52,21 @@
 					class={clsx(
 						'flex w-12 flex-col items-center justify-between rounded p-1 text-2xl uppercase transition-colors hover:cursor-pointer md:w-16 md:p-2 md:text-4xl',
 						{
-							'bg-gray-100 dark:bg-gray-100/80': !checkAlphaKeyColorIncluded(l),
-							'bg-amber-300': checkAlphaKeyColorIncluded(l)
+							'bg-gray-100 dark:bg-gray-100/80':
+								!checkAlphaKeyColorIncluded(l) && getAlphaStateNumber(l) === 1,
+							'dark:bg-amber-300': checkAlphaKeyColorIncluded(l),
+							'bg-emerald-500 dark:bg-emerald-500':
+								checkAlphaColorIsUsable(l) && getAlphaStateNumber(l) > 3,
+							'bg-yellow-500 dark:bg-yellow-500':
+								checkAlphaColorIsUsable(l) && getAlphaStateNumber(l) === 3,
+							'bg-orange-500 dark:bg-orange-500':
+								checkAlphaColorIsUsable(l) && getAlphaStateNumber(l) === 2,
+							'bg-red-500 dark:bg-red-500':
+								checkAlphaColorIsUsable(l) && getAlphaStateNumber(l) === 1
 						}
 					)}
 					><p>{l}</p>
-					<span
-						class={clsx('relative text-xs', {
-							'text-orange-500': checkAlphaColorIsUsable(l) && getAlphaStateNumber(l) === 3,
-							'text-orange-400': checkAlphaColorIsUsable(l) && getAlphaStateNumber(l) === 2,
-							'text-orange-300': checkAlphaColorIsUsable(l) && getAlphaStateNumber(l) === 1
-						})}
-					>
-						{#if getAlphaStateNumber(l) === Infinity}
-							<span class="">♾️ </span>
-						{:else}
-							{getAlphaStateNumber(l)}
-						{/if}
-					</span></button
-				>
+				</button>
 			{:else}
 				<button
 					disabled
@@ -80,9 +76,7 @@
 							'text-gray-400/50 dark:bg-gray-100/10': !selected.includes(l),
 							'bg-amber-300 text-black': selected.includes(l)
 						}
-					)}
-					><p>{l}</p>
-					<span class="text-xs">{alphaState.get(l)}</span></button
+					)}><p>{l}</p></button
 				>
 			{/if}
 		{/each}
