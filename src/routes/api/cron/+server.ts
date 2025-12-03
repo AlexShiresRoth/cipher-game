@@ -116,7 +116,7 @@ export const GET = async ({ request, url }) => {
 				.values({
 					...puzzle
 				})
-				.onConflictDoUpdate({ target: cipherPuzzleProd.date, set: { ...puzzle } });
+				.onConflictDoNothing({ target: cipherPuzzleProd.date });
 		})
 	);
 
