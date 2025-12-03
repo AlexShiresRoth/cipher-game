@@ -54,14 +54,21 @@
 					class={clsx(
 						'flex w-12 flex-col items-center justify-between rounded p-1 text-2xl uppercase transition-colors hover:cursor-pointer md:w-16 md:p-2 md:text-4xl',
 						{
-							'dark:bg-amber-300': checkAlphaKeyColorIncluded(l),
+							'bg-amber-300': checkAlphaKeyColorIncluded(l),
 							'bg-gray-100 dark:bg-gray-100/80':
-								checkAlphaColorIsUsable(l) && getAlphaStateNumber(l) > 3,
+								checkAlphaColorIsUsable(l) &&
+								getAlphaStateNumber(l) > 3 &&
+								!checkAlphaKeyColorIncluded(l),
 							'bg-yellow-400 dark:bg-yellow-500':
-								checkAlphaColorIsUsable(l) && getAlphaStateNumber(l) === 3,
+								checkAlphaColorIsUsable(l) &&
+								getAlphaStateNumber(l) === 3 &&
+								!checkAlphaKeyColorIncluded(l),
 							'bg-orange-400 dark:bg-orange-500':
-								checkAlphaColorIsUsable(l) && getAlphaStateNumber(l) === 2,
-							'bg-red-400 dark:bg-red-500': getAlphaStateNumber(l) === 1
+								checkAlphaColorIsUsable(l) &&
+								getAlphaStateNumber(l) === 2 &&
+								!checkAlphaKeyColorIncluded(l),
+							'bg-red-400 dark:bg-red-500':
+								getAlphaStateNumber(l) === 1 && !checkAlphaKeyColorIncluded(l)
 						}
 					)}
 					><p>{l}</p>
