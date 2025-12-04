@@ -17,14 +17,10 @@
 	$: checkAlphaKeyColorIncluded = (l: string) => {
 		return selected.includes(l);
 	};
-	$: checkAlphaKeyColorInCipher = (l: string) => {
-		return cipherState.includes(l) && !selected.includes(l);
-	};
-	$: checkAlphaColorIsVowel = (l: string) => {
-		return 'aeiouy'.includes(l) && !selected.includes(l);
-	};
-	$: checkAlphaColorIsUsable = (l: string) => {
-		return checkAlphaColorIsVowel(l) || checkAlphaKeyColorInCipher(l);
+
+	$: getArrayFromNum = (num: number) => {
+		const newArr = Array.from({ length: num > 3 ? 3 : num });
+		return newArr;
 	};
 
 	$: isAvailable = (l: string) => {
@@ -52,37 +48,38 @@
 				<button
 					on:click={() => handleSelect(l)}
 					class={clsx(
-						'flex w-12 flex-col items-center justify-between rounded p-1 text-2xl uppercase transition-colors hover:cursor-pointer md:w-16 md:p-2 md:text-4xl',
+						'flex min-w-12 flex-col items-center justify-between gap-2 rounded p-2 text-2xl uppercase transition-colors hover:cursor-pointer md:w-16 md:p-2 md:text-4xl',
 						{
 							'bg-amber-300': checkAlphaKeyColorIncluded(l),
-							'bg-gray-100 dark:bg-gray-100/80':
-								checkAlphaColorIsUsable(l) &&
-								getAlphaStateNumber(l) > 3 &&
-								!checkAlphaKeyColorIncluded(l),
-							'bg-yellow-400 dark:bg-yellow-500':
-								checkAlphaColorIsUsable(l) &&
-								getAlphaStateNumber(l) === 3 &&
-								!checkAlphaKeyColorIncluded(l),
-							'bg-orange-400 dark:bg-orange-500':
-								checkAlphaColorIsUsable(l) &&
-								getAlphaStateNumber(l) === 2 &&
-								!checkAlphaKeyColorIncluded(l),
-							'bg-red-400 dark:bg-red-500':
-								getAlphaStateNumber(l) === 1 && !checkAlphaKeyColorIncluded(l)
+							'bg-gray-100 dark:bg-gray-100/80': !checkAlphaKeyColorIncluded(l)
 						}
 					)}
-					><p>{l}</p>
+				>
+					<p>{l}</p>
+					<div class="flex items-center gap-1">
+						{#if getAlphaStateNumber(l) === Infinity}
+							<span class="block h-1 w-3 bg-black"></span>
+						{:else}
+							{#each getArrayFromNum(getAlphaStateNumber(l)) as _len}
+								<span class={clsx('block h-1 w-1  bg-black')}></span>
+							{/each}
+						{/if}
+					</div>
 				</button>
 			{:else}
 				<button
 					disabled
 					class={clsx(
-						'flex w-12 flex-col items-center justify-between rounded p-1 text-2xl uppercase transition-colors hover:cursor-pointer md:w-16 md:p-2 md:text-4xl',
+						'flex min-w-12 flex-col items-center justify-between gap-2 rounded p-2 text-2xl uppercase transition-colors hover:cursor-pointer md:w-16 md:p-2 md:text-4xl',
 						{
 							'text-gray-400/50 dark:bg-gray-100/10': !selected.includes(l),
 							'bg-amber-300 text-black': selected.includes(l)
 						}
-					)}><p>{l}</p></button
+					)}
+					><p>{l}</p>
+					<div class="flex items-center gap-1">
+						<span class={clsx('block h-1 w-1')}></span>
+					</div></button
 				>
 			{/if}
 		{/each}

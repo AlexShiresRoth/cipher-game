@@ -55,18 +55,25 @@
 		</li>
 
 		<strong>Each letter has a certain amount of availability</strong>
-		<ul class="ml-4">
+		<ul class="ml-4 flex flex-col gap-2">
 			<li class="list-disc">
-				Letters in the cipher have <strong>unlimited</strong> uses, and are a neutral color.
+				Letters in the cipher have <strong>unlimited</strong> uses, and are represented with a line.
+
+				<div class="flex items-center gap-1">
+					(<span class="block h-1 w-5 bg-black"></span>)
+				</div>
 			</li>
 			<li class="list-disc">
-				Vowels have <strong class="text-yellow-500">three</strong> uses
+				All other letters have dots to indicate how many uses are left
+				<div class="flex items-center gap-1">
+					(
+					<span class="dot block h-1 w-1 bg-black"></span>
+					<span class="dot block h-1 w-1 bg-black"></span>
+					<span class="dot block h-1 w-1 bg-black"></span>)
+				</div>
 			</li>
 			<li class="list-disc">
-				Letters with two uses left will be in <strong class="text-orange-500">orange</strong>
-			</li>
-			<li class="list-disc">
-				All other letters have <strong class="text-red-500">one</strong> use
+				Vowels start with 3 and all others have one, so try to use letters that are in the cipher!
 			</li>
 		</ul>
 	</ol>

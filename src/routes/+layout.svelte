@@ -12,9 +12,9 @@
 	<div
 		class="flex w-full items-center border-b border-b-gray-200/50 px-4 py-2 dark:border-b-gray-100/10"
 	>
-		<img src="/logo.svg" alt="logo" height="40" width="40" />
+		<img src="/logo.svg" alt="logo" height="30" width="30" />
 		<p class="text-xs text-gray-400">
-			&copy; {new Date().getFullYear()} Alex Rothenberg. All rights reserved.
+			&copy; Cipher {new Date().getFullYear()}, All rights reserved.
 		</p>
 	</div>
 	<div

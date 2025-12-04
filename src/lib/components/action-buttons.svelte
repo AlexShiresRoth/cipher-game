@@ -73,23 +73,38 @@
 		>
 			{#if showKey}
 				<div
-					class="absolute bottom-full flex w-52 flex-col items-center gap-2 rounded border border-gray-200 bg-white p-4 text-sm text-black shadow-lg after:absolute after:top-full after:left-1/2 after:-translate-x-1/2
+					class="absolute bottom-full flex w-54 flex-col items-center gap-2 border-2 border-black bg-white p-4 text-sm text-black shadow-lg after:absolute after:top-full after:left-1/2 after:-translate-x-1/2
 							after:border-8 after:border-transparent after:border-t-white hover:cursor-pointer
-							dark:bg-black dark:text-white after:dark:border-t-black"
+							dark:border-white dark:bg-black dark:text-white after:dark:border-t-black"
 					transition:fly
 				>
-					<p class="flex w-full items-center gap-4">
-						<span class="block h-8 w-8 rounded bg-yellow-500"></span>{` `} 3 uses left
-					</p>
-					<p class="flex w-full items-center gap-4">
-						<span class="block h-8 w-8 rounded bg-orange-500"></span>{` `} 2 uses left
-					</p>
-					<p class="flex w-full items-center gap-4">
-						<span class="block h-8 w-8 rounded bg-red-500"></span>{` `} 1 uses left
-					</p>
-					<p class="flex w-full items-center gap-4">
-						<span class="block h-8 w-8 rounded bg-gray-100"></span>{` `} unlimited uses
-					</p>
+					<div class="mb-2 w-full border-b-2 border-b-black py-2 dark:border-gray-100">
+						<p>Keyboard info</p>
+					</div>
+					<div class="flex w-full items-center gap-4">
+						<div
+							class="flex min-w-10 flex-col items-center gap-1 rounded bg-gray-100 p-2 text-2xl text-black dark:bg-gray-100/80"
+						>
+							<p>C</p>
+							<div class="flex items-center gap-1">
+								<span class="block h-1 w-5 bg-black"></span>
+							</div>
+						</div>
+						<p class="text-left lowercase">A Line indicates infinite uses</p>
+					</div>
+					<div class="flex w-full items-center gap-4">
+						<div
+							class="flex min-w-10 flex-col items-center gap-1 rounded bg-gray-100 p-2 text-2xl text-black dark:bg-gray-100/80"
+						>
+							<p>I</p>
+							<div class="flex items-center gap-1">
+								<span class="dot block h-1 w-1 bg-black"></span>
+								<span class="dot block h-1 w-1 bg-black"></span>
+								<span class="dot block h-1 w-1 bg-black"></span>
+							</div>
+						</div>
+						<p class="text-left lowercase">Dots represent uses left</p>
+					</div>
 				</div>
 			{/if}
 			Key
@@ -109,3 +124,30 @@
 		>
 	</div>
 </div>
+
+<style>
+	.dot {
+		animation: fade 6s infinite;
+	}
+
+	.dot:nth-child(1) {
+		animation-delay: 3s;
+	}
+	.dot:nth-child(2) {
+		animation-delay: 2s;
+	}
+	.dot:nth-child(3) {
+		animation-delay: 1s;
+	}
+
+	@keyframes fade {
+		0%,
+		80%,
+		100% {
+			opacity: 0;
+		}
+		40% {
+			opacity: 1;
+		}
+	}
+</style>

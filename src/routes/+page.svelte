@@ -1,4 +1,6 @@
 <script lang="ts">
+	// TODO create a page that allows you to create a cipher puzzle
+	// and then drag and drop to shuffle
 	import ActionButtons from '$lib/components/action-buttons.svelte';
 	import Cipher from '$lib/components/cipher.svelte';
 	import GameOverModal from '$lib/components/game-over-modal.svelte';
@@ -441,7 +443,7 @@ ${rowsText}
 	{/each}
 </div>
 
-<div class="flex w-11/12 flex-col items-center md:w-1/2 lg:w-1/3">
+<div class="flex w-11/12 flex-col items-center md:w-2/3 lg:w-1/2">
 	{#if !loading}
 		<!-- Moves row -->
 		<Stats {replenishAmt} {moveAmount} emoji={getTierByMoves()?.emoji} />
