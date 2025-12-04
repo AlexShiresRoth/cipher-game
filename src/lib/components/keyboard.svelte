@@ -2,7 +2,6 @@
 	import clsx from 'clsx';
 	import UpdatePopup from './update-popup.svelte';
 
-	export let cipherState: string[];
 	export let selected: string[];
 	export let handleSelect: (l: string) => void;
 	export let alphaState: Map<string, number>;
@@ -10,9 +9,9 @@
 	export let showUpdatePopup: boolean;
 	export let toggleUpdatePopup;
 
-	function getAlphaStateNumber(l: string) {
+	$: getAlphaStateNumber = (l: string) => {
 		return alphaState.get(l) as number;
-	}
+	};
 
 	$: checkAlphaKeyColorIncluded = (l: string) => {
 		return selected.includes(l);
@@ -43,7 +42,7 @@
 				</p></UpdatePopup
 			>
 		{/if}
-		{#each alpha as l, i}
+		{#each alpha as l}
 			{#if isAvailable(l)}
 				<button
 					on:click={() => handleSelect(l)}

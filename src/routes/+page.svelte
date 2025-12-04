@@ -468,7 +468,6 @@ ${rowsText}
 		<!-- Letter selection box -->
 		<Keyboard
 			{selected}
-			{cipherState}
 			handleSelect={(l: string) => onSelect(l)}
 			{alpha}
 			{alphaState}
