@@ -6,7 +6,7 @@
 	export let replenishAmt;
 </script>
 
-<div class="flex w-full flex-col gap-2 py-2 text-sm">
+<div class="flex w-full flex-col gap-2 pt-2 text-sm">
 	<div class="flex w-full items-center justify-between">
 		<div><p class="dark:text-white/80">Status {emoji}</p></div>
 		<div class="flex gap-2">

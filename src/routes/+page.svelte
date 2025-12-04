@@ -18,6 +18,7 @@
 		removeLetterFromSelection,
 		toggleUpdatePopup
 	} from '$lib/logic';
+	import { defaultUpdatesState, getUpdateMapValue, updateNames } from '$lib/logic/updates';
 	import { format } from 'date-fns';
 	import { onMount, tick } from 'svelte';
 	import { fly } from 'svelte/transition';
@@ -34,11 +35,6 @@
 		puzzle: 'puzzle',
 		viewed: 'viewed',
 		date: 'date'
-	};
-
-	const updateNames = {
-		keyboard: 'keyboard',
-		replenish: 'replenish'
 	};
 
 	const tiers: Record<number, { mistakes: number; emoji: string }> = {
@@ -93,7 +89,7 @@
 
 	$: alphaState = defaultAlphaState();
 
-	$: updatesState = defaultUpdatesState();
+	$: updatesState = defaultUpdatesState(updateNames);
 
 	$: getTierByMoves = () => {
 		return tiers[swaps.filter((b) => !b).length + replenishAmt] || tiers[3];
@@ -106,18 +102,6 @@
 			alphaSet.set(l, lettersInCipher.length > 0 ? Infinity : vowels.includes(l) ? 3 : 1);
 		}
 		return alphaSet;
-	}
-
-	function defaultUpdatesState(): Map<string, boolean> {
-		const updateMap = new Map();
-		for (let item in updateNames) {
-			updateMap.set(item, false);
-		}
-		return updateMap;
-	}
-
-	function getUpdateMapValue(key: string, updatesMap: Map<string, boolean>) {
-		return !!updatesMap.get(key);
 	}
 
 	function toggleModalOpen(val: boolean) {

@@ -60,16 +60,16 @@
 				Letters in the cipher have <strong>unlimited</strong> uses, and are represented with a line.
 
 				<div class="flex items-center gap-1">
-					(<span class="block h-1 w-5 bg-black"></span>)
+					(<span class="block h-1 w-5 bg-black dark:bg-white"></span>)
 				</div>
 			</li>
 			<li class="list-disc">
 				All other letters have dots to indicate how many uses are left
 				<div class="flex items-center gap-1">
 					(
-					<span class="dot block h-1 w-1 bg-black"></span>
-					<span class="dot block h-1 w-1 bg-black"></span>
-					<span class="dot block h-1 w-1 bg-black"></span>)
+					<span class="dot block h-1 w-1 bg-black dark:bg-white"></span>
+					<span class="dot block h-1 w-1 bg-black dark:bg-white"></span>
+					<span class="dot block h-1 w-1 bg-black dark:bg-white"></span>)
 				</div>
 			</li>
 			<li class="list-disc">

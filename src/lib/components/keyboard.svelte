@@ -36,9 +36,9 @@
 				alignClasses="left-3.5 bottom-full"
 				><p class="text-xs dark:text-white">
 					<strong class="text-amber-500">UPDATE</strong>:{` `} Certain letters now have usage amounts,
-					vowels have <strong class="text-yellow-500">three</strong>, letters in the cipher are
-					<strong class="text-gray-100">unlimited</strong>, and all others have
-					<strong class="text-red-500">one</strong> use.
+					vowels have <strong>three</strong>, letters in the cipher are
+					<strong>unlimited</strong>, and all others have
+					<strong>one</strong> use.
 				</p></UpdatePopup
 			>
 		{/if}
