@@ -1,3 +1,4 @@
+import { SvelteMap } from 'svelte/reactivity';
 import { handleErrorOnGuess } from './errors.svelte';
 
 /**
@@ -38,10 +39,11 @@ export function clearUsedLetters({
  * @param showUpdatePopup
  * @returns boolean
  */
-export function toggleUpdatePopup(showUpdatePopup: boolean) {
-	const show = !showUpdatePopup;
+export function toggleUpdatePopup(updateMap: Map<string, boolean>, key: string, value: boolean) {
+	const newUpdates = new SvelteMap(updateMap);
+	newUpdates.set(key, value);
 
-	return show;
+	return newUpdates;
 }
 
 /**
@@ -54,7 +56,7 @@ export function removeLetterFromSelection(selected: string[]) {
 	selected.pop();
 	const newSelection = [...selected];
 
-	return newSelection;
+	return { newSelection };
 }
 
 /**
@@ -64,8 +66,9 @@ export function removeLetterFromSelection(selected: string[]) {
  */
 export async function isValidWord(word: string) {
 	try {
-		const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
-		return { valid: res.ok, error: null };
+		const res = await fetch(`api/dictionary?word=${word}`);
+		const data: { valid: boolean } = await res.json();
+		return { valid: data.valid, error: null };
 	} catch (error) {
 		console.error(error);
 		return { valid: false, error };

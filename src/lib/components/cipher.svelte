@@ -10,7 +10,6 @@
 	export let startIndex: number;
 	export let indexToSwap: number;
 	export let word: string;
-	export let getMoveToIndex: () => number;
 	export let chooseStartingIndex;
 
 	const [send, receive] = crossfade({
@@ -70,7 +69,9 @@
 				'relative flex items-center justify-center border-2 p-2 transition-all md:min-w-16',
 				{
 					'border-emerald-500 text-emerald-500':
-						highlightAtCorrectPosition(i) && !handleSelectedLetter(key),
+						highlightAtCorrectPosition(i) &&
+						!handleSelectedLetter(key) &&
+						!highlightAtStartIndex(i),
 					'border-black dark:border-white dark:text-white': defaultCipherDisplay(i, key),
 					'animate-bounce border-amber-500 text-amber-500 hover:cursor-pointer':
 						handleSelectedLetter(key),

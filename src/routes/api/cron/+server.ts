@@ -22,6 +22,7 @@ const DAYS_OF_THE_WEEK = [
 	'Saturday'
 ];
 
+// TODO — I want this to run based on the last puzzles date, not the day the cron runs
 export const GET = async ({ request, url }) => {
 	const secret = url.searchParams.get('token')?.toString() || request.headers.get('Authorization');
 
@@ -116,7 +117,7 @@ export const GET = async ({ request, url }) => {
 				.values({
 					...puzzle
 				})
-				.onConflictDoUpdate({ target: cipherPuzzleProd.date, set: { ...puzzle } });
+				.onConflictDoNothing({ target: cipherPuzzleProd.date });
 		})
 	);
 

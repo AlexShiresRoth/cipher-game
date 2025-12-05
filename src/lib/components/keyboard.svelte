@@ -1,44 +1,84 @@
 <script lang="ts">
 	import clsx from 'clsx';
+	import UpdatePopup from './update-popup.svelte';
 
-	export let usedLetters: string[];
-	export let cipherState: string[];
 	export let selected: string[];
 	export let handleSelect: (l: string) => void;
+	export let alphaState: Map<string, number>;
+	export let alpha: string[];
+	export let showUpdatePopup: boolean;
+	export let toggleUpdatePopup;
 
-	const alpha = 'qwertyuiopasdfghjklzxcvbnm'.split('');
+	$: getAlphaStateNumber = (l: string) => {
+		return alphaState.get(l) as number;
+	};
+
+	$: checkAlphaKeyColorIncluded = (l: string) => {
+		return selected.includes(l);
+	};
+
+	$: getArrayFromNum = (num: number) => {
+		const newArr = Array.from({ length: num > 3 ? 3 : num });
+		return newArr;
+	};
 
 	$: isAvailable = (l: string) => {
-		if (!usedLetters.includes(l) || cipherState.includes(l)) return true;
-
-		return false;
+		const uses = alphaState.get(l) || 0;
+		return uses > 0;
 	};
 </script>
 
-<div class="flex w-full justify-center">
-	<div class="flex flex-wrap items-center justify-center gap-2 md:gap-4 dark:text-black">
+<div class="relative flex w-full justify-center">
+	<div class="relative flex flex-wrap items-center justify-center gap-2 dark:text-black">
+		{#if showUpdatePopup}
+			<UpdatePopup
+				toggleUpdatePopup={() => toggleUpdatePopup(showUpdatePopup)}
+				alignClasses="left-3.5 bottom-full"
+				><p class="text-xs dark:text-white">
+					<strong class="text-amber-500">UPDATE</strong>:{` `} Certain letters now have usage amounts,
+					vowels have <strong>three</strong>, letters in the cipher are
+					<strong>unlimited</strong>, and all others have
+					<strong>one</strong> use.
+				</p></UpdatePopup
+			>
+		{/if}
 		{#each alpha as l}
 			{#if isAvailable(l)}
 				<button
 					on:click={() => handleSelect(l)}
 					class={clsx(
-						'flex w-12 items-center justify-center rounded p-1 text-2xl uppercase transition-colors hover:cursor-pointer md:text-4xl',
+						'flex min-w-12 flex-col items-center justify-between gap-2 rounded p-2 text-2xl uppercase transition-colors hover:cursor-pointer md:w-16 md:p-2 md:text-4xl',
 						{
-							'bg-amber-300': selected.includes(l),
-							'bg-gray-100 dark:bg-gray-100/80': !selected.includes(l)
+							'bg-amber-300': checkAlphaKeyColorIncluded(l),
+							'bg-gray-100 dark:bg-gray-100/80': !checkAlphaKeyColorIncluded(l)
 						}
-					)}>{l}</button
+					)}
 				>
+					<p>{l}</p>
+					<div class="flex items-center gap-1">
+						{#if getAlphaStateNumber(l) === Infinity}
+							<span class="block h-1 w-3 bg-black"></span>
+						{:else}
+							{#each getArrayFromNum(getAlphaStateNumber(l)) as _len}
+								<span class={clsx('block h-1 w-1  bg-black')}></span>
+							{/each}
+						{/if}
+					</div>
+				</button>
 			{:else}
 				<button
 					disabled
 					class={clsx(
-						'flex w-12 items-center justify-center rounded p-1 text-2xl  uppercase transition-colors hover:cursor-pointer md:text-4xl',
+						'flex min-w-12 flex-col items-center justify-between gap-2 rounded p-2 text-2xl uppercase transition-colors hover:cursor-pointer md:w-16 md:p-2 md:text-4xl',
 						{
 							'text-gray-400/50 dark:bg-gray-100/10': !selected.includes(l),
 							'bg-amber-300 text-black': selected.includes(l)
 						}
-					)}>{l}</button
+					)}
+					><p>{l}</p>
+					<div class="flex items-center gap-1">
+						<span class={clsx('block h-1 w-1')}></span>
+					</div></button
 				>
 			{/if}
 		{/each}

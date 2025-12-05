@@ -53,6 +53,29 @@
 		<li>
 			You can get these back by replenishing the keyboard, this costs a move though, so be aware!
 		</li>
+
+		<strong>Each letter has a certain amount of availability</strong>
+		<ul class="ml-4 flex flex-col gap-2">
+			<li class="list-disc">
+				Letters in the cipher have <strong>unlimited</strong> uses, and are represented with a line.
+
+				<div class="flex items-center gap-1">
+					(<span class="block h-1 w-5 bg-black dark:bg-white"></span>)
+				</div>
+			</li>
+			<li class="list-disc">
+				All other letters have dots to indicate how many uses are left
+				<div class="flex items-center gap-1">
+					(
+					<span class="dot block h-1 w-1 bg-black dark:bg-white"></span>
+					<span class="dot block h-1 w-1 bg-black dark:bg-white"></span>
+					<span class="dot block h-1 w-1 bg-black dark:bg-white"></span>)
+				</div>
+			</li>
+			<li class="list-disc">
+				Vowels start with 3 and all others have one, so try to use letters that are in the cipher!
+			</li>
+		</ul>
 	</ol>
 
 	<h3 class="text-lg font-semibold text-amber-500">Example</h3>
