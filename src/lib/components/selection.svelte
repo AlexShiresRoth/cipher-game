@@ -2,7 +2,7 @@
 	export let selected;
 </script>
 
-<div class="my-2 flex w-full justify-center">
+<div class="mt-8 mb-2 flex w-full justify-center">
 	{#if selected.length === 0}
 		<p class="text-3xl opacity-0">{`p`}</p>
 	{/if}

@@ -1,33 +1,40 @@
 <script>
-	import { fly } from 'svelte/transition';
-
 	export let emoji;
 	export let moveAmount;
 	export let replenishAmt;
+	export let solvableAmt;
+	export let mistakeAmount;
 </script>
 
-<div class="flex w-full flex-col gap-2 pt-2 text-sm">
-	<div class="flex w-full items-center justify-between">
-		<div><p class="dark:text-white/80">Status {emoji}</p></div>
-		<div class="flex gap-2">
-			<p class=" dark:text-white/80">Moves</p>
-			<span class="relative inline-block w-[1ch]">
-				{#key moveAmount}
-					<span class="absolute top-0 left-0" transition:fly={{ y: -40 }}>
-						{moveAmount}
-					</span>
-				{/key}
-			</span>
-		</div>
-	</div>
-	<div class="flex gap-2">
-		<p class="dark:text-white/80">Reps</p>
-		<span class="relative inline-block w-[1ch]">
-			{#key replenishAmt}
-				<span class="absolute top-0 left-0" transition:fly={{ y: -40 }}>
-					{replenishAmt}
-				</span>
-			{/key}
-		</span>
-	</div>
+<div class="flex w-full justify-center gap-2 pt-2">
+	<table class="w-full border-collapse rounded text-sm">
+		<thead>
+			<tr class="border border-black text-center text-sm dark:border-white">
+				<th class="border-r border-black px-2 py-2 dark:border-white dark:text-white/80">Status</th>
+				<th class="border-r px-2 py-2 dark:text-white/80">Solvable</th>
+				<th class="border-r border-black px-2 py-2 dark:border-white dark:text-white/80">Moves</th>
+				<th class="border-r border-black px-2 py-2 dark:border-white dark:text-white/80"
+					>Mistakes</th
+				>
+				<th class="border-r border-black px-2 py-2 dark:border-white dark:text-white/80">Reps</th>
+			</tr>
+		</thead>
+
+		<tbody>
+			<tr class="border border-black text-center dark:border-white">
+				<td class="border-r border-black px-2 py-2 dark:border-white dark:text-white/80">{emoji}</td
+				>
+				<td class="border-r px-2 py-2 dark:text-white/80">{solvableAmt}</td>
+				<td class="border-r border-black px-2 py-2 dark:border-white dark:text-white/80"
+					>{moveAmount}</td
+				>
+				<td class="border-r border-black px-2 py-2 dark:border-white dark:text-white/80"
+					>{mistakeAmount}</td
+				>
+				<td class="border-r border-black px-2 py-2 dark:border-white dark:text-white/80"
+					>{replenishAmt}</td
+				>
+			</tr>
+		</tbody>
+	</table>
 </div>

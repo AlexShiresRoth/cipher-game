@@ -8,7 +8,6 @@
 	import Keyboard from '$lib/components/keyboard.svelte';
 	import Nav from '$lib/components/nav.svelte';
 	import Selection from '$lib/components/selection.svelte';
-	import Stats from '$lib/components/stats.svelte';
 	import {
 		clearSelection,
 		clearUsedLetters,
@@ -92,7 +91,8 @@
 	$: updatesState = defaultUpdatesState(updateNames);
 
 	$: getTierByMoves = () => {
-		return tiers[swaps.filter((b) => !b).length + replenishAmt] || tiers[3];
+		const factor = moveAmount + replenishAmt + swaps.filter((b) => !b).length - data.minMoves || 0;
+		return tiers[factor] || tiers[3];
 	};
 
 	function defaultAlphaState(): Map<string, number> {
@@ -374,7 +374,7 @@ ${rowsText}
 		checkForGameStatus();
 		checkForErrors();
 		checkSelection();
-
+		getTierByMoves();
 		showLetters = false;
 
 		tick().then(() => {
@@ -416,6 +416,10 @@ ${rowsText}
 		{showLetters}
 		emoji={getTierByMoves()?.emoji}
 		{toggleModalOpen}
+		solvableAmt={data.minMoves}
+		{replenishAmt}
+		{moveAmount}
+		mistakeAmount={swaps.filter((b) => !b).length}
 	/>
 {/if}
 
@@ -429,11 +433,8 @@ ${rowsText}
 
 <div class="flex w-11/12 flex-col items-center md:w-2/3 lg:w-1/2">
 	{#if !loading}
-		<!-- Moves row -->
-		<Stats {replenishAmt} {moveAmount} emoji={getTierByMoves()?.emoji} />
 		<!-- Current user selection row -->
 		<Selection {selected} />
-
 		<!-- Cipher blocks row -->
 		<Cipher
 			{word}
@@ -478,7 +479,6 @@ ${rowsText}
 				clearUsedLetters={() => {
 					const clearedLetters = clearUsedLetters({ moveAmount, replenishAmt });
 					usedLetters = clearedLetters.usedLetters;
-					moveAmount = clearedLetters.moveAmount;
 					replenishAmt = clearedLetters.replenishAmt;
 					alphaState = defaultAlphaState();
 					localStorage.removeItem(StorageKeys.usedLetters);
