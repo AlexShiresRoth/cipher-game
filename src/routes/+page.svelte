@@ -1,6 +1,4 @@
 <script lang="ts">
-	// TODO create a page that allows you to create a cipher puzzle
-	// and then drag and drop to shuffle
 	import ActionButtons from '$lib/components/action-buttons.svelte';
 	import Cipher from '$lib/components/cipher.svelte';
 	import GameOverModal from '$lib/components/game-over-modal.svelte';
@@ -91,8 +89,9 @@
 	$: updatesState = defaultUpdatesState(updateNames);
 
 	$: getTierByMoves = () => {
-		const factor = moveAmount + replenishAmt + swaps.filter((b) => !b).length - data.minMoves || 0;
-		return tiers[factor] || tiers[3];
+		const diff = moveAmount + replenishAmt + swaps.filter((b) => !b).length - data.minMoves;
+		const factor = diff > 0 ? diff : 0;
+		return tiers[factor || 0] || tiers[3];
 	};
 
 	function defaultAlphaState(): Map<string, number> {
@@ -147,6 +146,7 @@
 		replenishAmt = 0;
 		swaps = [];
 		alphaState = defaultAlphaState();
+		console.trace('RESET STORAGE');
 		localStorage.clear();
 	}
 
@@ -163,7 +163,8 @@
 			guesses = JSON.parse(savedGuesses);
 			moveAmount = parseInt(moves);
 		}
-		if (puzzle !== data.word) {
+		if (puzzle !== word) {
+			console.trace('puzzle', puzzle, word);
 			resetStorage();
 			return;
 		}
@@ -190,8 +191,11 @@
 		}
 	}
 
-	function addTodaysPuzzleToStorage() {
-		localStorage.setItem(StorageKeys.puzzle, word);
+	function addTodaysPuzzleToStorage(newWord: string) {
+		const storedPuzzle = localStorage.getItem(StorageKeys.puzzle);
+		if (storedPuzzle !== newWord) {
+			localStorage.setItem(StorageKeys.puzzle, newWord);
+		}
 	}
 
 	function shouldShowTutorial() {
@@ -348,26 +352,34 @@
 ⬆️ ${moveAmount} moves
 ${rowsText}
 🔄 ${replenishAmt} reps used`.trim();
-		navigator.share({
+		const shareData = {
 			text: shareText,
 			title: `Cipher #${data.id}`,
 			url: 'https://play-cipher.com'
-		});
+		};
+		if (navigator.canShare(shareData)) {
+			navigator.share(shareData);
+		} else {
+			await navigator.clipboard.writeText(shareText);
+			alert('copied to clipboard!');
+		}
 	}
 
 	onMount(() => {
-		checkTodaysPuzzle();
-		addTodaysPuzzleToStorage();
-		shouldShowTutorial();
-		const interval = setInterval(checkTodaysPuzzle, 60 * 1000); // every minute
+		if (word) {
+			checkTodaysPuzzle();
+			addTodaysPuzzleToStorage(word);
+			shouldShowTutorial();
+			const interval = setInterval(checkTodaysPuzzle, 60 * 1000); // every minute
 
-		return () => clearInterval(interval);
+			return () => clearInterval(interval);
+		}
 	});
 
 	// reactive effects
 	$: (() => {
 		(startIndex, indexToSwap, selected, allowChooseIndex, guesses, win, lose, gameOver);
-		(moveAmount, modalOpen, showNavModal, loading, usedLetters, swaps, alphaState, date);
+		(moveAmount, modalOpen, showNavModal, loading, usedLetters, swaps, alphaState);
 
 		if (typeof window === 'undefined') return;
 
@@ -391,7 +403,16 @@ ${rowsText}
 	/>
 </svelte:head>
 
-<Nav {gameOver} {showNavModal} {toggleModalOpen} />
+<Nav
+	{gameOver}
+	{showNavModal}
+	{toggleModalOpen}
+	{replenishAmt}
+	{moveAmount}
+	solvableAmt={data.minMoves}
+	emoji={getTierByMoves()?.emoji}
+	mistakeAmount={swaps.filter((b) => !b).length}
+/>
 
 {#if showTutorial && !loading}
 	<div
