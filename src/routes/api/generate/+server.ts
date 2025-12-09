@@ -1,50 +1,64 @@
-import { env } from '$env/dynamic/private';
+import { CRON_SECRET, DICTIONARY_API_KEY } from '$env/static/private';
 import { db } from '$lib/server/db/index.js';
-import { cipherPuzzleProd } from '$lib/server/db/schema.js';
+import { cipherPuzzle } from '$lib/server/db/schema.js';
 import { json } from '@sveltejs/kit';
-import { format } from 'date-fns';
+import { eq } from 'drizzle-orm';
 
 export const config = {
 	runtime: 'nodejs20.x'
 };
 
-function getDayName(date = new Date()) {
-	return ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][
-		date.getDay()
-	];
+async function validateWord(word: string) {
+	const res = await fetch(
+		`https://www.dictionaryapi.com/api/v3/references/collegiate/json/${word}?key=${DICTIONARY_API_KEY}`
+	);
+
+	const data = await res.json();
+
+	// If first entry is a string, this means it's suggestions
+	if (typeof data[0] === 'string') {
+		return new Response(JSON.stringify({ valid: false }), { status: 200 });
+	}
+
+	// if there are multiple meanings, the api provides example:1 as
+	const id = data[0]?.meta?.id?.split(':')[0];
+
+	return id === word || data[0]?.meta?.stems?.includes(word);
 }
 
-/// TODO we need to test to make sure we can add words via request from last puzzle date
-
-export const GET = async ({ request, url }) => {
+export const POST = async ({ request, url }) => {
 	const secret = url.searchParams.get('token')?.toString() || request.headers.get('Authorization');
 
-	const isAuthed = secret === env.CRON_SECRET || secret === `Bearer ${env.CRON_SECRET}`;
+	const isAuthed = secret === CRON_SECRET || secret === `Bearer ${CRON_SECRET}`;
 
 	if (!isAuthed) {
 		return new Response('Unauthorized', { status: 401, statusText: 'Unauthorized' });
 	}
 
-	const WORD_LIST: { wordList: { word: string; cipherWord: string }[] } = await request.json();
+	const { cipher, word, date } = (await request.json()) as {
+		cipher: string;
+		word: string;
+		date: string;
+	};
 
-	if (WORD_LIST.wordList.length === 0) {
-		throw new Error('Please provide word list');
+	if (!cipher || !word || !date) {
+		throw new Error('Missing data');
 	}
 
-	const puzzles = (await db.select().from(cipherPuzzleProd)) || [];
-
-	const mostRecentPuzzle = puzzles[puzzles.length - 1];
-	if (!mostRecentPuzzle.date) {
-		throw new Error('Need a most recent puzzle date');
+	if (cipher === word) {
+		throw new Error('Whoops, looks like you forgot to shuffle');
 	}
-	const usedWords = puzzles
-		.map((p) => p.word)
-		.slice(puzzles.length - 30 > 0 ? puzzles.length - 30 : 0, puzzles.length);
 
-	const today = new Date(mostRecentPuzzle.date);
-	const newDay = new Date(today);
-	newDay.setDate(today.getDate() + 1);
-	console.log('new day?', newDay);
+	if (!validateWord(word)) {
+		throw new Error(`${word} is not valid`);
+	}
+
+	const foundWord = await db.select().from(cipherPuzzle).where(eq(cipherPuzzle.word, word));
+
+	if (foundWord.length > 0) {
+		throw new Error(`${word} already used`);
+	}
+
 	function checkPuzzleCorrectNess(w: string, d: string) {
 		const wArr = [];
 		for (const l of d.split('')) {
@@ -52,37 +66,30 @@ export const GET = async ({ request, url }) => {
 				wArr.push(l);
 			}
 		}
-		console.log('Shuffled:', d.length);
-		console.log('Word', w.length);
+
 		return wArr.length === w.length;
 	}
 
-	const customPuzzles = await Promise.all(
-		WORD_LIST.wordList.map(async (puzzle, i) => {
-			const day = new Date(newDay);
-			const isValidCipher = checkPuzzleCorrectNess(puzzle.word, puzzle.cipherWord);
-			if (!isValidCipher) {
-				throw new Error(`${puzzle.word} does not match`);
-			}
-			if (usedWords.includes(puzzle.word)) {
-				throw new Error(`${puzzle.word} has been used recently`);
-			}
-			const newDate = day.setDate(day.getDate() + i);
-			const newPuzzle = {
-				...puzzle,
-				date: format(newDate, 'yyyy-MM-dd'),
-				maxAttempts: 6,
-				dayOfWeek: getDayName(new Date(day))
-			};
-			return await db
-				.insert(cipherPuzzleProd)
-				.values({
-					...newPuzzle
-				})
-				.onConflictDoUpdate({ target: cipherPuzzleProd.date, set: { ...newPuzzle } })
-				.returning();
-		})
-	);
+	const isValidCipher = checkPuzzleCorrectNess(word, cipher);
 
-	return json(customPuzzles);
+	if (!isValidCipher) {
+		throw new Error(`${word} does not match`);
+	}
+
+	const newPuzzle = {
+		word: word.toLowerCase(),
+		cipherWord: cipher.toLowerCase(),
+		date,
+		minMoves: 5
+	};
+
+	const customPuzzle = await db
+		.insert(cipherPuzzle)
+		.values({
+			...newPuzzle
+		})
+		.onConflictDoUpdate({ target: cipherPuzzle.date, set: { ...newPuzzle } })
+		.returning();
+
+	return json(customPuzzle);
 };

@@ -1,5 +1,5 @@
 import { db } from '$lib/server/db';
-import { cipherPuzzleProd } from '$lib/server/db/schema';
+import { cipherPuzzle } from '$lib/server/db/schema';
 import { formatInTimeZone } from 'date-fns-tz';
 import { eq } from 'drizzle-orm';
 
@@ -15,7 +15,7 @@ export const load = async ({ setHeaders }) => {
 	const today = new Date();
 	const tzTime = formatInTimeZone(today, 'America/New_York', 'yyyy-MM-dd');
 
-	const cipher = await db.select().from(cipherPuzzleProd).where(eq(cipherPuzzleProd.date, tzTime));
+	const cipher = await db.select().from(cipherPuzzle).where(eq(cipherPuzzle.date, tzTime));
 
 	console.log('cipher', cipher, tzTime);
 

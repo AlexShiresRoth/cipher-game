@@ -43,6 +43,13 @@
       "when": 1764086762385,
       "tag": "0005_exotic_magma",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1765240211515,
+      "tag": "0006_lazy_albert_cleary",
+      "breakpoints": true
     }
   ]
 }
