@@ -36,7 +36,7 @@
 						</div>
 						<h2 transition:fly={{ y: 100, delay: 10 }}>The Cipher Was:</h2>
 					{/if}
-					<div class="flex w-full items-center gap-2">
+					<div class="flex w-full items-center justify-center gap-2">
 						{#each word.split('') as letter, i (`${letter}-${i}`)}
 							{#if showLetters}
 								<div
