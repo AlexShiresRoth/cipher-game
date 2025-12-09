@@ -22,7 +22,28 @@ const DAYS_OF_THE_WEEK = [
 	'Saturday'
 ];
 
-// TODO — I want this to run based on the last puzzles date, not the day the cron runs
+function shuffle(word: string) {
+	const arr = word.split('');
+	const n = arr.length;
+
+	const shuffled = [...arr];
+
+	for (let i = n - 1; i > 0; i--) {
+		const j = Math.floor(Math.random() * (i + 1));
+		[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+	}
+
+	for (let i = 0; i < n; i++) {
+		if (shuffled[i] === arr[i]) {
+			const swapWith = i === n - 1 ? i - 1 : i + 1;
+			[shuffled[i], shuffled[swapWith]] = [shuffled[swapWith], shuffled[i]];
+		}
+	}
+
+	return shuffled.join('');
+}
+
+// TODO — I think we can get rid of this for generating words, it's often wrong
 export const GET = async ({ request, url }) => {
 	const secret = url.searchParams.get('token')?.toString() || request.headers.get('Authorization');
 
@@ -46,13 +67,8 @@ export const GET = async ({ request, url }) => {
 					role: 'system',
 					content: `
 				You are generating a daily puzzle for a word-based logic game.
-
 					Rules:
 					- Choose one real, common but clever 8 letter English word.
-					- Generate a cipher that is a *derangement* of the word.
-					A derangement means: **no letter may remain in the same index**.
-					(For every index i: cipher[i] != word[i])
-					- The cipher must contain exactly the same letters as the word.
 					- Do NOT output any reasoning — only structured data.
 					- Response must be lowercase.
 					- Do not use any banned words:
@@ -61,7 +77,6 @@ export const GET = async ({ request, url }) => {
 					Example output:
 					{
 					"word": "function",
-					"cipher": "tnucionf",
 					"maxAttempts": 6,
 					"date": "12/24/2025",
 					"dayOfWeek": ${day}
@@ -97,27 +112,15 @@ export const GET = async ({ request, url }) => {
 			const date = new Date(startOfWeek);
 			date.setDate(startOfWeek.getDate() + i);
 			const res = await getCipher(day);
-
+			if (!res?.word) {
+				throw new Error('Missing word in response');
+			}
 			return {
 				...res,
 				dayOfWeek: day,
-				cipherWord: res?.cipherWord
-					.split('')
-					.filter((l) => res.word.includes(l))
-					.join(''),
+				cipherWord: shuffle(res.word),
 				date: date.toISOString().split('T')[0]
 			};
-		})
-	);
-
-	await Promise.all(
-		cipherPuzzlePerDay.map(async (puzzle) => {
-			await db
-				.insert(cipherPuzzleProd)
-				.values({
-					...puzzle
-				})
-				.onConflictDoNothing({ target: cipherPuzzleProd.date });
 		})
 	);
 
