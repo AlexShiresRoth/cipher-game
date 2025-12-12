@@ -1,3 +1,4 @@
+import { WORD_LIST } from '$lib/wordlists';
 import { SvelteMap } from 'svelte/reactivity';
 import { handleErrorOnGuess } from './errors.svelte';
 
@@ -64,15 +65,8 @@ export function removeLetterFromSelection(selected: string[]) {
  * @param word
  * @description - checks dictionary api for valid words
  */
-export async function isValidWord(word: string) {
-	try {
-		const res = await fetch(`api/dictionary?word=${word}`);
-		const data: { valid: boolean } = await res.json();
-		return { valid: data.valid, error: null };
-	} catch (error) {
-		console.error(error);
-		return { valid: false, error };
-	}
+export function isValidWord(word: string) {
+	return { valid: WORD_LIST[word.length].words.findIndex((w) => w === word) >= 0 };
 }
 
 /**
@@ -117,7 +111,7 @@ type GuessParams = {
 	swaps: boolean[];
 	moveAmount: number;
 	usedLetters: string[];
-	isValidWord: (val: string) => Promise<{ valid: boolean; error: unknown }>;
+	isValidWord: (val: string) => { valid: boolean };
 	getMoveToIndex: () => number;
 };
 
@@ -146,10 +140,8 @@ export async function guess({
 		samePosition: moveIndex === startIndex
 	};
 
-	const { valid, error } = await isValidWord(joined);
+	const { valid } = await isValidWord(joined);
 	const invalidGuess = !valid;
-	const apiErrorMessage = `The dictionary service we rely on is temporarily down due to a global outage.
-        Your game data is safe — this should be resolved soon!`;
 
 	// --- Error descriptors ---
 	const possibleErrors = [
@@ -158,7 +150,7 @@ export async function guess({
 		{ condition: conditions.notInCipher, msg: 'Not in cipher' },
 		{
 			condition: invalidGuess,
-			msg: !error ? 'Not a valid guess' : apiErrorMessage
+			msg: 'Not a valid guess'
 		},
 		{ condition: conditions.samePosition, msg: 'Same position' }
 	];
