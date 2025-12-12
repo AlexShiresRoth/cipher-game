@@ -1,49 +1,27 @@
 import { env } from '$env/dynamic/private';
-import { db } from '$lib/server/db';
-import { cipherPuzzleProd } from '$lib/server/db/schema';
+import { isValidWord, shuffle } from '$lib/logic';
+import { bfsCipherSolver } from '$lib/logic/bfs-search.js';
+import { db } from '$lib/server/db/index.js';
+import { cipherPuzzle } from '$lib/server/db/schema.js';
 import { json } from '@sveltejs/kit';
+import { format } from 'date-fns';
+import { desc } from 'drizzle-orm';
 import OpenAI from 'openai';
-import { zodTextFormat } from 'openai/helpers/zod';
-import { Cipher } from '../../../types';
-
+import { zodTextFormat } from 'openai/helpers/zod.js';
+import z from 'zod';
 export const config = {
 	runtime: 'nodejs20.x'
 };
 
 const client = new OpenAI({ apiKey: env.OPENAI_API_KEY });
 
-const DAYS_OF_THE_WEEK = [
-	'Sunday',
-	'Monday',
-	'Tuesday',
-	'Wednesday',
-	'Thursday',
-	'Friday',
-	'Saturday'
-];
+const openAIResponse = z.object({
+	words: z.array(z.string())
+});
 
-function shuffle(word: string) {
-	const arr = word.split('');
-	const n = arr.length;
-
-	const shuffled = [...arr];
-
-	for (let i = n - 1; i > 0; i--) {
-		const j = Math.floor(Math.random() * (i + 1));
-		[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-	}
-
-	for (let i = 0; i < n; i++) {
-		if (shuffled[i] === arr[i]) {
-			const swapWith = i === n - 1 ? i - 1 : i + 1;
-			[shuffled[i], shuffled[swapWith]] = [shuffled[swapWith], shuffled[i]];
-		}
-	}
-
-	return shuffled.join('');
-}
-
-// TODO — I think we can get rid of this for generating words, it's often wrong
+// TODO - figure out how to retry if a word is already in the database
+// OR instead of chatgpt should we just shuffle the 8 letter words and then
+// just upload them all to the database?
 export const GET = async ({ request, url }) => {
 	const secret = url.searchParams.get('token')?.toString() || request.headers.get('Authorization');
 
@@ -53,76 +31,70 @@ export const GET = async ({ request, url }) => {
 		return new Response('Unauthorized', { status: 401, statusText: 'Unauthorized' });
 	}
 
-	const puzzles = (await db.select().from(cipherPuzzleProd)) || [];
-
-	const usedWords = puzzles
-		.map((p) => p.word)
-		.slice(puzzles.length - 30 > 0 ? puzzles.length - 30 : 0, puzzles.length);
-
-	async function getCipher(day: string) {
+	async function getWordList() {
 		const response = await client.responses.parse({
 			model: 'gpt-4o-2024-08-06',
 			input: [
 				{
 					role: 'system',
 					content: `
-				You are generating a daily puzzle for a word-based logic game.
+					You are generating a word list of 7 words.
 					Rules:
-					- Choose one real, common but clever 8 letter English word.
+					- Choose real, common but clever 8 letter English words.
 					- Do NOT output any reasoning — only structured data.
 					- Response must be lowercase.
-					- Do not use any banned words:
-					${usedWords.join(', ')}
 
 					Example output:
 					{
-					"word": "function",
-					"maxAttempts": 6,
-					"date": "12/24/2025",
-					"dayOfWeek": ${day}
+					  "words": ["generate", "radiance", "firewood"]
 					}`
 				}
 			],
 			text: {
-				format: zodTextFormat(Cipher, 'cipher')
+				format: zodTextFormat(openAIResponse, 'wordArray')
 			}
 		});
 
 		return response.output_parsed;
 	}
 
-	const today = new Date();
-	const startOfWeek = new Date(today);
-	startOfWeek.setDate(today.getDate() + 1);
+	const newWordList = await getWordList();
 
-	let dayIndex = today.getDay();
-	const DAYS: typeof DAYS_OF_THE_WEEK = [];
-	DAYS_OF_THE_WEEK.forEach(() => {
-		today.setDate(today.getDate() + dayIndex);
-		if (dayIndex < DAYS_OF_THE_WEEK.length - 1) {
-			dayIndex++;
-		} else {
-			dayIndex = 0;
+	if (!newWordList) {
+		throw new Error('Wordlist failed to generate');
+	}
+
+	const puzzles = await db.select().from(cipherPuzzle).orderBy(desc(cipherPuzzle.date)).limit(1);
+
+	const latestPuzzle = puzzles[0];
+
+	newWordList.words.forEach((word) => {
+		if (!isValidWord(word)) {
+			throw new Error(`${word}: Invalid Word`);
 		}
-		DAYS.push(DAYS_OF_THE_WEEK[dayIndex]);
 	});
 
-	const cipherPuzzlePerDay = await Promise.all(
-		DAYS.map(async (day, i) => {
-			const date = new Date(startOfWeek);
-			date.setDate(startOfWeek.getDate() + i);
-			const res = await getCipher(day);
-			if (!res?.word) {
-				throw new Error('Missing word in response');
-			}
-			return {
-				...res,
-				dayOfWeek: day,
-				cipherWord: shuffle(res.word),
-				date: date.toISOString().split('T')[0]
-			};
-		})
-	);
+	const latestPuzzleDate = new Date(latestPuzzle.date as string);
 
-	return json(cipherPuzzlePerDay);
+	const startDate = new Date(latestPuzzleDate);
+	startDate.setDate(latestPuzzleDate.getDate() + 1);
+	const shuffledWords = newWordList.words.map((word, i) => {
+		const cipherWord = shuffle(word);
+
+		const { minMoves } = bfsCipherSolver(cipherWord, word);
+
+		console.log('MIN MOVES', minMoves);
+
+		const puzzleDate = new Date(startDate);
+		puzzleDate.setDate(startDate.getDate() + i);
+		console.log('date?', i);
+		return {
+			word,
+			cipherWord,
+			minMoves,
+			date: format(puzzleDate, 'yyyy-MM-dd')
+		};
+	});
+
+	return json(shuffledWords);
 };

@@ -1,3 +1,4 @@
+import { WORD_LIST } from '$lib/wordlists';
 import { SvelteMap } from 'svelte/reactivity';
 import { handleErrorOnGuess } from './errors.svelte';
 
@@ -64,15 +65,8 @@ export function removeLetterFromSelection(selected: string[]) {
  * @param word
  * @description - checks dictionary api for valid words
  */
-export async function isValidWord(word: string) {
-	try {
-		const res = await fetch(`api/dictionary?word=${word}`);
-		const data: { valid: boolean } = await res.json();
-		return { valid: data.valid, error: null };
-	} catch (error) {
-		console.error(error);
-		return { valid: false, error };
-	}
+export function isValidWord(word: string) {
+	return { valid: WORD_LIST[word.length].words.findIndex((w) => w === word) >= 0 };
 }
 
 /**
