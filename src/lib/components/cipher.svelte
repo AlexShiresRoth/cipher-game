@@ -66,7 +66,7 @@
 			out:send={{ key: `${key}-${i}`, delay: 0, duration: i * 100 }}
 			animate:flip
 			class={clsx(
-				'relative flex items-center justify-center border-2 p-2 transition-all md:min-w-16',
+				'relative z-0 flex items-center justify-center border-2 p-2 transition-all md:min-w-16',
 				{
 					'border-emerald-500 text-emerald-500':
 						highlightAtCorrectPosition(i) &&

@@ -111,7 +111,7 @@ type GuessParams = {
 	swaps: boolean[];
 	moveAmount: number;
 	usedLetters: string[];
-	isValidWord: (val: string) => Promise<{ valid: boolean; error: unknown }>;
+	isValidWord: (val: string) => { valid: boolean };
 	getMoveToIndex: () => number;
 };
 
@@ -140,10 +140,8 @@ export async function guess({
 		samePosition: moveIndex === startIndex
 	};
 
-	const { valid, error } = await isValidWord(joined);
+	const { valid } = await isValidWord(joined);
 	const invalidGuess = !valid;
-	const apiErrorMessage = `The dictionary service we rely on is temporarily down due to a global outage.
-        Your game data is safe — this should be resolved soon!`;
 
 	// --- Error descriptors ---
 	const possibleErrors = [
@@ -152,7 +150,7 @@ export async function guess({
 		{ condition: conditions.notInCipher, msg: 'Not in cipher' },
 		{
 			condition: invalidGuess,
-			msg: !error ? 'Not a valid guess' : apiErrorMessage
+			msg: 'Not a valid guess'
 		},
 		{ condition: conditions.samePosition, msg: 'Same position' }
 	];
