@@ -34,22 +34,26 @@
 		date: 'date'
 	};
 
-	const tiers: Record<number, { mistakes: number; emoji: string }> = {
+	const tiers: Record<number, { mistakes: number; emoji: string; phrase: string }> = {
 		0: {
 			mistakes: 0,
-			emoji: '💎'
+			emoji: '💎',
+			phrase: 'Righteous solve! No mistakes — few crack this optimally 🤯'
 		},
 		1: {
 			mistakes: 1,
-			emoji: '🥇'
+			emoji: '🥇',
+			phrase: 'Excellent! Just one move over perfect 😎'
 		},
 		2: {
 			mistakes: 2,
-			emoji: '🥈'
+			emoji: '🥈',
+			phrase: 'Solid work — the cipher did not win today 👌'
 		},
 		3: {
 			mistakes: 3,
-			emoji: '🥉'
+			emoji: '🥉',
+			phrase: 'You got there! That one fought back 🥹'
 		}
 	};
 
@@ -396,11 +400,19 @@ ${rowsText}
 </script>
 
 <svelte:head>
-	<title>CIPHER | Play</title>
+	<title>Play CIPHER {`#`}{data.id} - The daily word-shuffle game</title>
 	<meta
 		name="description"
-		content="Play Cipher, the daily interactive word-scramble puzzle game. Decode the shuffled word using clever moves, swapping mechanics, and logic-based strategy."
+		content="Play Cipher, the daily interactive word-shuffle puzzle game. Decipher the shuffled word using clever moves, swapping mechanics, and logic-based strategy."
 	/>
+	<meta property="og:title" content={`CIPHER #${data.id} – Daily Word-Shuffle Puzzle`} />
+	<meta
+		property="og:description"
+		content="Decipher shuffled words and challenge yourself with the daily brain-teaser."
+	/>
+	<meta property="og:type" content="game" />
+	<meta property="og:url" content="https://play-cipher.com" />
+	<meta property="og:image" content="https://play-cipher.com/og-image.png" />
 </svelte:head>
 
 <Nav
@@ -435,7 +447,7 @@ ${rowsText}
 		{shareResults}
 		{win}
 		{showLetters}
-		emoji={getTierByMoves()?.emoji}
+		tier={getTierByMoves()}
 		{toggleModalOpen}
 		solvableAmt={data.minMoves}
 		{replenishAmt}

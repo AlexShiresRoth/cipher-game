@@ -11,8 +11,25 @@
 		content="A detailed guide on how to play the Cipher word puzzle game. 
 	This guide consists of examples and thorough instructions."
 	/>
+	<meta
+		property="og:description"
+		content="A detailed guide on how to play the Cipher word puzzle game. 
+	This guide consists of examples and thorough instructions."
+	/>
+	<meta property="og:type" content="game" />
+	<meta property="og:url" content="https://play-cipher.com" />
+	<meta property="og:image" content="https://play-cipher.com/og-image.png" />
 </svelte:head>
 
-<Nav {showNavModal} showHome toggleModalOpen={() => {}} />
+<Nav
+	{showNavModal}
+	showHome
+	toggleModalOpen={() => {}}
+	mistakeAmount={0}
+	moveAmount={0}
+	emoji=""
+	solvableAmt={0}
+	replenishAmt={0}
+/>
 
 <HowTo />
