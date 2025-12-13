@@ -3,7 +3,6 @@
 	import Stats from './stats.svelte';
 	export let win;
 	export let showLetters;
-	export let emoji;
 	export let word;
 	export let shareResults;
 	export let toggleModalOpen;
@@ -11,6 +10,7 @@
 	export let solvableAmt;
 	export let replenishAmt;
 	export let mistakeAmount;
+	export let tier;
 
 	$: showStats = false;
 </script>
@@ -32,7 +32,7 @@
 				<div class="flex w-11/12 flex-col items-center justify-center gap-2">
 					{#if showLetters}
 						<div class="flex w-full justify-center">
-							<p class="text-7xl dark:text-white">{emoji}</p>
+							<p class="text-7xl dark:text-white">{tier.emoji}</p>
 						</div>
 						<h2 transition:fly={{ y: 100, delay: 10 }}>The Cipher Was:</h2>
 					{/if}
@@ -54,12 +54,12 @@
 				</div>
 
 				{#if showLetters}
-					<div class="flex flex-col items-center gap-4">
+					<div class="flex flex-col items-center gap-4 px-2">
 						<h1
 							transition:fly={{ y: 100, delay: 200 }}
-							class="text-center text-4xl font-bold uppercase"
+							class="text-center text-2xl font-bold uppercase"
 						>
-							congrats! you cracked it 🥹
+							{tier.phrase}
 						</h1>
 						<p transition:fly={{ y: -100, delay: 200 }} class="text-center text-sm">
 							This puzzle was solvable in <strong>{solvableAmt}</strong> moves
@@ -67,7 +67,7 @@
 						<button
 							transition:fly={{ y: 100, delay: 300 }}
 							class="rounded-full bg-black px-4 py-2 text-white hover:cursor-pointer dark:bg-emerald-500 dark:text-black"
-							on:click={shareResults}>Share your result</button
+							on:click={shareResults}>Share with friends & enemies</button
 						>
 						<button
 							transition:fly={{ y: -100, delay: 350 }}
@@ -84,7 +84,7 @@
 
 				{#if showStats}
 					<div class="w-11/12 md:w-1/2" transition:fade>
-						<Stats {emoji} {moveAmount} {solvableAmt} {replenishAmt} {mistakeAmount} />
+						<Stats emoji={tier.emoji} {moveAmount} {solvableAmt} {replenishAmt} {mistakeAmount} />
 					</div>
 				{/if}
 			</div>
