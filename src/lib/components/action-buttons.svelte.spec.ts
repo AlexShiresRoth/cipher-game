@@ -12,6 +12,26 @@ import { fireEvent, render } from '@testing-library/svelte';
 import { describe, expect, it, vi } from 'vitest';
 import ActionButtons from './action-buttons.svelte';
 
+if (!Element.prototype.animate) {
+	Element.prototype.animate = (() => {
+		return () => {
+			return {
+				finished: Promise.resolve(),
+				cancel: () => {},
+				play: () => {},
+				pause: () => {},
+				reverse: () => {},
+				currentTime: 0,
+				effect: null,
+				id: '',
+				onfinish: null,
+				oncancel: null,
+				playState: 'idle'
+			} as unknown as Animation; // assert as Animation safely
+		};
+	})();
+}
+
 vi.mock('../logic/actions.svelte.ts', async () => {
 	const actual = await import('../logic/actions.svelte');
 	return {
@@ -57,7 +77,7 @@ const guessParams = {
 };
 
 describe('Action Buttons', () => {
-	describe('Replenish buttons', () => {
+	describe('Replenish button', () => {
 		it('should render replenish button', async () => {
 			const result = render(ActionButtons, {
 				props: {
@@ -119,6 +139,30 @@ describe('Action Buttons', () => {
 
 			await fireEvent.click(repBtn);
 			expect(clearUsedLettersMock).not.toHaveBeenCalled();
+		});
+	});
+
+	describe('key button', () => {
+		it('should show the key modal when true', async () => {
+			const result = render(ActionButtons, {
+				props: {
+					clearSelection,
+					usedLetters,
+					clearUsedLetters: () => clearUsedLettersMock({ moveAmount: 10, replenishAmt: 0 }),
+					showUpdatePopup: true,
+					toggleUpdatePopup,
+					selected,
+					guess: () => guessMock(guessParams),
+					removeLetterFromSelection
+				}
+			});
+
+			const button = await result.findByTestId('key-button');
+			expect(button).toBeInTheDocument();
+			fireEvent.click(button);
+
+			const modal = await result.findByTestId('key-modal');
+			expect(modal).toBeInTheDocument();
 		});
 	});
 
