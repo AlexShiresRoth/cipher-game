@@ -489,6 +489,11 @@ ${rowsText}
 			handleSelect={(l: string) => onSelect(l)}
 			{alpha}
 			{alphaState}
+			guess={handleGuess}
+			removeLetterFromSelection={() => {
+				const { newSelection } = removeLetterFromSelection(selected);
+				selected = newSelection;
+			}}
 			showUpdatePopup={getUpdateMapValue(updateNames.keyboard, updatesState)}
 			toggleUpdatePopup={() => {
 				updatesState = toggleUpdatePopup(
