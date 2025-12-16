@@ -68,11 +68,13 @@
 	</div>
 	<div class="flex gap-2">
 		<button
+			data-testid="key-button"
 			on:click={() => (showKey = !showKey)}
 			class="relative flex items-center justify-center rounded bg-black p-2 text-base text-white uppercase transition-colors dark:bg-indigo-500 dark:text-black"
 		>
 			{#if showKey}
 				<div
+					data-testid="key-modal"
 					class="absolute bottom-full flex w-54 flex-col items-center gap-2 border-2 border-black bg-white p-4 text-sm text-black shadow-lg after:absolute after:top-full after:left-1/2 after:-translate-x-1/2
 							after:border-8 after:border-transparent after:border-t-white hover:cursor-pointer
 							dark:border-white dark:bg-black dark:text-white after:dark:border-t-black"

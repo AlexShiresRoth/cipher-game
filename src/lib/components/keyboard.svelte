@@ -1,5 +1,6 @@
 <script lang="ts">
 	import clsx from 'clsx';
+	import { onMount } from 'svelte';
 	import UpdatePopup from './update-popup.svelte';
 
 	export let selected: string[];
@@ -8,6 +9,8 @@
 	export let alpha: string[];
 	export let showUpdatePopup: boolean;
 	export let toggleUpdatePopup;
+	export let removeLetterFromSelection: () => void;
+	export let guess;
 
 	$: getAlphaStateNumber = (l: string) => {
 		return alphaState.get(l) as number;
@@ -26,6 +29,21 @@
 		const uses = alphaState.get(l) || 0;
 		return uses > 0;
 	};
+
+	onMount(() => {
+		window.addEventListener('keyup', (e) => {
+			console.log('e', e.key);
+			if (alpha.includes(e.key)) {
+				handleSelect(e.key);
+			}
+			if (e.key === 'Backspace') {
+				removeLetterFromSelection();
+			}
+			if (e.key === 'Enter') {
+				guess();
+			}
+		});
+	});
 </script>
 
 <div class="relative flex w-full justify-center">
