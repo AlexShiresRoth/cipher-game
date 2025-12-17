@@ -32,9 +32,11 @@
 
 	onMount(() => {
 		window.addEventListener('keyup', (e) => {
-			console.log('e', e.key);
-			if (alpha.includes(e.key)) {
+			if (alpha.includes(e.key) && selected.length < 12) {
+				// TODO we should move this limit to a const
 				handleSelect(e.key);
+
+				console.log('e', e);
 			}
 			if (e.key === 'Backspace') {
 				removeLetterFromSelection();

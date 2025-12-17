@@ -60,6 +60,8 @@
 	const alpha = 'qwertyuiopasdfghjklzxcvbnm'.split('');
 	const vowels = 'aeiouy'.split('');
 	const date = new Date();
+	let supportsWebAnimations = false;
+	let waitingForWebAnimResponse = true;
 
 	export let data: CipherPuzzle & { id: string };
 	export let word = data.word;
@@ -113,7 +115,7 @@
 
 	function onSelect(letter: string) {
 		if (gameOver) return;
-		if (selected.length >= 10) return;
+		if (selected.length >= 12) return; // TODO move to const
 
 		selected = [...selected, letter];
 
@@ -376,6 +378,11 @@ ${rowsText}
 			shouldShowTutorial();
 			const interval = setInterval(checkTodaysPuzzle, 60 * 1000); // every minute
 
+			supportsWebAnimations =
+				typeof Element !== 'undefined' && typeof Element.prototype.animate === 'function';
+
+			waitingForWebAnimResponse = false;
+			console.log('supports?', supportsWebAnimations);
 			return () => clearInterval(interval);
 		}
 	});
@@ -547,3 +554,20 @@ ${rowsText}
 		</div>
 	{/if}
 </div>
+
+<style>
+	@keyframes fly-in-up {
+		0% {
+			transform: translateY(200px);
+			opacity: 0%;
+		}
+		100% {
+			transform: translateY(0);
+			opacity: 100%;
+		}
+	}
+
+	.anim-fly-up {
+		animation: fly-in-up 400ms ease-in-out forwards;
+	}
+</style>
