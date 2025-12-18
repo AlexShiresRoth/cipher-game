@@ -1,8 +1,5 @@
 <script lang="ts">
 	import clsx from 'clsx';
-	import { flip } from 'svelte/animate';
-	import { quintOut } from 'svelte/easing';
-	import { crossfade, fly } from 'svelte/transition';
 
 	export let selected: string[];
 	export let cipherState: string[];
@@ -11,25 +8,6 @@
 	export let indexToSwap: number;
 	export let word: string;
 	export let chooseStartingIndex;
-
-	const [send, receive] = crossfade({
-		duration: (d) => Math.sqrt(d * 200),
-
-		fallback(node, params) {
-			const style = getComputedStyle(node);
-			const transform = style.transform === 'none' ? '' : style.transform;
-
-			return {
-				duration: (params.duration as number) || 600,
-				delay: params.delay,
-				easing: quintOut,
-				css: (t) => `
-				transform: ${transform} scale(${t}) rotateY(${t});
-				opacity: ${t}
-			`
-			};
-		}
-	});
 
 	// check if duplicate letters should highlight
 	$: handleSelectedLetter = (key: string) => {
@@ -62,9 +40,6 @@
 	{#each cipherState as key, i (`${key}-${i}`)}
 		<button
 			on:click={() => chooseStartingIndex(i)}
-			in:receive={{ key: `${key}-${i}`, delay: i * 100, duration: i * 100 }}
-			out:send={{ key: `${key}-${i}`, delay: 0, duration: i * 100 }}
-			animate:flip
 			class={clsx(
 				'relative z-0 flex items-center justify-center border-2 p-2 transition-all md:min-w-16',
 				{
@@ -85,20 +60,17 @@
 		>
 			<p class="text-2xl font-bold uppercase md:text-5xl">{key}</p>
 			{#if handleSelectedLetter(key)}
-				<div
-					class="absolute -bottom-10 z-10 flex flex-col items-center justify-center"
-					transition:fly={{ y: 20 }}
-				>
+				<div class="absolute -bottom-10 z-10 flex flex-col items-center justify-center">
 					<span class="text-xs text-amber-500 uppercase">Press here</span>
 				</div>
 			{/if}
 			{#if startIndex === i && !allowChooseIndex}
-				<div class="absolute -bottom-6 z-10" transition:fly={{ y: 20 }}>
+				<div class="absolute -bottom-6 z-10">
 					<span class="text-xs text-amber-500 uppercase">{cipherState[indexToSwap]}</span>
 				</div>
 			{/if}
 			{#if indexToSwap === i && !allowChooseIndex}
-				<div class="absolute -bottom-6 z-10" transition:fly={{ y: 20 }}>
+				<div class="absolute -bottom-6 z-10">
 					<span class="text-xs text-indigo-500 uppercase">{selected[0]}</span>
 				</div>
 			{/if}

@@ -18,7 +18,6 @@
 	import { defaultUpdatesState, getUpdateMapValue, updateNames } from '$lib/logic/updates';
 	import { format } from 'date-fns';
 	import { onMount, tick } from 'svelte';
-	import { fly } from 'svelte/transition';
 	import type { CipherPuzzle } from '../types';
 
 	const StorageKeys = {
@@ -439,10 +438,9 @@ ${rowsText}
 	>
 		<button
 			on:click={() => (showTutorial = false)}
-			class="bg-white p-4 text-black dark:bg-black dark:text-white"
-			transition:fly={{ y: -200 }}>close</button
+			class="fly-in-up bg-white p-4 text-black dark:bg-black dark:text-white">close</button
 		>
-		<div class="bg-white dark:bg-black" transition:fly={{ y: 200 }}>
+		<div class="fly-in-up bg-white dark:bg-black">
 			<HowTo />
 		</div>
 	</div>
@@ -465,9 +463,7 @@ ${rowsText}
 
 <div class="absolute top-10 flex flex-col gap-2">
 	{#each errors as error, i (`${error}-${i}`)}
-		<button transition:fly={{ y: -100 }} class="bg-black p-2 text-sm text-white shadow-lg"
-			>{error}</button
-		>
+		<button class="fly-in-up bg-black p-2 text-sm text-white shadow-lg">{error}</button>
 	{/each}
 </div>
 

@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { ArrowLeft, RotateCcw, Trash } from '@lucide/svelte';
 	import clsx from 'clsx';
-	import { fly } from 'svelte/transition';
 	import UpdatePopup from './update-popup.svelte';
 
 	export let clearUsedLetters: () => void;
@@ -78,7 +77,6 @@
 					class="absolute bottom-full flex w-54 flex-col items-center gap-2 border-2 border-black bg-white p-4 text-sm text-black shadow-lg after:absolute after:top-full after:left-1/2 after:-translate-x-1/2
 							after:border-8 after:border-transparent after:border-t-white hover:cursor-pointer
 							dark:border-white dark:bg-black dark:text-white after:dark:border-t-black"
-					transition:fly
 				>
 					<div class="mb-2 w-full border-b-2 border-b-black py-2 dark:border-gray-100">
 						<p>Keyboard info</p>
