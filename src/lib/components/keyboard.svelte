@@ -32,8 +32,7 @@
 
 	onMount(() => {
 		window.addEventListener('keyup', (e) => {
-			console.log('e', e.key);
-			if (alpha.includes(e.key)) {
+			if (alpha.includes(e.key) && isAvailable(e.key)) {
 				handleSelect(e.key);
 			}
 			if (e.key === 'Backspace') {
