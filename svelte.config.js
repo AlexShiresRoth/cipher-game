@@ -14,14 +14,16 @@ const config = {
 		// See https://svelte.dev/docs/kit/adapters for more information about adapters.
 		adapter: process.env.ADAPTER === 'netlify' ? netlifyAdapter() : vercelAdapter(),
 		csp: {
-			mode: 'auto', 
+			mode: 'auto',
 			directives: {
 				'default-src': ["'self'"],
-				'script-src': ["'self'"],
-				'style-src': ["'self'", "'unsafe-inline'"],
+				'script-src': ["'self'", 'https://va.vercel-scripts.com/v1/script.debug.js'],
+				'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+				'style-src-elem': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+				'style-src-attr': ["'self'", "'unsafe-inline'"],
+				'font-src': ["'self'", 'https://fonts.gstatic.com'],
 				'img-src': ["'self'", 'data:'],
 				'connect-src': ["'self'"],
-				'font-src': ["'self'"],
 				'frame-ancestors': ["'none'"],
 				'base-uri': ["'self'"],
 				'form-action': ["'self'"]

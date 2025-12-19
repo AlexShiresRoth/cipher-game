@@ -83,6 +83,7 @@
 	let loading = true;
 	let showTutorial = false;
 	let replenishAmt = 0;
+	let hydrated = false;
 	let correctPositions = cipherState.filter((l, i) => l === word[i]).length;
 	let formattedDate = format(date.toLocaleDateString(), 'yyyy-MM-dd');
 
@@ -375,7 +376,7 @@ ${rowsText}
 			addTodaysPuzzleToStorage(word);
 			shouldShowTutorial();
 			const interval = setInterval(checkTodaysPuzzle, 60 * 1000); // every minute
-
+			hydrated = true;
 			return () => clearInterval(interval);
 		}
 	});
@@ -415,57 +416,57 @@ ${rowsText}
 	<meta property="og:image" content="https://play-cipher.com/og-image.png" />
 </svelte:head>
 
-<Nav
-	{gameOver}
-	{showNavModal}
-	{toggleModalOpen}
-	{replenishAmt}
-	{moveAmount}
-	solvableAmt={data.minMoves}
-	emoji={getTierByMoves()?.emoji}
-	mistakeAmount={swaps.filter((b) => !b).length}
-/>
-
-{#if showTutorial && !loading}
-	<div
-		class="fixed top-0 z-20 flex max-h-full w-screen flex-col items-end gap-4 overflow-y-scroll bg-white/40 px-4 pt-10 dark:bg-black/40"
-	>
-		<button
-			on:click={() => (showTutorial = false)}
-			class="bg-white p-4 text-black dark:bg-black dark:text-white"
-			transition:fly={{ y: -200 }}>close</button
-		>
-		<div class="bg-white dark:bg-black" transition:fly={{ y: 200 }}>
-			<HowTo />
-		</div>
-	</div>
-{/if}
-
-{#if gameOver && modalOpen}
-	<GameOverModal
-		{word}
-		{shareResults}
-		{win}
-		{showLetters}
-		tier={getTierByMoves()}
+{#if hydrated && !loading}
+	<Nav
+		{gameOver}
+		{showNavModal}
 		{toggleModalOpen}
-		solvableAmt={data.minMoves}
 		{replenishAmt}
 		{moveAmount}
+		solvableAmt={data.minMoves}
+		emoji={getTierByMoves()?.emoji}
 		mistakeAmount={swaps.filter((b) => !b).length}
 	/>
-{/if}
 
-<div class="absolute top-10 flex flex-col gap-2">
-	{#each errors as error, i (`${error}-${i}`)}
-		<button transition:fly={{ y: -100 }} class="bg-black p-2 text-sm text-white shadow-lg"
-			>{error}</button
+	{#if showTutorial}
+		<div
+			class="fixed top-0 z-20 flex max-h-full w-screen flex-col items-end gap-4 overflow-y-scroll bg-white/40 px-4 pt-10 dark:bg-black/40"
 		>
-	{/each}
-</div>
+			<button
+				on:click={() => (showTutorial = false)}
+				out:fly={{ y: -200 }}
+				class="fly-in-down bg-white p-4 text-black dark:bg-black dark:text-white">close</button
+			>
+			<div class="fly-in-up bg-white dark:bg-black" out:fly={{ y: 200 }}>
+				<HowTo />
+			</div>
+		</div>
+	{/if}
 
-<div class="flex w-11/12 flex-col items-center md:w-2/3 lg:w-1/2">
-	{#if !loading}
+	{#if gameOver && modalOpen}
+		<GameOverModal
+			{word}
+			{shareResults}
+			{win}
+			{showLetters}
+			tier={getTierByMoves()}
+			{toggleModalOpen}
+			solvableAmt={data.minMoves}
+			{replenishAmt}
+			{moveAmount}
+			mistakeAmount={swaps.filter((b) => !b).length}
+		/>
+	{/if}
+
+	<div class="absolute top-10 flex flex-col gap-2">
+		{#each errors as error, i (`${error}-${i}`)}
+			<button transition:fly={{ y: -100 }} class="bg-black p-2 text-sm text-white shadow-lg"
+				>{error}</button
+			>
+		{/each}
+	</div>
+
+	<div class="flex w-11/12 flex-col items-center md:w-2/3 lg:w-1/2">
 		<!-- Current user selection row -->
 		<Selection {selected} />
 		<!-- Cipher blocks row -->
@@ -540,10 +541,40 @@ ${rowsText}
 				{usedLetters}
 			/>
 		{/if}
-	{/if}
-	{#if loading}
-		<div class="flex h-[80vh] items-center justify-center gap-2">
-			<img src="/logo.svg" alt="logo" height="300" width="300" />
-		</div>
-	{/if}
-</div>
+	</div>
+{:else}
+	<div class="flex h-screen items-center justify-center gap-2">
+		<img src="/logo.svg" alt="logo" height="300" width="300" />
+	</div>
+{/if}
+
+<style>
+	@keyframes fly-in-up {
+		0% {
+			opacity: 0;
+			transform: translateY(200px);
+		}
+		100% {
+			opacity: 1;
+			transform: translateY(0px);
+		}
+	}
+
+	@keyframes fly-in-down {
+		0% {
+			opacity: 0;
+			transform: translateY(-200px);
+		}
+		100% {
+			opacity: 1;
+			transform: translateY(0px);
+		}
+	}
+
+	.fly-in-up {
+		animation: fly-in-up 500ms forwards ease-in-out;
+	}
+	.fly-in-down {
+		animation: fly-in-down 500ms forwards ease-in-out;
+	}
+</style>
