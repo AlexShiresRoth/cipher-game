@@ -12,12 +12,12 @@ export const PreferenceStorageKeys = {
 	preferences: 'preferences'
 };
 
-export const PreferenceKeys: PreferenceLayout = {
-	showMoves: 'showMoves',
+export const PreferenceKeys = {
+	showRank: 'showRank',
 	showMistakes: 'showMistakes',
+	showMoves: 'showMoves',
 	showReps: 'showReps',
-	showSolvable: 'showSolvable',
-	showRank: 'showRank'
+	showSolvable: 'showSolvable'
 };
 
 export const PreferenceItems: Record<string, PrefItem> = {

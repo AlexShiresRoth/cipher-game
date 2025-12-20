@@ -1,8 +1,15 @@
 <script lang="ts">
+	import clsx from 'clsx';
+
 	export let selected;
+	export let shouldHaveMargin = true;
 </script>
 
-<div class="mt-8 mb-2 flex w-full justify-center">
+<div
+	class={clsx('mb-2 flex w-full justify-center', {
+		'mt-8': shouldHaveMargin
+	})}
+>
 	{#if selected.length === 0}
 		<p class="text-3xl opacity-0">{`p`}</p>
 	{/if}
