@@ -39,11 +39,16 @@
 		<div class="w-full px-4">
 			<h1 class="text-3xl">Preferences</h1>
 		</div>
+		<div class="mt-8 w-full border-b border-b-black/20 px-4 pb-4 dark:border-b-gray-100/30">
+			<h2 class="text-lg text-amber-500">Game interface</h2>
+			<p>Change the way stats show up in your game interface</p>
+		</div>
 		<div class="flex w-full flex-col">
 			{#each Array.from(preferences.entries()) as [key, value], i}
-				<div class="border-b border-b-gray-100/30 p-4">
+				<div class="border-b border-b-black/20 p-4 dark:border-b-gray-100/30">
 					<div class="flex items-center justify-between gap-1">
 						<h3>{value.title}</h3>
+
 						<div class="flex items-center">
 							<button
 								onclick={() => {
@@ -56,7 +61,7 @@
 									);
 								}}
 								aria-label="toggle-switch"
-								class="relative flex h-1 w-8 items-center rounded hover:cursor-pointer dark:bg-white/50"
+								class="relative flex h-1 w-8 items-center rounded bg-gray-200 hover:cursor-pointer dark:bg-white/50"
 							>
 								<span
 									class={clsx(
