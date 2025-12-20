@@ -1,64 +1,24 @@
 <script lang="ts">
+	import {
+		type PrefMap,
+		PreferenceKeys,
+		PreferenceStorageKeys,
+		addPrefToStorage,
+		checkStorageForPreferences
+	} from '$lib';
 	import Nav from '$lib/components/nav.svelte';
+	import clsx from 'clsx';
 	import { onMount } from 'svelte';
-
-	type PreferenceLayout = Record<string, string>;
-
-    type PrefItem = {
-        show: boolean;
-        description:string;
-        title: string;
-    }
-
- 
-
-	const StorageKeys = {
-		preferences: 'preferences'
-	};
-
-	const PreferenceKeys: PreferenceLayout = {
-		showMoves: 'showMoves',
-		showMistakes: 'showMistakes',
-		showReps: 'showReps',
-		showSolvable: 'showSolvable',
-		showRank: 'showRank'
-	};
-
- 
 
 	let loading = true;
 	let showNavModal = false;
 
-	$: preferences = new Map<string, PrefItem>();
-
-	function checkStorageForPreferences(prefKeys: Record<string, string>) {
-		const preferences = localStorage.getItem(StorageKeys.preferences);
-		if (preferences) {
-			const prefMap = new Map<string, boolean>();
-			const prefStorageObject = JSON.parse(atob(preferences)) as Map<string, boolean>;
-			Object.entries(PreferenceKeys).forEach(([key, value]) => {
-				prefMap.set(key, prefStorageObject.get(key) || false);
-			});
-
-			return prefMap;
-		} else {
-			const newMap = new Map<string, boolean>();
-			Object.entries(prefKeys).forEach(([key]) => {
-				newMap.set(key, false);
-			});
-
-			return newMap;
-		}
-	}
-
-	function addPrefToStorage(key: string) {}
+	$: preferences = new Map() as PrefMap;
 
 	onMount(() => {
 		loading = false;
 
 		preferences = checkStorageForPreferences(PreferenceKeys);
-
-		console.log(Array.from(preferences.entries()));
 	});
 </script>
 
@@ -76,7 +36,44 @@
 	/>
 
 	<div class="flex w-full flex-col items-center py-8">
-		<h1 class="text-3xl">Preferences</h1>
-		<div>{#each Array.from(preferences.entries())}</div>
+		<div class="w-full px-4">
+			<h1 class="text-3xl">Preferences</h1>
+		</div>
+		<div class="flex w-full flex-col">
+			{#each Array.from(preferences.entries()) as [key, value], i}
+				<div class="border-b border-b-gray-100/30 p-4">
+					<div class="flex items-center justify-between gap-1">
+						<h3>{value.title}</h3>
+						<div class="flex items-center">
+							<button
+								onclick={() => {
+									const updatedPrefs = addPrefToStorage(key, preferences);
+
+									preferences = updatedPrefs;
+									localStorage.setItem(
+										PreferenceStorageKeys.preferences,
+										btoa(JSON.stringify([...updatedPrefs]))
+									);
+								}}
+								aria-label="toggle-switch"
+								class="relative flex h-1 w-8 items-center rounded hover:cursor-pointer dark:bg-white/50"
+							>
+								<span
+									class={clsx(
+										'absolute left-0 block h-4 w-4 rounded-full transition-all duration-300 ease-in-out',
+										{
+											'translate-x-0 bg-gray-400 dark:bg-white': !value.show,
+											'translate-x-4 bg-amber-500': value.show
+										}
+									)}
+								></span>
+							</button>
+						</div>
+					</div>
+
+					<p class="text-sm text-black/80 dark:text-white/80">{value.description}</p>
+				</div>
+			{/each}
+		</div>
 	</div>
 </div>

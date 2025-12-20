@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { type PrefMap } from '$lib';
 	import ActionButtons from '$lib/components/action-buttons.svelte';
 	import Cipher from '$lib/components/cipher.svelte';
 	import GameOverModal from '$lib/components/game-over-modal.svelte';
@@ -93,6 +94,8 @@
 
 	$: updatesState = defaultUpdatesState(updateNames);
 
+	$: preferences = new Map() as PrefMap;
+
 	$: getTierByMoves = () => {
 		const diff = moveAmount + replenishAmt + swaps.filter((b) => !b).length - data.minMoves;
 		const factor = diff > 0 ? diff : 0;
@@ -169,7 +172,6 @@
 			moveAmount = parseInt(moves);
 		}
 		if (puzzle !== word) {
-			console.trace('puzzle', puzzle, word);
 			resetStorage();
 			return;
 		}
