@@ -154,8 +154,11 @@
 		replenishAmt = 0;
 		swaps = [];
 		alphaState = defaultAlphaState();
-		console.trace('RESET STORAGE');
-		localStorage.clear();
+		Object.entries(StorageKeys).forEach(([key, value]) => {
+			if (value !== StorageKeys.viewed) {
+				localStorage.removeItem(key);
+			}
+		});
 	}
 
 	// handle if user has already completed todays game
@@ -418,7 +421,7 @@ ${rowsText}
 	<meta property="og:image" content="https://play-cipher.com/og-image.png" />
 </svelte:head>
 
-{#if hydrated && !loading}
+<div class:hidden={!hydrated && loading} class="flex w-full flex-col items-center">
 	<Nav
 		{gameOver}
 		{showNavModal}
@@ -544,11 +547,13 @@ ${rowsText}
 			/>
 		{/if}
 	</div>
-{:else}
+</div>
+
+<div class:hidden={hydrated && !loading}>
 	<div class="flex h-screen items-center justify-center gap-2">
 		<img src="/logo.svg" alt="logo" height="300" width="300" />
 	</div>
-{/if}
+</div>
 
 <style>
 	@keyframes fly-in-up {
