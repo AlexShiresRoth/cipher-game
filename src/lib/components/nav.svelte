@@ -55,10 +55,24 @@
 					class="absolute top-full right-0 -z-10 flex w-full max-w-36 flex-col items-start bg-black text-sm text-white uppercase"
 				>
 					{#if showHome}
-						<a href="/" class="w-full px-2 py-1">home</a>
+						<a
+							href="/"
+							class="w-full px-2 py-1 hover:cursor-pointer hover:text-amber-500 hover:underline"
+							>home</a
+						>
 					{/if}
 
-					<a href="/how-to" class="w-full px-2 py-1">how to play</a>
+					<a
+						href="/how-to"
+						class="w-full px-2 py-1 hover:cursor-pointer hover:text-amber-500 hover:underline"
+						>how to play</a
+					>
+
+					<a
+						href="/preferences"
+						class="w-full px-2 py-1 hover:cursor-pointer hover:text-amber-500 hover:underline"
+						>preferences</a
+					>
 
 					{#if gameOver}
 						<button

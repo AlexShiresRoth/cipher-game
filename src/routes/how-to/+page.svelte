@@ -31,5 +31,5 @@
 	solvableAmt={0}
 	replenishAmt={0}
 />
-
+<div class="mt-8"></div>
 <HowTo />
