@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { type PrefMap } from '$lib';
 	import ActionButtons from '$lib/components/action-buttons.svelte';
 	import Cipher from '$lib/components/cipher.svelte';
 	import GameOverModal from '$lib/components/game-over-modal.svelte';
@@ -7,11 +8,13 @@
 	import Nav from '$lib/components/nav.svelte';
 	import Selection from '$lib/components/selection.svelte';
 	import {
+		checkStorageForPreferences,
 		clearSelection,
 		clearUsedLetters,
 		getMoveToIndex,
 		guess,
 		isValidWord,
+		PreferenceKeys,
 		removeLetterFromSelection,
 		toggleUpdatePopup
 	} from '$lib/logic';
@@ -92,6 +95,8 @@
 	$: alphaState = defaultAlphaState();
 
 	$: updatesState = defaultUpdatesState(updateNames);
+
+	$: preferences = new Map() as PrefMap;
 
 	$: getTierByMoves = () => {
 		const diff = moveAmount + replenishAmt + swaps.filter((b) => !b).length - data.minMoves;
@@ -372,11 +377,17 @@ ${rowsText}
 		}
 	}
 
+	function checkIfPreferenceSettingExist(preferences: PrefMap) {
+		return preferences && Array.from(preferences.values()).some((val) => val.show);
+	}
+
 	onMount(() => {
 		if (word) {
 			checkTodaysPuzzle();
 			addTodaysPuzzleToStorage(word);
 			shouldShowTutorial();
+			preferences = checkStorageForPreferences(PreferenceKeys);
+			console.log('prefeernc', preferences);
 			const interval = setInterval(checkTodaysPuzzle, 60 * 1000); // every minute
 			hydrated = true;
 			return () => clearInterval(interval);
@@ -469,8 +480,31 @@ ${rowsText}
 	</div>
 
 	<div class="flex w-11/12 flex-col items-center md:w-2/3 lg:w-1/2">
+		{#if checkIfPreferenceSettingExist(preferences)}
+			<div class="my-4 flex w-full flex-wrap justify-between gap-4 text-sm">
+				{#if preferences.get(PreferenceKeys.showRank)?.show}
+					<div class="flex items-center gap-1">
+						<p>Status <span>{getTierByMoves().emoji}</span></p>
+					</div>
+				{/if}
+				{#if preferences.get(PreferenceKeys.showMistakes)?.show}
+					<div class="flex items-center gap-1">
+						<p>Mistakes <span>{swaps.filter((b) => !b).length}</span></p>
+					</div>
+				{/if}
+				{#if preferences.get(PreferenceKeys.showMoves)?.show}
+					<div class="flex items-center gap-1"><p>Moves <span>{moveAmount}</span></p></div>
+				{/if}
+				{#if preferences.get(PreferenceKeys.showReps)?.show}
+					<div class="flex items-center gap-1"><p>Reps <span>{replenishAmt}</span></p></div>
+				{/if}
+				{#if preferences.get(PreferenceKeys.showSolvable)?.show}
+					<div class="flex items-center gap-1"><p>Solvable <span>{data.minMoves}</span></p></div>
+				{/if}
+			</div>
+		{/if}
 		<!-- Current user selection row -->
-		<Selection {selected} />
+		<Selection {selected} shouldHaveMargin={!checkIfPreferenceSettingExist(preferences)} />
 		<!-- Cipher blocks row -->
 		<Cipher
 			{word}
