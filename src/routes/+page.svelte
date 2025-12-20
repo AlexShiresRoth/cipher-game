@@ -151,8 +151,11 @@
 		replenishAmt = 0;
 		swaps = [];
 		alphaState = defaultAlphaState();
-		console.trace('RESET STORAGE');
-		localStorage.clear();
+		Object.entries(StorageKeys).forEach(([key, value]) => {
+			if (value !== StorageKeys.viewed) {
+				localStorage.removeItem(key);
+			}
+		});
 	}
 
 	// handle if user has already completed todays game
@@ -169,7 +172,6 @@
 			moveAmount = parseInt(moves);
 		}
 		if (puzzle !== word) {
-			console.trace('puzzle', puzzle, word);
 			resetStorage();
 			return;
 		}
