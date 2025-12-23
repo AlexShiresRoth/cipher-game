@@ -447,6 +447,8 @@ ${rowsText}
 
 <div class:hidden={!hydrated && loading} class="flex w-full flex-col items-center">
 	<Nav
+		{word}
+		solutionPath={data.solutionPath}
 		{gameOver}
 		{showNavModal}
 		{toggleModalOpen}

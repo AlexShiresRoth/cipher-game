@@ -1,0 +1,141 @@
+{
+  "id": "afe62d04-0293-43f5-80ab-f4ab19520a86",
+  "prevId": "b43c1881-8c61-4367-b573-a1cef87901ea",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.cipherPuzzle": {
+      "name": "cipherPuzzle",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "word": {
+          "name": "word",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cipherWord": {
+          "name": "cipherWord",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "date": {
+          "name": "date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "minMoves": {
+          "name": "minMoves",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "cipherPuzzle_word_unique": {
+          "name": "cipherPuzzle_word_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "word"
+          ]
+        },
+        "cipherPuzzle_date_unique": {
+          "name": "cipherPuzzle_date_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "date"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.cipherPuzzleTest": {
+      "name": "cipherPuzzleTest",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "word": {
+          "name": "word",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cipherWord": {
+          "name": "cipherWord",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "date": {
+          "name": "date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dayOfWeek": {
+          "name": "dayOfWeek",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "solutionPath": {
+          "name": "solutionPath",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "cipherPuzzleTest_word_unique": {
+          "name": "cipherPuzzleTest_word_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "word"
+          ]
+        },
+        "cipherPuzzleTest_date_unique": {
+          "name": "cipherPuzzleTest_date_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "date"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

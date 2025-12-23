@@ -48,7 +48,7 @@ export const GET = async ({ request, url }) => {
 
 			const cipherWord = shuffle(lWord);
 
-			const { minMoves } = bfsCipherSolver(cipherWord, lWord);
+			const { minMoves, path } = bfsCipherSolver(cipherWord, lWord);
 
 			console.log('MIN MOVES', minMoves, lWord, cipherWord);
 
@@ -59,7 +59,8 @@ export const GET = async ({ request, url }) => {
 				word: lWord,
 				cipherWord,
 				minMoves,
-				date: puzzleDate.toISOString().split('T')[0]
+				date: puzzleDate.toISOString().split('T')[0],
+				solutionPath: path || []
 			};
 		})
 	);

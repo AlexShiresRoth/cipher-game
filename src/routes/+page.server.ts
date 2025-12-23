@@ -15,7 +15,7 @@ export const load = async ({ setHeaders }) => {
 	const today = new Date();
 	const tzTime = formatInTimeZone(today, 'America/New_York', 'yyyy-MM-dd');
 
-	const cipher = await db.select().from(cipherPuzzle).where(eq(cipherPuzzle.date, '2025-12-25'));
+	const cipher = await db.select().from(cipherPuzzle).where(eq(cipherPuzzle.date, tzTime));
 
 	console.log('cipher', cipher, tzTime);
 

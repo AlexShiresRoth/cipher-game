@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { ChartNoAxesColumn } from '@lucide/svelte';
+	import { ChartNoAxesColumn, Route } from '@lucide/svelte';
 	import clsx from 'clsx';
 	import { fly } from 'svelte/transition';
+	import SolutionPath from './solution-path.svelte';
 	import Stats from './stats.svelte';
 
 	export let showNavModal = false;
@@ -13,8 +14,11 @@
 	export let mistakeAmount: number;
 	export let solvableAmt: number;
 	export let replenishAmt: number;
+	export let solutionPath: string[];
+	export let word: string;
 
 	$: showStats = false;
+	$: showSolution = false;
 </script>
 
 <nav class="relative flex w-full">
@@ -34,18 +38,35 @@
 		>
 			{#if !showHome}
 				<button
-					on:click={() => (showStats = !showStats)}
+					class={clsx('hover:cursor-pointer', {
+						'text-emerald-500': showSolution
+					})}
+					on:click={() => (
+						(showSolution = !showSolution),
+						(showStats = false),
+						(showNavModal = false)
+					)}
+				>
+					<Route size={20} />
+				</button>
+				<button
+					on:click={() => (
+						(showStats = !showStats),
+						(showNavModal = false),
+						(showSolution = false)
+					)}
 					class={clsx('hover:cursor-pointer', {
 						'text-amber-300': showStats
 					})}
 				>
-					<ChartNoAxesColumn />
+					<ChartNoAxesColumn size={20} />
 				</button>
 			{/if}
 			<button
 				on:click={() => {
 					showNavModal = !showNavModal;
 					showStats = false;
+					showSolution = false;
 				}}
 				class="bg-black px-4 py-2 text-white uppercase transition-colors hover:cursor-pointer hover:bg-black/80"
 				>{'menu'}</button
@@ -64,13 +85,13 @@
 
 					<a
 						href="/how-to"
-						class="w-full px-2 py-1 hover:cursor-pointer hover:text-amber-500 hover:underline"
+						class="w-full border-t border-t-white/40 px-2 py-1 hover:cursor-pointer hover:text-amber-500 hover:underline"
 						>how to play</a
 					>
 
 					<a
 						href="/preferences"
-						class="w-full px-2 py-1 hover:cursor-pointer hover:text-amber-500 hover:underline"
+						class="w-full border-t border-t-white/40 px-2 py-1 hover:cursor-pointer hover:text-amber-500 hover:underline"
 						>preferences</a
 					>
 
@@ -93,6 +114,15 @@
 		>
 			<h2 class="text-3xl uppercase">Stats</h2>
 			<Stats {emoji} {moveAmount} {mistakeAmount} {solvableAmt} {replenishAmt} />
+		</div>
+	{/if}
+	{#if showSolution}
+		<div
+			class="absolute top-full z-10 mt-1 flex h-screen w-full flex-col bg-white p-4 dark:bg-black"
+			transition:fly={{ y: -100 }}
+		>
+			<h2 class="text-3xl uppercase">Solution</h2>
+			<SolutionPath {solutionPath} {word} />
 		</div>
 	{/if}
 </nav>

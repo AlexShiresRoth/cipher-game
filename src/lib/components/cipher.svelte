@@ -66,7 +66,7 @@
 			out:send={{ key: `${key}-${i}`, delay: 0, duration: i * 100 }}
 			animate:flip
 			class={clsx(
-				'relative z-0 flex items-center justify-center border-2 p-2 transition-all md:min-w-16',
+				'relative z-0 flex min-w-8 items-center justify-center border-2 p-2 transition-all md:min-w-16',
 				{
 					'border-emerald-500 text-emerald-500':
 						highlightAtCorrectPosition(i) &&
@@ -76,10 +76,7 @@
 					'animate-bounce border-amber-500 text-amber-500 hover:cursor-pointer':
 						handleSelectedLetter(key),
 					'border-amber-500 text-amber-500': highlightAtStartIndex(i),
-					'border-indigo-500 text-indigo-500':
-						highlightAtSwapIndex(i) && !handleSelectedLetter(key),
-					'min-w-10': cipherState.length <= 7,
-					'min-w-8': cipherState.length > 7
+					'border-indigo-500 text-indigo-500': highlightAtSwapIndex(i) && !handleSelectedLetter(key)
 				}
 			)}
 		>
