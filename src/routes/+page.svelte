@@ -57,6 +57,21 @@
 			mistakes: 3,
 			emoji: '🥉',
 			phrase: 'You got there! That one fought back 🥹'
+		},
+		4: {
+			mistakes: 5,
+			emoji: '🤔',
+			phrase: 'Ouch, that one was tougher than it seemed.'
+		},
+		5: {
+			mistakes: 8,
+			emoji: '🤯',
+			phrase: `Hey, you didn't quit and that's great`
+		},
+		6: {
+			mistakes: 10,
+			emoji: '😢',
+			phrase: `Woof`
 		}
 	};
 
@@ -101,7 +116,8 @@
 	$: getTierByMoves = () => {
 		const diff = moveAmount + replenishAmt + swaps.filter((b) => !b).length - data.minMoves;
 		const factor = diff > 0 ? diff : 0;
-		return tiers[factor || 0] || tiers[3];
+		console.log('tiers');
+		return tiers[factor || 0] || tiers[6];
 	};
 
 	function defaultAlphaState(): Map<string, number> {

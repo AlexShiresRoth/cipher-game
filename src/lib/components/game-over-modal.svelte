@@ -62,7 +62,8 @@
 							{tier.phrase}
 						</h1>
 						<p transition:fly={{ y: -100, delay: 200 }} class="text-center text-sm">
-							This puzzle was solvable in <strong>{solvableAmt}</strong> moves
+							This puzzle was solvable in <strong class="text-amber-500">{solvableAmt}</strong>
+							moves. You did it in <strong class="text-amber-500">{moveAmount}</strong> moves
 						</p>
 						<button
 							transition:fly={{ y: 100, delay: 300 }}
