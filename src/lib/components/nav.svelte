@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { ChartNoAxesColumn, Route } from '@lucide/svelte';
 	import clsx from 'clsx';
+	import { onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
 	import SolutionPath from './solution-path.svelte';
 	import Stats from './stats.svelte';
+	import UpdatePopup from './update-popup.svelte';
 
 	export let showNavModal = false;
 	export let gameOver = false;
@@ -16,9 +18,16 @@
 	export let replenishAmt: number;
 	export let solutionPath: string[];
 	export let word: string;
-
+	export let showSolutionUpdate: boolean;
+	export let toggleUpdatePopup;
 	$: showStats = false;
 	$: showSolution = false;
+
+	onMount(() => {
+		window.addEventListener('resize', () => {
+			showSolution = false;
+		});
+	});
 </script>
 
 <nav class="relative flex w-full">
@@ -37,25 +46,40 @@
 			tabindex="0"
 		>
 			{#if !showHome}
-				<button
-					class={clsx('hover:cursor-pointer', {
-						'text-emerald-500': showSolution
-					})}
-					on:click={() => (
-						(showSolution = !showSolution),
-						(showStats = false),
-						(showNavModal = false)
-					)}
-				>
-					<Route size={20} />
-				</button>
+				<div class="relative flex items-center justify-center">
+					<button
+						disabled={!gameOver}
+						class={clsx('transition-colors hover:cursor-pointer', {
+							'text-emerald-500': showSolution,
+							'text-amber-500': showSolutionUpdate,
+							'text-gray-100/50': !gameOver && !showSolutionUpdate
+						})}
+						on:click={() => (
+							(showSolution = !showSolution),
+							(showStats = false),
+							(showNavModal = false)
+						)}
+					>
+						<Route size={19} />
+					</button>
+					{#if showSolutionUpdate}
+						<UpdatePopup alignCarat="top-middle" {toggleUpdatePopup} alignClasses="top-[150%]"
+							><p class="text-xs dark:text-white">
+								<strong class="text-amber-500">UPDATE</strong>: {` `} You can now view how the algorithm
+								would solve the puzzle, once you complete the puzzle. This is just an example, there
+								is more than one way!
+							</p></UpdatePopup
+						>
+					{/if}
+				</div>
+
 				<button
 					on:click={() => (
 						(showStats = !showStats),
 						(showNavModal = false),
 						(showSolution = false)
 					)}
-					class={clsx('hover:cursor-pointer', {
+					class={clsx('relative hover:cursor-pointer', {
 						'text-amber-300': showStats
 					})}
 				>
@@ -118,10 +142,13 @@
 	{/if}
 	{#if showSolution}
 		<div
-			class="absolute top-full z-10 mt-1 flex h-screen w-full flex-col bg-white p-4 dark:bg-black"
+			class="absolute top-full z-10 mt-1 flex w-full flex-col bg-white p-4 dark:bg-black"
 			transition:fly={{ y: -100 }}
 		>
-			<h2 class="text-3xl uppercase">Solution</h2>
+			<h2 class="text-3xl uppercase">Solution Example</h2>
+			<p class="font-regular mb-2 text-sm dark:text-gray-300">
+				There are many ways to solve this puzzle, here is one way
+			</p>
 			<SolutionPath {solutionPath} {word} />
 		</div>
 	{/if}

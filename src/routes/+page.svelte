@@ -33,7 +33,7 @@
 		swaps: 'swaps',
 		gameStatus: 'gameStatus',
 		puzzle: 'puzzle',
-		viewed: 'viewed',
+		viewed: 'viewedV2',
 		date: 'date'
 	};
 
@@ -116,7 +116,6 @@
 	$: getTierByMoves = () => {
 		const diff = moveAmount + replenishAmt + swaps.filter((b) => !b).length - data.minMoves;
 		const factor = diff > 0 ? diff : 0;
-		console.log('tiers');
 		return tiers[factor || 0] || tiers[6];
 	};
 
@@ -403,7 +402,6 @@ ${rowsText}
 			addTodaysPuzzleToStorage(word);
 			shouldShowTutorial();
 			preferences = checkStorageForPreferences(PreferenceKeys);
-			console.log('prefeernc', preferences);
 			const interval = setInterval(checkTodaysPuzzle, 60 * 1000); // every minute
 			hydrated = true;
 			return () => clearInterval(interval);
@@ -457,6 +455,14 @@ ${rowsText}
 		solvableAmt={data.minMoves}
 		emoji={getTierByMoves()?.emoji}
 		mistakeAmount={swaps.filter((b) => !b).length}
+		showSolutionUpdate={getUpdateMapValue(updateNames.solution, updatesState)}
+		toggleUpdatePopup={() => {
+			updatesState = toggleUpdatePopup(
+				updatesState,
+				updateNames.solution,
+				!getUpdateMapValue(updateNames.solution, updatesState)
+			);
+		}}
 	/>
 
 	{#if showTutorial}

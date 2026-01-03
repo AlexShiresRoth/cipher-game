@@ -1,6 +1,7 @@
 export const updateNames = {
 	keyboard: 'keyboard',
-	replenish: 'replenish'
+	replenish: 'replenish',
+	solution: 'solution'
 };
 
 export function defaultUpdatesState(updateNames: Record<string, string>): Map<string, boolean> {
