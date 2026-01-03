@@ -80,7 +80,8 @@ export const POST = async ({ request, url }) => {
 		word: word.toLowerCase(),
 		cipherWord: cipher.toLowerCase(),
 		date,
-		minMoves: 5
+		minMoves: 5,
+		solutionPath: []
 	};
 
 	const customPuzzle = await db

@@ -5,7 +5,8 @@ export const Cipher = z.object({
 	cipherWord: z.string().min(5).max(8),
 	minMoves: z.number(),
 	date: z.string(),
-	id: z.string().optional()
+	id: z.string().optional(),
+	solutionPath: z.array(z.string())
 });
 
 export type CipherPuzzle = z.infer<typeof Cipher>;

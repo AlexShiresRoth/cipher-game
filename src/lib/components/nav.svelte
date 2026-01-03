@@ -1,8 +1,11 @@
 <script lang="ts">
-	import { ChartNoAxesColumn } from '@lucide/svelte';
+	import { ChartNoAxesColumn, Route } from '@lucide/svelte';
 	import clsx from 'clsx';
+	import { onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
+	import SolutionPath from './solution-path.svelte';
 	import Stats from './stats.svelte';
+	import UpdatePopup from './update-popup.svelte';
 
 	export let showNavModal = false;
 	export let gameOver = false;
@@ -13,8 +16,18 @@
 	export let mistakeAmount: number;
 	export let solvableAmt: number;
 	export let replenishAmt: number;
-
+	export let solutionPath: string[];
+	export let word: string;
+	export let showSolutionUpdate: boolean;
+	export let toggleUpdatePopup;
 	$: showStats = false;
+	$: showSolution = false;
+
+	onMount(() => {
+		window.addEventListener('resize', () => {
+			showSolution = false;
+		});
+	});
 </script>
 
 <nav class="relative flex w-full">
@@ -33,19 +46,51 @@
 			tabindex="0"
 		>
 			{#if !showHome}
+				<div class="relative flex items-center justify-center">
+					<button
+						disabled={!gameOver}
+						class={clsx('transition-colors hover:cursor-pointer', {
+							'text-emerald-500': showSolution,
+							'text-amber-500': showSolutionUpdate,
+							'text-gray-100/50': !gameOver && !showSolutionUpdate
+						})}
+						on:click={() => (
+							(showSolution = !showSolution),
+							(showStats = false),
+							(showNavModal = false)
+						)}
+					>
+						<Route size={19} />
+					</button>
+					{#if showSolutionUpdate}
+						<UpdatePopup alignCarat="top-middle" {toggleUpdatePopup} alignClasses="top-[150%]"
+							><p class="text-xs dark:text-white">
+								<strong class="text-amber-500">UPDATE</strong>: {` `} You can now view how the algorithm
+								would solve the puzzle, once you complete the puzzle. This is just an example, there
+								is more than one way!
+							</p></UpdatePopup
+						>
+					{/if}
+				</div>
+
 				<button
-					on:click={() => (showStats = !showStats)}
-					class={clsx('hover:cursor-pointer', {
+					on:click={() => (
+						(showStats = !showStats),
+						(showNavModal = false),
+						(showSolution = false)
+					)}
+					class={clsx('relative hover:cursor-pointer', {
 						'text-amber-300': showStats
 					})}
 				>
-					<ChartNoAxesColumn />
+					<ChartNoAxesColumn size={20} />
 				</button>
 			{/if}
 			<button
 				on:click={() => {
 					showNavModal = !showNavModal;
 					showStats = false;
+					showSolution = false;
 				}}
 				class="bg-black px-4 py-2 text-white uppercase transition-colors hover:cursor-pointer hover:bg-black/80"
 				>{'menu'}</button
@@ -64,13 +109,13 @@
 
 					<a
 						href="/how-to"
-						class="w-full px-2 py-1 hover:cursor-pointer hover:text-amber-500 hover:underline"
+						class="w-full border-t border-t-white/40 px-2 py-1 hover:cursor-pointer hover:text-amber-500 hover:underline"
 						>how to play</a
 					>
 
 					<a
 						href="/preferences"
-						class="w-full px-2 py-1 hover:cursor-pointer hover:text-amber-500 hover:underline"
+						class="w-full border-t border-t-white/40 px-2 py-1 hover:cursor-pointer hover:text-amber-500 hover:underline"
 						>preferences</a
 					>
 
@@ -93,6 +138,18 @@
 		>
 			<h2 class="text-3xl uppercase">Stats</h2>
 			<Stats {emoji} {moveAmount} {mistakeAmount} {solvableAmt} {replenishAmt} />
+		</div>
+	{/if}
+	{#if showSolution}
+		<div
+			class="absolute top-full z-10 mt-1 flex w-full flex-col bg-white p-4 dark:bg-black"
+			transition:fly={{ y: -100 }}
+		>
+			<h2 class="text-3xl uppercase">Solution Example</h2>
+			<p class="font-regular mb-2 text-sm dark:text-gray-300">
+				There are many ways to solve this puzzle, here is one way
+			</p>
+			<SolutionPath {solutionPath} {word} />
 		</div>
 	{/if}
 </nav>

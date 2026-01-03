@@ -1,10 +1,10 @@
 <script lang="ts">
 	import '../app.css';
 	let { children } = $props();
-	const version = `0.8.0`;
+	const version = `0.9.0`;
 </script>
 
-<main class="mb-28 flex min-h-[90vh] w-screen flex-col items-center overflow-x-hidden">
+<main class="mb-28 flex min-h-screen w-screen flex-col items-center overflow-x-hidden">
 	{@render children()}
 </main>
 

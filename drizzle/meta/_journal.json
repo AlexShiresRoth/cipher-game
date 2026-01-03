@@ -50,6 +50,20 @@
       "when": 1765240211515,
       "tag": "0006_lazy_albert_cleary",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1766452093635,
+      "tag": "0007_fast_swordsman",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1766455278338,
+      "tag": "0008_nasty_ben_parker",
+      "breakpoints": true
     }
   ]
 }

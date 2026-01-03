@@ -181,7 +181,7 @@ describe('Action Buttons', () => {
 				}
 			});
 
-			const updateBtn = await result.findByTestId('update-popup-reps');
+			const updateBtn = await result.findByTestId('update-popup');
 
 			expect(updateBtn).toBeInTheDocument();
 		});
@@ -201,7 +201,7 @@ describe('Action Buttons', () => {
 				}
 			});
 
-			const updateBtn = await result.findByTestId('update-popup-reps');
+			const updateBtn = await result.findByTestId('update-popup');
 
 			fireEvent.click(updateBtn);
 

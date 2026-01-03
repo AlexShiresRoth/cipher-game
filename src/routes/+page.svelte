@@ -33,7 +33,7 @@
 		swaps: 'swaps',
 		gameStatus: 'gameStatus',
 		puzzle: 'puzzle',
-		viewed: 'viewed',
+		viewed: 'viewedV2',
 		date: 'date'
 	};
 
@@ -57,6 +57,21 @@
 			mistakes: 3,
 			emoji: '🥉',
 			phrase: 'You got there! That one fought back 🥹'
+		},
+		4: {
+			mistakes: 5,
+			emoji: '🤔',
+			phrase: 'Ouch, that one was tougher than it seemed.'
+		},
+		5: {
+			mistakes: 8,
+			emoji: '🤯',
+			phrase: `Hey, you didn't quit and that's great`
+		},
+		6: {
+			mistakes: 10,
+			emoji: '😢',
+			phrase: `Woof`
 		}
 	};
 
@@ -101,7 +116,7 @@
 	$: getTierByMoves = () => {
 		const diff = moveAmount + replenishAmt + swaps.filter((b) => !b).length - data.minMoves;
 		const factor = diff > 0 ? diff : 0;
-		return tiers[factor || 0] || tiers[3];
+		return tiers[factor || 0] || tiers[6];
 	};
 
 	function defaultAlphaState(): Map<string, number> {
@@ -387,7 +402,6 @@ ${rowsText}
 			addTodaysPuzzleToStorage(word);
 			shouldShowTutorial();
 			preferences = checkStorageForPreferences(PreferenceKeys);
-			console.log('prefeernc', preferences);
 			const interval = setInterval(checkTodaysPuzzle, 60 * 1000); // every minute
 			hydrated = true;
 			return () => clearInterval(interval);
@@ -431,6 +445,8 @@ ${rowsText}
 
 <div class:hidden={!hydrated && loading} class="flex w-full flex-col items-center">
 	<Nav
+		{word}
+		solutionPath={data.solutionPath}
 		{gameOver}
 		{showNavModal}
 		{toggleModalOpen}
@@ -439,6 +455,14 @@ ${rowsText}
 		solvableAmt={data.minMoves}
 		emoji={getTierByMoves()?.emoji}
 		mistakeAmount={swaps.filter((b) => !b).length}
+		showSolutionUpdate={getUpdateMapValue(updateNames.solution, updatesState)}
+		toggleUpdatePopup={() => {
+			updatesState = toggleUpdatePopup(
+				updatesState,
+				updateNames.solution,
+				!getUpdateMapValue(updateNames.solution, updatesState)
+			);
+		}}
 	/>
 
 	{#if showTutorial}
