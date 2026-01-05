@@ -11,8 +11,6 @@
 	export let replenishAmt;
 	export let mistakeAmount;
 	export let tier;
-
-	$: showStats = false;
 </script>
 
 <div
@@ -61,36 +59,14 @@
 						>
 							{tier.phrase}
 						</h1>
-						<div class="text-center">
-							<p transition:fly={{ y: -100, delay: 200 }} class="text-sm">
-								This puzzle was solvable in <strong class="text-amber-500">{solvableAmt}</strong>
-								moves.
-							</p>
-							<p transition:fly={{ y: -100, delay: 300 }} class="text-sm">
-								You did it in <strong class="text-amber-500">{moveAmount}</strong>.
-							</p>
+						<div class="mb-2 w-11/12 md:w-1/2" transition:fade>
+							<Stats emoji={tier.emoji} {moveAmount} {solvableAmt} {replenishAmt} {mistakeAmount} />
 						</div>
 						<button
 							transition:fly={{ y: 100, delay: 300 }}
 							class="rounded-full bg-black px-4 py-2 text-white hover:cursor-pointer dark:bg-emerald-500 dark:text-black"
 							on:click={shareResults}>Share with friends & enemies</button
 						>
-						<button
-							transition:fly={{ y: -100, delay: 350 }}
-							class="rounded-full bg-black px-4 py-2 text-white hover:cursor-pointer dark:bg-white dark:text-black"
-							on:click={() => (showStats = !showStats)}
-							>{#if !showStats}
-								{`Show Stats`}
-							{:else}
-								{`Hide Stats`}
-							{/if}</button
-						>
-					</div>
-				{/if}
-
-				{#if showStats}
-					<div class="w-11/12 md:w-1/2" transition:fade>
-						<Stats emoji={tier.emoji} {moveAmount} {solvableAmt} {replenishAmt} {mistakeAmount} />
 					</div>
 				{/if}
 			</div>
