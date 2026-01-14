@@ -137,10 +137,11 @@ export async function guess({
 		guessed: guesses.includes(joined),
 		tooShort: selected.length < 3, // this should not really be called, extra precaution
 		notInCipher: !cipherState.includes(selected[0]),
-		samePosition: moveIndex === startIndex
+		samePosition: moveIndex === startIndex,
+		sameLetter: cipherState[moveIndex] === cipherState[startIndex]
 	};
 
-	const { valid } = await isValidWord(joined);
+	const { valid } = isValidWord(joined);
 	const invalidGuess = !valid;
 
 	// --- Error descriptors ---
@@ -152,14 +153,18 @@ export async function guess({
 			condition: invalidGuess,
 			msg: 'Not a valid guess'
 		},
-		{ condition: conditions.samePosition, msg: 'Same position' }
+		{ condition: conditions.samePosition, msg: 'Same position' },
+		{ condition: conditions.sameLetter, msg: 'Same letter swap' }
 	];
 
 	// --- Build newErrors ---
 	let newErrors = [...errors];
-	for (const { condition, msg } of possibleErrors) {
-		const handled = handleErrorOnGuess({ condition, newErrorMsg: msg, errors });
-		if (handled) newErrors = [...errors, ...handled];
+	// don't add new errors if someone is spamming
+	if (newErrors.length < 5) {
+		for (const { condition, msg } of possibleErrors) {
+			const handled = handleErrorOnGuess({ condition, newErrorMsg: msg, errors });
+			if (handled) newErrors = [...errors, ...handled];
+		}
 	}
 
 	// --- If guess is invalid, reset selection and return early ---
@@ -168,7 +173,8 @@ export async function guess({
 		conditions.tooShort ||
 		conditions.notInCipher ||
 		invalidGuess ||
-		conditions.samePosition
+		conditions.samePosition ||
+		conditions.sameLetter
 	) {
 		const cleared = clearSelection();
 

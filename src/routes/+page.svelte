@@ -37,6 +37,8 @@
 		date: 'date'
 	};
 
+	const maxWordLength = 12;
+
 	const tiers: Record<number, { mistakes: number; emoji: string; phrase: string }> = {
 		0: {
 			mistakes: 0,
@@ -134,7 +136,7 @@
 
 	function onSelect(letter: string) {
 		if (gameOver) return;
-		if (selected.length >= 10) return;
+		if (selected.length >= maxWordLength) return;
 
 		selected = [...selected, letter];
 
@@ -265,7 +267,7 @@
 			setTimeout(() => {
 				const newErrors = [...errors];
 				newErrors.pop();
-				errors = newErrors;
+				errors = newErrors.slice(0, 5);
 			}, 3000);
 		}
 	}
@@ -496,7 +498,7 @@ ${rowsText}
 	{/if}
 
 	<div class="absolute top-10 flex flex-col gap-2">
-		{#each errors as error, i (`${error}-${i}`)}
+		{#each errors.slice(0, 5) as error, i (`${error}-${i}`)}
 			<button transition:fly={{ y: -100 }} class="bg-black p-2 text-sm text-white shadow-lg"
 				>{error}</button
 			>
