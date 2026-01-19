@@ -30,6 +30,10 @@
 	emoji=""
 	solvableAmt={0}
 	replenishAmt={0}
+	word=""
+	toggleUpdatePopup={() => {}}
+	solutionPath={[]}
+	showSolutionUpdate={false}
 />
 <div class="mt-8"></div>
 <HowTo />

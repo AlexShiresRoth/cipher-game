@@ -8,19 +8,23 @@
 	import Nav from '$lib/components/nav.svelte';
 	import Selection from '$lib/components/selection.svelte';
 	import {
+		alpha,
 		checkStorageForPreferences,
 		clearSelection,
 		clearUsedLetters,
+		defaultAlphaState,
 		getMoveToIndex,
 		guess,
 		isValidWord,
 		PreferenceKeys,
 		removeLetterFromSelection,
-		toggleUpdatePopup
+		toggleUpdatePopup,
+		vowels
 	} from '$lib/logic';
 	import { defaultUpdatesState, getUpdateMapValue, updateNames } from '$lib/logic/updates';
 	import { format } from 'date-fns';
 	import { onMount, tick } from 'svelte';
+	import { SvelteMap } from 'svelte/reactivity';
 	import { fly } from 'svelte/transition';
 	import type { CipherPuzzle } from '../types';
 
@@ -77,8 +81,6 @@
 		}
 	};
 
-	const alpha = 'qwertyuiopasdfghjklzxcvbnm'.split('');
-	const vowels = 'aeiouy'.split('');
 	const date = new Date();
 
 	export let data: CipherPuzzle & { id: string };
@@ -109,7 +111,7 @@
 
 	$: formattedDate = format(new Date().toLocaleDateString(), 'yyyy-MM-dd');
 
-	$: alphaState = defaultAlphaState();
+	$: alphaState = defaultAlphaState(alpha, cipherState, vowels);
 
 	$: updatesState = defaultUpdatesState(updateNames);
 
@@ -120,15 +122,6 @@
 		const factor = diff > 0 ? diff : 0;
 		return tiers[factor || 0] || tiers[6];
 	};
-
-	function defaultAlphaState(): Map<string, number> {
-		const alphaSet = new Map();
-		for (const l of alpha) {
-			const lettersInCipher = cipherState.filter((c) => c === l);
-			alphaSet.set(l, lettersInCipher.length > 0 ? Infinity : vowels.includes(l) ? 3 : 1);
-		}
-		return alphaSet;
-	}
 
 	function toggleModalOpen(val: boolean) {
 		modalOpen = val;
@@ -172,7 +165,7 @@
 		usedLetters = [];
 		replenishAmt = 0;
 		swaps = [];
-		alphaState = defaultAlphaState();
+		alphaState = defaultAlphaState(alpha, cipherState, vowels);
 		Object.entries(StorageKeys).forEach(([key, value]) => {
 			if (value !== StorageKeys.viewed) {
 				localStorage.removeItem(key);
@@ -210,7 +203,11 @@
 		}
 		if (lettersUsed) {
 			usedLetters = JSON.parse(lettersUsed);
-			alphaState = handleUpdateAlphaMap(alpha, usedLetters, defaultAlphaState());
+			alphaState = handleUpdateAlphaMap(
+				alpha,
+				usedLetters,
+				defaultAlphaState(alpha, cipherState, vowels)
+			);
 		}
 		if (replenishAmount) {
 			replenishAmt = JSON.parse(replenishAmount);
@@ -305,9 +302,9 @@
 	function handleUpdateAlphaMap(
 		alpha: string[],
 		usedLetters: string[],
-		defaultState: Map<string, number>
+		defaultState: SvelteMap<string, number>
 	) {
-		const newAlphaState = new Map<string, number>();
+		const newAlphaState = new SvelteMap<string, number>();
 		alpha.forEach((l) => {
 			const hasUsedLetters = usedLetters.filter((ul) => l === ul).length;
 			const currentKey = defaultState.get(l) as number;
@@ -351,7 +348,11 @@
 		allowChooseIndex = result.allowChooseIndex;
 
 		// We need to update map of letters based on their usage
-		alphaState = handleUpdateAlphaMap(alpha, usedLetters, defaultAlphaState());
+		alphaState = handleUpdateAlphaMap(
+			alpha,
+			usedLetters,
+			defaultAlphaState(alpha, cipherState, vowels)
+		);
 
 		localStorage.setItem(StorageKeys.guesses, JSON.stringify(guesses));
 		localStorage.setItem(StorageKeys.moves, JSON.stringify(moveAmount));
@@ -557,14 +558,6 @@ ${rowsText}
 				const { newSelection } = removeLetterFromSelection(selected);
 				selected = newSelection;
 			}}
-			showUpdatePopup={getUpdateMapValue(updateNames.keyboard, updatesState)}
-			toggleUpdatePopup={() => {
-				updatesState = toggleUpdatePopup(
-					updatesState,
-					updateNames.keyboard,
-					!getUpdateMapValue(updateNames.keyboard, updatesState)
-				);
-			}}
 		/>
 
 		<!-- Action buttons -->
@@ -581,7 +574,7 @@ ${rowsText}
 					const clearedLetters = clearUsedLetters({ moveAmount, replenishAmt });
 					usedLetters = clearedLetters.usedLetters;
 					replenishAmt = clearedLetters.replenishAmt;
-					alphaState = defaultAlphaState();
+					alphaState = defaultAlphaState(alpha, cipherState, vowels);
 					localStorage.removeItem(StorageKeys.usedLetters);
 					localStorage.setItem(StorageKeys.moves, JSON.stringify(moveAmount));
 					localStorage.setItem(StorageKeys.replenishAmt, JSON.stringify(replenishAmt));
@@ -592,14 +585,6 @@ ${rowsText}
 				}}
 				guess={handleGuess}
 				{selected}
-				showUpdatePopup={getUpdateMapValue(updateNames.replenish, updatesState)}
-				toggleUpdatePopup={() => {
-					updatesState = toggleUpdatePopup(
-						updatesState,
-						updateNames.replenish,
-						!getUpdateMapValue(updateNames.replenish, updatesState)
-					);
-				}}
 				{usedLetters}
 			/>
 		{/if}

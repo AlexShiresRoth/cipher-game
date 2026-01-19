@@ -1,14 +1,11 @@
 <script lang="ts">
 	import clsx from 'clsx';
 	import { onMount } from 'svelte';
-	import UpdatePopup from './update-popup.svelte';
 
 	export let selected: string[];
 	export let handleSelect: (l: string) => void;
 	export let alphaState: Map<string, number>;
 	export let alpha: string[];
-	export let showUpdatePopup: boolean;
-	export let toggleUpdatePopup;
 	export let removeLetterFromSelection: () => void;
 	export let guess;
 
@@ -47,18 +44,6 @@
 
 <div class="relative flex w-full justify-center">
 	<div class="relative flex flex-wrap items-center justify-center gap-2 dark:text-black">
-		{#if showUpdatePopup}
-			<UpdatePopup
-				toggleUpdatePopup={() => toggleUpdatePopup(showUpdatePopup)}
-				alignClasses="left-3.5 bottom-full"
-				><p class="text-xs dark:text-white">
-					<strong class="text-amber-500">UPDATE</strong>:{` `} Certain letters now have usage amounts,
-					vowels have <strong>three</strong>, letters in the cipher are
-					<strong>unlimited</strong>, and all others have
-					<strong>one</strong> use.
-				</p></UpdatePopup
-			>
-		{/if}
 		{#each alpha as l}
 			{#if isAvailable(l)}
 				<button
