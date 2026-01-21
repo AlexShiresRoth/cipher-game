@@ -1,7 +1,7 @@
 <script>
 	import Cipher from '$lib/components/cipher.svelte';
 	const word = 'firework';
-	const cipher = 'wfiroker';
+	const cipher = 'efirokwr';
 	const cipherState = cipher.split('');
 	const selected = [''];
 </script>

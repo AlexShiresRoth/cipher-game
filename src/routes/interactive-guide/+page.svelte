@@ -4,6 +4,13 @@
 	import { fly } from 'svelte/transition';
 	import IntroOne from './intro-one.svelte';
 	import IntroTwo from './intro-two.svelte';
+	import StepEight from './step-eight.svelte';
+	import StepFive from './step-five.svelte';
+	import StepFour from './step-four.svelte';
+	import StepSeven from './step-seven.svelte';
+	import StepSix from './step-six.svelte';
+	import StepThree from './step-three.svelte';
+	import StepTwo from './step-two.svelte';
 	import Stepone from './stepone.svelte';
 
 	const steps: { header: string; content: ConstructorOfATypedSvelteComponent }[] = [
@@ -16,18 +23,33 @@
 			content: IntroTwo
 		},
 		{
-			header: 'Step 1',
+			header: 'Part 1: the Cipher',
 			content: Stepone
-		}
+		},
+		{ header: 'Part 2: the Keyboard', content: StepTwo },
+		{ header: 'Part 3: the Action Buttons', content: StepThree },
+		{ header: 'Part 4: All Together', content: StepFour },
+		{ header: 'Part 5: Duplicate Letters', content: StepFive },
+		{ header: 'Part 6: Guess Two', content: StepSix },
+		{ header: 'Part 7: Guess Three', content: StepSeven },
+		{ header: 'Part 8: Guess Four', content: StepEight }
 	];
 
 	$: started = false;
 	$: step = 0;
 
 	function incrementStep(num: number) {
+		window.scrollTo({
+			top: 0,
+			behavior: 'smooth'
+		});
 		return num + 1;
 	}
 	function decrement(num: number) {
+		window.scrollTo({
+			top: 0,
+			behavior: 'smooth'
+		});
 		return num > 0 ? num - 1 : num;
 	}
 </script>
@@ -67,8 +89,8 @@
 <div class="flex min-h-screen w-full flex-col justify-center gap-4 px-5 py-16 md:w-2/3 lg:w-1/2">
 	{#if !started}
 		<h1 class="text-2xl md:text-4xl">
-			Welcome to Cipher, this is a visual tutorial providing a step by step look at how to solve the
-			puzzle
+			Welcome to Cipher, this is a tutorial providing a step by step look at how to solve the
+			decipher the puzzle.
 		</h1>
 		<div>
 			<button
@@ -101,18 +123,21 @@
 			{:else}
 				<div></div>
 			{/if}
-			<button on:click={() => (step = incrementStep(step))} class="flex items-center text-sm"
-				>Next <ArrowRight size={14} /></button
+			{#if !!steps[step + 1]}
+				<button on:click={() => (step = incrementStep(step))} class="flex items-center text-sm"
+					>Next <ArrowRight size={14} /></button
+				>
+			{/if}
+		</div>
+	{/if}
+	{#if step >= 5}
+		<div class="flex flex-col items-center gap-4">
+			<p>Feeling confident? Maybe, a little?</p>
+			<a
+				href="/"
+				class="flex items-center justify-center rounded bg-emerald-500 px-4 py-2 text-black"
+				>Try Today's Puzzle</a
 			>
 		</div>
 	{/if}
 </div>
-
-<!-- <ActionButtons
-			clearSelection={() => {}}
-			clearUsedLetters={() => {}}
-			removeLetterFromSelection={() => {}}
-			guess={() => {}}
-			{selected}
-			usedLetters={[]}
-		/> -->

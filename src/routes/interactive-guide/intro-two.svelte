@@ -1,7 +1,7 @@
 <script>
 	import Cipher from '$lib/components/cipher.svelte';
 	const word = 'firework';
-	const cipher = 'wfiroker';
+	const cipher = 'efirokwr';
 	const cipherState = cipher.split('');
 	const selected = [''];
 </script>
@@ -22,5 +22,7 @@
 </p>
 <p>
 	We do this by selecting real English words. But that's not enough, we need a word whose first
-	letter is in the Cipher.
+	letter is in the Cipher(this will select the starting position). Then, the length of that valid
+	word will move it however many blocks from left to right. If the word is longer than the starting
+	position to the end, it wraps around to the beginning.
 </p>
