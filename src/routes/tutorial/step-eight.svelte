@@ -7,22 +7,27 @@
 
 	const word = 'firework';
 	const cipher = 'fireokwr';
-	const guess = '';
+	const guess = 'window';
 	const selected = guess.split('');
 	const cipherState = cipher.split('');
 	const alphaState = defaultAlphaState(alpha, cipherState, vowels);
 </script>
 
-<p>Now the puzzle is halfway resolved!</p>
+<p>Now the puzzle is halfway solved!</p>
+<p>
+	Next, let's move the 'W' at position seven with the 'O' at position five, using <em
+		class="text-amber-300 uppercase">{guess}</em
+	>.
+</p>
 <div class="my-2"></div>
 <Selection {selected} shouldHaveMargin={false} />
 <Cipher
 	{word}
 	{cipherState}
 	{selected}
-	startIndex={-1}
+	startIndex={6}
 	allowChooseIndex={false}
-	indexToSwap={-1}
+	indexToSwap={4}
 	chooseStartingIndex={() => {}}
 />
 

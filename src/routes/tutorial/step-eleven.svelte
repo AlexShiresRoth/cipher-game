@@ -3,31 +3,32 @@
 	import ActionButtons from '$lib/components/action-buttons.svelte';
 	import Cipher from '$lib/components/cipher.svelte';
 	import Keyboard from '$lib/components/keyboard.svelte';
-	import Selection from '$lib/components/selection.svelte';
+	import ResultsAndScoring from '$lib/components/results-and-scoring.svelte';
+	import Explanation from './explanation.svelte';
 
 	const word = 'firework';
-	const cipher = 'feirokwr';
-	const guess = 'region';
-	const selected = guess.split('');
-	const cipherState = cipher.split('');
+	const cipherState = word.split('');
+	const selected = ''.split('');
 	const alphaState = defaultAlphaState(alpha, cipherState, vowels);
 </script>
 
+<p>And the Cipher is solved 🎉</p>
 <p>
-	For our second selection, we will use the six letter word <em class="text-amber-300 uppercase"
-		>Region</em
-	> to swap the 'R' at position four, with the 'I' at position three, to move the 'R' into the correct
-	position.
+	When you complete the puzzle, a screen will pop up showing your success and stats. You'll also be
+	able to share your results from this screen.
+</p>
+<p>
+	Thank you for trying 'Cipher' out and sticking with this tutorial 🙏. Hopefully now, it all makes
+	sense!
 </p>
 <div class="my-2"></div>
-<Selection {selected} shouldHaveMargin={false} />
 <Cipher
 	{word}
 	{cipherState}
 	{selected}
-	startIndex={3}
+	startIndex={-1}
 	allowChooseIndex={false}
-	indexToSwap={2}
+	indexToSwap={-1}
 	chooseStartingIndex={() => {}}
 />
 
@@ -48,3 +49,12 @@
 	{selected}
 	usedLetters={[]}
 />
+
+<Explanation>
+	<p>
+		Each Cipher varies in complexity. One day the puzzle can be solved in four moves, the other
+		seven.
+	</p>
+	<p>Your scoring tier depends on a couple of factors, not just the puzzle complexity!</p>
+	<ResultsAndScoring />
+</Explanation>

@@ -107,9 +107,9 @@
 						>
 					{/if}
 					<a
-						href="/interactive-guide"
+						href="/tutorial"
 						class="w-full border-t border-t-white/40 px-2 py-1 hover:cursor-pointer hover:text-amber-500 hover:underline"
-						>visual guide</a
+						>tutorial</a
 					>
 					<a
 						href="/how-to"
