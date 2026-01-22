@@ -16,9 +16,10 @@
 />
 
 <p>
-	Once you've made a selection<em class="text-amber-300 uppercase">({guess})</em>, you'll see the
-	"Guess" button become highlighted, you can then submit the word to be validated and if valid it
-	will swap the two letters.
+	Outside of the tutorial, when you make a selection like <em class="text-amber-300 uppercase"
+		>({guess})</em
+	>, you'll see the "Guess" button become highlighted, you can then submit the word to be validated
+	and if valid it will swap the two letters.
 </p>
 <div class="my-2"></div>
 <Explanation

@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { alpha, defaultAlphaState, vowels } from '$lib';
 	import ActionButtons from '$lib/components/action-buttons.svelte';
-	import Cipher from '$lib/components/cipher.svelte';
 	import Keyboard from '$lib/components/keyboard.svelte';
 	import Selection from '$lib/components/selection.svelte';
+	import MockCipher from './mock-cipher.svelte';
 
 	const word = 'firework';
 	const cipher = 'fireokwr';
@@ -21,16 +21,8 @@
 </p>
 <div class="my-2"></div>
 <Selection {selected} shouldHaveMargin={false} />
-<Cipher
-	{word}
-	{cipherState}
-	{selected}
-	startIndex={6}
-	allowChooseIndex={false}
-	indexToSwap={4}
-	chooseStartingIndex={() => {}}
-/>
-
+<!-- shit this breaks, the W gets repeated FUCUCUUCUCUClk TODO fix this -->
+<MockCipher {cipher} {selected} startSwap={6} endSwap={4} />
 <Keyboard
 	handleSelect={() => {}}
 	{selected}

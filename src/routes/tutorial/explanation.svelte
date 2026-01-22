@@ -16,7 +16,7 @@
 				}
 			)}
 			on:click={() => (showExp = !showExp)}
-			>{showExp ? 'Hide ' : 'Show '}Explanation<BookUser size={16} />
+			>{showExp ? 'Hide ' : 'Show '}Details<BookUser size={16} />
 		</button>
 	</div>
 	{#if showExp}

@@ -12,6 +12,10 @@
 	const alphaState = defaultAlphaState(alpha, cipherState, vowels);
 </script>
 
+<p>
+	Now that we've submitted our valid selection the 'F' is at position one, in it's correct position
+	and the 'W' is at the second position.
+</p>
 <div class="my-2"></div>
 <Cipher
 	{word}
@@ -43,13 +47,9 @@
 
 <Explanation>
 	<p>
-		Now that we've submitted our selection, and it was a valid word, the 'F' is now at position one
-		and the 'W' is at the second position.
-	</p>
-
-	<p>
-		You can also see that the 'F' is now highlighted in green, indicating that it's in the correct
-		position since the word is <em class="text-amber-300 uppercase">{word}</em>.
+		Letters in their correct position are highlighted in green. Since the word is <em
+			class="text-amber-300 uppercase">{word}</em
+		> the 'F' is now highlighted.
 	</p>
 </Explanation>
 <div class="my-2"></div>

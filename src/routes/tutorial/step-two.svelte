@@ -26,15 +26,20 @@
 	>, will be highlighted. Be careful with what words you create, because some letters have finite
 	uses.
 </p>
-<em>Letters with a dash have infinite uses.</em>
-<em>Letters with dots have finite uses.</em>
+<div
+	class="flex flex-col gap-2 rounded border border-white/20 bg-white/10 p-2 text-sm text-gray-400 italic"
+>
+	<p>For the sake of this tutorial, the letters are not going to diminish in uses.</p>
+	<p>Letters with a dash have infinite uses.</p>
+	<p>Letters with dots have finite uses.</p>
+</div>
 <div class="my-2"></div>
 <Explanation>
 	<p>
 		You can see in the keyboard above that certain letters have a dash and others have dots. The
-		letters with a dash are letters are in the cipher, and these have infinite uses. The letters
-		with dots indicate how many uses they have, vowels have 3 and then the rest have 1. You'll
-		notice, as you play that the dots reduce as you use the letters. If you run out of uses on a
-		letter, you can replenish them, but at a cost(more on this later).
+		letters with a dash are in the cipher, and these have infinite uses. The letters with dots
+		indicate how many uses they have left, vowels have 3 and then the rest have 1. You'll notice, as
+		you play that the dots reduce as you use the letters. If you run out of uses on a letter, you
+		can replenish them, but at a cost(more on this later).
 	</p>
 </Explanation>
