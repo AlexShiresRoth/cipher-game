@@ -78,6 +78,12 @@
 			mistakes: 10,
 			emoji: '😢',
 			phrase: `Woof`
+		},
+		7: {
+			mistakes: 0,
+			emoji: '🧩👑🧩',
+			phrase: `They all said it couldn't be done. Oh how you proved them wrong, 
+			incredible!`
 		}
 	};
 
@@ -120,11 +126,24 @@
 	$: getTierByMoves = () => {
 		const diff = moveAmount + replenishAmt + swaps.filter((b) => !b).length - data.minMoves;
 		const factor = diff > 0 ? diff : 0;
+		const usedOnlyCipherLetters = factor === 0 && checkAlphaStateIsDiminshed();
+
+		if (usedOnlyCipherLetters) {
+			return tiers[7];
+		}
 		return tiers[factor || 0] || tiers[6];
 	};
 
 	function toggleModalOpen(val: boolean) {
 		modalOpen = val;
+	}
+
+	function checkAlphaStateIsDiminshed() {
+		const initialAlphaState = defaultAlphaState(alpha, data.cipherWord.split(''), vowels);
+
+		return alpha.every((letter) => {
+			return initialAlphaState.get(letter) === alphaState.get(letter);
+		});
 	}
 
 	function onSelect(letter: string) {
@@ -354,6 +373,8 @@
 			defaultAlphaState(alpha, cipherState, vowels)
 		);
 
+		console.log('alpha state update?', alphaState);
+
 		localStorage.setItem(StorageKeys.guesses, JSON.stringify(guesses));
 		localStorage.setItem(StorageKeys.moves, JSON.stringify(moveAmount));
 		localStorage.setItem(StorageKeys.cipher, cipherState.join(''));
@@ -407,6 +428,7 @@ ${rowsText}
 			preferences = checkStorageForPreferences(PreferenceKeys);
 			const interval = setInterval(checkTodaysPuzzle, 60 * 1000); // every minute
 			hydrated = true;
+			checkAlphaStateIsDiminshed();
 			return () => clearInterval(interval);
 		}
 	});
