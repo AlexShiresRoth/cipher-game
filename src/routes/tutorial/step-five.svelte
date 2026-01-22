@@ -24,7 +24,7 @@
 	{selected}
 	startIndex={3}
 	allowChooseIndex={true}
-	indexToSwap={2}
+	indexToSwap={-1}
 	chooseStartingIndex={() => {}}
 />
 <p>

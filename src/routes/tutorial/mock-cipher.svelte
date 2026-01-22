@@ -6,6 +6,7 @@
 	export let selected: string[];
 	export let startSwap: number = -1;
 	export let endSwap: number = -1;
+	const lastSelectedIndex = cipher.length - startSwap;
 
 	function getSelectedMeta(i: number) {
 		if (startSwap === -1) return null;
@@ -45,15 +46,15 @@
 					{/if}
 					{#if i === 0}
 						<span class={clsx('absolute -top-6 text-lg text-amber-500 uppercase')}>
-							{selected[selected.length - startSwap]}
+							{selected[lastSelectedIndex - 1]}
 							<em class="absolute -right-2.5 text-xs">
-								({selected.length - startSwap + 1})
+								({lastSelectedIndex})
 							</em>
 						</span>
 					{/if}
 					<div
 						class={clsx(
-							'flex min-w-8 items-center justify-center border-2 p-2 text-xl font-bold uppercase transition-all md:min-w-15 md:text-5xl',
+							'flex w-8 items-center justify-center border-2 p-2 text-xl font-bold uppercase transition-all md:min-w-15 md:text-5xl',
 							{
 								'border-amber-500 text-amber-500': i === startSwap,
 								'border-indigo-500 text-indigo-500': i === endSwap,

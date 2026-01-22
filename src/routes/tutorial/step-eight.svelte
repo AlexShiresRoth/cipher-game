@@ -5,7 +5,6 @@
 	import Selection from '$lib/components/selection.svelte';
 	import MockCipher from './mock-cipher.svelte';
 
-	const word = 'firework';
 	const cipher = 'fireokwr';
 	const guess = 'window';
 	const selected = guess.split('');
@@ -21,7 +20,6 @@
 </p>
 <div class="my-2"></div>
 <Selection {selected} shouldHaveMargin={false} />
-<!-- shit this breaks, the W gets repeated FUCUCUUCUCUClk TODO fix this -->
 <MockCipher {cipher} {selected} startSwap={6} endSwap={4} />
 <Keyboard
 	handleSelect={() => {}}

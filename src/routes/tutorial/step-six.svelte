@@ -5,7 +5,6 @@
 	import Selection from '$lib/components/selection.svelte';
 	import MockCipher from './mock-cipher.svelte';
 
-	const word = 'firework';
 	const cipher = 'feirokwr';
 	const guess = 'radiant';
 	const selected = guess.split('');

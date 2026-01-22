@@ -1,11 +1,10 @@
 <script lang="ts">
 	import { alpha, defaultAlphaState, vowels } from '$lib';
 	import ActionButtons from '$lib/components/action-buttons.svelte';
-	import Cipher from '$lib/components/cipher.svelte';
 	import Keyboard from '$lib/components/keyboard.svelte';
 	import Selection from '$lib/components/selection.svelte';
+	import MockCipher from './mock-cipher.svelte';
 
-	const word = 'firework';
 	const cipher = 'firewokr';
 	const guess = 'radical';
 	const selected = guess.split('');
@@ -20,15 +19,8 @@
 </p>
 <div class="my-2"></div>
 <Selection {selected} shouldHaveMargin={false} />
-<Cipher
-	{word}
-	{cipherState}
-	{selected}
-	startIndex={7}
-	allowChooseIndex={false}
-	indexToSwap={6}
-	chooseStartingIndex={() => {}}
-/>
+
+<MockCipher {selected} startSwap={7} endSwap={6} {cipher} />
 
 <Keyboard
 	handleSelect={() => {}}
