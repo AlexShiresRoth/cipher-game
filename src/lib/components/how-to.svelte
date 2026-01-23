@@ -5,13 +5,21 @@
 
 <section
 	id="how-to-play"
-	class="mx-auto max-w-xl border-2 border-black p-6 font-mono leading-relaxed md:max-w-1/2 dark:border-white/50"
+	class="mx-auto max-w-xl border border-black p-6 font-mono leading-relaxed md:max-w-1/2 dark:border-white/50"
 >
-	<h2 class="mb-4 border-b-2 border-black pb-2 text-xl font-bold">How to Play Cipher</h2>
+	<h2 class="mb-2 border-b-2 border-black pb-2 text-xl font-bold">How to Play Cipher</h2>
+
+	<div
+		class="mb-6 flex flex-col gap-2 rounded border p-2 dark:border-white/20 dark:bg-white/10 dark:text-gray-400"
+	>
+		<p>
+			Want to try a step by step <a href="/tutorial" class="text-amber-500 underline">tutorial</a>?
+		</p>
+	</div>
 
 	<p><strong>Goal:</strong> Unscramble the shuffled 8 letter word (the <em>cipher</em>).</p>
 
-	<hr class="my-4 border-black" />
+	<hr class="my-2 border-black" />
 
 	<h3 class="text-lg font-semibold text-amber-500">How it works</h3>
 	<p>

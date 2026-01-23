@@ -13,7 +13,7 @@
 </script>
 
 <p>
-	For our second selection, we will use the seven letter word <em class="text-amber-300 uppercase"
+	For our second selection, we will use the seven letter word <em class="text-amber-500 uppercase"
 		>{guess}</em
 	> to swap the 'R' at position four, with the 'I' at position three, to move the 'R' into the correct
 	position.

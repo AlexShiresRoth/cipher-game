@@ -149,7 +149,7 @@
 	{/if}
 	{#if started}
 		<div class="mt-4 flex flex-col gap-2">
-			<p>Pages</p>
+			<p class="uppercase">Pages</p>
 			<div class="flex flex-wrap items-center gap-4">
 				{#each steps as s, i}
 					<button

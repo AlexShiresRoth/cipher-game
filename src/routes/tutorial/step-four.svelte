@@ -48,7 +48,7 @@
 <Explanation>
 	<p>
 		Letters in their correct position are highlighted in green. Since the word is <em
-			class="text-amber-300 uppercase">{word}</em
+			class="text-amber-500 uppercase">{word}</em
 		> the 'F' is now highlighted.
 	</p>
 </Explanation>

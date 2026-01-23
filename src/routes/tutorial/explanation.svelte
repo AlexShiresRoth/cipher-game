@@ -10,7 +10,7 @@
 	<div>
 		<button
 			class={clsx(
-				'flex items-center gap-1 rounded border border-white/10 bg-gray-100/10 px-4 py-2 text-sm italic hover:cursor-pointer',
+				'flex items-center gap-1 rounded  border  bg-black px-4 py-2 text-sm text-white italic hover:cursor-pointer dark:border-white/10 dark:bg-gray-100/10',
 				{
 					'text-amber-500': showExp
 				}
@@ -21,7 +21,7 @@
 	</div>
 	{#if showExp}
 		<div
-			class="flex flex-col gap-2 rounded border border-white/10 bg-gray-100/10 p-4"
+			class="flex flex-col gap-2 border border-black bg-gray-200/30 p-4 dark:border-white/10 dark:bg-gray-100/10"
 			in:fade
 			out:fade
 		>

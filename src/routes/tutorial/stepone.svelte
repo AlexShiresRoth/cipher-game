@@ -7,7 +7,7 @@
 </script>
 
 <p>
-	For our first move, we'll use a seven letter word: <em class="text-amber-300 uppercase"
+	For our first move, we'll use a seven letter word: <em class="text-amber-500 uppercase"
 		>{guess}</em
 	> to swap the 'F' (at position 2) with the 'E' (at position 1). This moves the 'F' to the first position.
 </p>
@@ -19,7 +19,7 @@
 		see the indicators change positions.
 	</p>
 	<p>
-		Above the Cipher, you'll see the letters of the word <em class="text-amber-300 uppercase"
+		Above the Cipher, you'll see the letters of the word <em class="text-amber-500 uppercase"
 			>{guess}</em
 		> indicating how many blocks the word is moving the letter 'F'.
 	</p></Explanation

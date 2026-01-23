@@ -21,7 +21,7 @@
 	correct position by swapping letter positions within the Cipher.
 </p>
 <p>
-	We do this by selecting real English words<em class="text-amber-300"
+	We do this by selecting real English words<em class="text-amber-500"
 		>(minimum of three letters)</em
 	>. But that's not enough, we need a word whose first letter is in the Cipher(this will select the
 	starting position). Then, the length of that word will move it however many blocks from left to

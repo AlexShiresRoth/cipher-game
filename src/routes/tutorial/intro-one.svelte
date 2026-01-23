@@ -20,13 +20,13 @@
 
 <p>
 	When starting the puzzle, the first thing you may notice is a scrambled word at the top. In this
-	example the scrambled word is <code
-		class="rounded bg-gray-100/10 uppercase italic dark:text-amber-300">wfiroker</code
+	example the scrambled word is <code class="rounded bg-gray-100/10 text-amber-500 uppercase italic"
+		>wfiroker</code
 	>.
 </p>
 <p>
 	You may have unscrambled this in your mind, and realized that the word we're trying to decipher
-	is—spoiler alert 🚨 <code class="rounded bg-gray-100/10 uppercase italic dark:text-amber-300"
+	is—spoiler alert 🚨 <code class="rounded bg-gray-100/10 text-amber-500 uppercase italic"
 		>firework</code
 	>
 </p>

@@ -37,7 +37,7 @@
 		swaps: 'swaps',
 		gameStatus: 'gameStatus',
 		puzzle: 'puzzle',
-		viewed: 'viewedV2',
+		viewed: 'viewedV3',
 		date: 'date'
 	};
 
@@ -117,7 +117,9 @@
 
 	$: formattedDate = format(new Date().toLocaleDateString(), 'yyyy-MM-dd');
 
-	$: alphaState = defaultAlphaState(alpha, cipherState, vowels);
+	// TODO need to fix this, alpha state stays the same
+	// exporting defaultAlphaState no worky
+	$: alphaState = new Map();
 
 	$: updatesState = defaultUpdatesState(updateNames);
 
@@ -373,8 +375,6 @@
 			defaultAlphaState(alpha, cipherState, vowels)
 		);
 
-		console.log('alpha state update?', alphaState);
-
 		localStorage.setItem(StorageKeys.guesses, JSON.stringify(guesses));
 		localStorage.setItem(StorageKeys.moves, JSON.stringify(moveAmount));
 		localStorage.setItem(StorageKeys.cipher, cipherState.join(''));
@@ -428,6 +428,7 @@ ${rowsText}
 			preferences = checkStorageForPreferences(PreferenceKeys);
 			const interval = setInterval(checkTodaysPuzzle, 60 * 1000); // every minute
 			hydrated = true;
+			alphaState = defaultAlphaState(alpha, cipherState, vowels);
 			checkAlphaStateIsDiminshed();
 			return () => clearInterval(interval);
 		}
