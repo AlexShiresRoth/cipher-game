@@ -33,6 +33,10 @@
 		mistakeAmount={0}
 		replenishAmt={0}
 		showHome
+		solutionPath={['']}
+		toggleUpdatePopup={() => {}}
+		word=""
+		showSolutionUpdate={false}
 	/>
 
 	<div class="flex w-full flex-col items-center py-8">

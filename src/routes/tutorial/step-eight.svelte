@@ -15,7 +15,7 @@
 <p>Now the puzzle is halfway solved!</p>
 <p>
 	Next, let's move the 'W' at position seven with the 'O' at position five, using <em
-		class="text-amber-300 uppercase">{guess}</em
+		class="text-amber-500 uppercase">{guess}</em
 	>.
 </p>
 <div class="my-2"></div>

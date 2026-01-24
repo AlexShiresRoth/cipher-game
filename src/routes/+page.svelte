@@ -81,7 +81,7 @@
 		},
 		7: {
 			mistakes: 0,
-			emoji: '🧩👑🧩',
+			emoji: '👑',
 			phrase: `They all said it couldn't be done. Oh how you proved them wrong, 
 			incredible!`
 		}
@@ -115,10 +115,6 @@
 	let correctPositions = cipherState.filter((l, i) => l === word[i]).length;
 	let formattedDate = format(date.toLocaleDateString(), 'yyyy-MM-dd');
 
-	$: formattedDate = format(new Date().toLocaleDateString(), 'yyyy-MM-dd');
-
-	// TODO need to fix this, alpha state stays the same
-	// exporting defaultAlphaState no worky
 	$: alphaState = new Map();
 
 	$: updatesState = defaultUpdatesState(updateNames);
@@ -126,8 +122,7 @@
 	$: preferences = new Map() as PrefMap;
 
 	$: getTierByMoves = () => {
-		const diff = moveAmount + replenishAmt + swaps.filter((b) => !b).length - data.minMoves;
-		const factor = diff > 0 ? diff : 0;
+		const factor = getTierFactoring(moveAmount, replenishAmt, swaps);
 		const usedOnlyCipherLetters = factor === 0 && checkAlphaStateIsDiminshed();
 
 		if (usedOnlyCipherLetters) {
@@ -135,6 +130,11 @@
 		}
 		return tiers[factor || 0] || tiers[6];
 	};
+
+	function getTierFactoring(moveAmt: number, replenishAmt: number, swaps: boolean[]) {
+		const diff = moveAmt + replenishAmt + swaps.filter((b) => !b).length - data.minMoves;
+		return diff > 0 ? diff : 0;
+	}
 
 	function toggleModalOpen(val: boolean) {
 		modalOpen = val;
@@ -305,7 +305,7 @@
 		}
 	}
 
-	//  this only happens if there are duplicate letters
+	// this only happens if there are duplicate letters
 	// the user can then click on the letter
 	function chooseStartingIndex(index: number) {
 		if (cipherState[index] === selected[0]) {
@@ -392,17 +392,26 @@
 			return rows;
 		}
 
+		function checkIfOnlyUsedCipherLetters() {
+			return (
+				getTierFactoring(moveAmount, replenishAmt, swaps) === 0 && checkAlphaStateIsDiminshed()
+			);
+		}
+
+		const isCipherWizard = checkIfOnlyUsedCipherLetters();
+
 		const rows = getRows();
 		const rowsText = rows
 			.map((row) => {
-				return row.map((b) => (b ? '🟩' : '🟥')).join('');
+				return row.map((b) => (b ? '🧩' : '❌')).join('');
 			})
 			.join('\n');
-
+		const clo = `🧩 🔠 🏆 ⁉`;
 		const shareText = `🔐 Cipher #${data.id} ${getTierByMoves()?.emoji}
 ⬆️ ${moveAmount} moves
-${rowsText}
+${isCipherWizard ? clo : rowsText}
 🔄 ${replenishAmt} reps used`.trim();
+
 		const shareData = {
 			text: shareText,
 			title: `Cipher #${data.id}`,
@@ -411,7 +420,7 @@ ${rowsText}
 		if (navigator.canShare(shareData)) {
 			navigator.share(shareData);
 		} else {
-			await navigator.clipboard.writeText(shareText);
+			await navigator.clipboard.writeText(shareData.text);
 			alert('copied to clipboard!');
 		}
 	}

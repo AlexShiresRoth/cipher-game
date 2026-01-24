@@ -14,7 +14,7 @@
 <p>
 	Now we have something special! We can swap the 'I' at position four with the 'E' at position two
 	to move both letters into their correct position, 🎷. We need a seven letter word starting with
-	'I', let's go with <em class="text-amber-300 uppercase">{guess}</em>.
+	'I', let's go with <em class="text-amber-500 uppercase">{guess}</em>.
 </p>
 <div class="my-2"></div>
 <Selection {selected} shouldHaveMargin={false} />

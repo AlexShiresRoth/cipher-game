@@ -14,7 +14,7 @@
 
 <p>Okay, last move!</p>
 <p>
-	Finally, we'll use a <em class="text-amber-300 uppercase">{guess}</em> seven letter 'R' word to swap
+	Finally, we'll use a <em class="text-amber-500 uppercase">{guess}</em> seven letter 'R' word to swap
 	with the 'K'.
 </p>
 <div class="my-2"></div>

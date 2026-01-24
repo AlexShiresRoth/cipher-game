@@ -15,7 +15,7 @@
 <p>Alright, not that much further.</p>
 <p>
 	Let's use a seven letter 'O' word to swap with the 'K' at position six. How about <em
-		class="text-amber-300 uppercase">{guess}</em
+		class="text-amber-500 uppercase">{guess}</em
 	>?
 </p>
 <div class="my-2"></div>
