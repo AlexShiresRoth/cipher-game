@@ -17,6 +17,7 @@
 	import StepTwo from './step-two.svelte';
 	import Stepone from './stepone.svelte';
 
+	// TODO - we should add a cms so we don't need to update text in code
 	const steps: { header: string; content: ConstructorOfATypedSvelteComponent }[] = [
 		{
 			header: 'Overview',

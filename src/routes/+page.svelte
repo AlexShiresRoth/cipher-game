@@ -81,9 +81,9 @@
 		},
 		7: {
 			mistakes: 0,
-			emoji: '👑',
-			phrase: `They all said it couldn't be done. Oh how you proved them wrong, 
-			incredible!`
+			emoji: '🥷',
+			phrase: `Your agility and technique led you here.
+			Incredible.\n You only used cipher letters.`
 		}
 	};
 
@@ -392,24 +392,15 @@
 			return rows;
 		}
 
-		function checkIfOnlyUsedCipherLetters() {
-			return (
-				getTierFactoring(moveAmount, replenishAmt, swaps) === 0 && checkAlphaStateIsDiminshed()
-			);
-		}
-
-		const isCipherWizard = checkIfOnlyUsedCipherLetters();
-
 		const rows = getRows();
 		const rowsText = rows
 			.map((row) => {
 				return row.map((b) => (b ? '🧩' : '❌')).join('');
 			})
 			.join('\n');
-		const clo = `🧩 🔠 🏆 ⁉`;
 		const shareText = `🔐 Cipher #${data.id} ${getTierByMoves()?.emoji}
 ⬆️ ${moveAmount} moves
-${isCipherWizard ? clo : rowsText}
+${rowsText}
 🔄 ${replenishAmt} reps used`.trim();
 
 		const shareData = {
