@@ -96,8 +96,7 @@
 <div class="flex min-h-screen w-full flex-col justify-center gap-4 px-5 py-16 md:w-2/3 lg:w-1/2">
 	{#if !started}
 		<h1 class="text-2xl md:text-4xl">
-			Welcome to the Cipher tutorial, we'll be going step by step, going over how to decipher the
-			puzzle.
+			Welcome to the Cipher tutorial. Let’s go step by step and learn how to decipher the puzzle.
 		</h1>
 		<div>
 			<button
