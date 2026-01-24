@@ -106,7 +106,11 @@
 							>home</a
 						>
 					{/if}
-
+					<a
+						href="/tutorial"
+						class="w-full border-t border-t-white/40 px-2 py-1 hover:cursor-pointer hover:text-amber-500 hover:underline"
+						>tutorial</a
+					>
 					<a
 						href="/how-to"
 						class="w-full border-t border-t-white/40 px-2 py-1 hover:cursor-pointer hover:text-amber-500 hover:underline"

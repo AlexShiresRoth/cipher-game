@@ -1,7 +1,7 @@
 <script lang="ts">
 	import '../app.css';
 	let { children } = $props();
-	const version = `0.9.0`;
+	const version = `1.0.0`;
 </script>
 
 <main class="mb-28 flex min-h-screen w-screen flex-col items-center overflow-x-hidden">
@@ -31,7 +31,7 @@
 			</p>
 		</div>
 		<div>
-			<p class="text-xs text-gray-400">v{version}@alpha</p>
+			<p class="text-xs text-gray-400">v{version}@beta</p>
 		</div>
 	</div>
 	<div class="flex w-full items-center justify-center px-4 py-2">

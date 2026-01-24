@@ -2,12 +2,9 @@
 	import { ArrowLeft, RotateCcw, Trash } from '@lucide/svelte';
 	import clsx from 'clsx';
 	import { fly } from 'svelte/transition';
-	import UpdatePopup from './update-popup.svelte';
 
 	export let clearUsedLetters: () => void;
 	export let usedLetters: string[];
-	export let showUpdatePopup: boolean;
-	export let toggleUpdatePopup;
 	export let clearSelection;
 	export let selected: string[];
 	export let removeLetterFromSelection: () => void;
@@ -32,14 +29,6 @@
 					' bg-amber-500 text-black': usedLetters.length > 0
 				})}><RotateCcw size={23} /></button
 			>
-			{#if showUpdatePopup}
-				<UpdatePopup toggleUpdatePopup={() => toggleUpdatePopup(showUpdatePopup)} alignClasses="">
-					<p class="text-xs">
-						<strong class="text-amber-500">UPDATE</strong>:{` `} New Replenish button—use this to regain
-						unavailable letters. Using it costs a move.
-					</p>
-				</UpdatePopup>
-			{/if}
 		</div>
 		<div>
 			<button

@@ -8,19 +8,23 @@
 	import Nav from '$lib/components/nav.svelte';
 	import Selection from '$lib/components/selection.svelte';
 	import {
+		alpha,
 		checkStorageForPreferences,
 		clearSelection,
 		clearUsedLetters,
+		defaultAlphaState,
 		getMoveToIndex,
 		guess,
 		isValidWord,
 		PreferenceKeys,
 		removeLetterFromSelection,
-		toggleUpdatePopup
+		toggleUpdatePopup,
+		vowels
 	} from '$lib/logic';
 	import { defaultUpdatesState, getUpdateMapValue, updateNames } from '$lib/logic/updates';
 	import { format } from 'date-fns';
 	import { onMount, tick } from 'svelte';
+	import { SvelteMap } from 'svelte/reactivity';
 	import { fly } from 'svelte/transition';
 	import type { CipherPuzzle } from '../types';
 
@@ -33,7 +37,7 @@
 		swaps: 'swaps',
 		gameStatus: 'gameStatus',
 		puzzle: 'puzzle',
-		viewed: 'viewedV2',
+		viewed: 'viewedV3',
 		date: 'date'
 	};
 
@@ -74,11 +78,15 @@
 			mistakes: 10,
 			emoji: '😢',
 			phrase: `Woof`
+		},
+		7: {
+			mistakes: 0,
+			emoji: '👑',
+			phrase: `They all said it couldn't be done. Oh how you proved them wrong, 
+			incredible!`
 		}
 	};
 
-	const alpha = 'qwertyuiopasdfghjklzxcvbnm'.split('');
-	const vowels = 'aeiouy'.split('');
 	const date = new Date();
 
 	export let data: CipherPuzzle & { id: string };
@@ -107,31 +115,37 @@
 	let correctPositions = cipherState.filter((l, i) => l === word[i]).length;
 	let formattedDate = format(date.toLocaleDateString(), 'yyyy-MM-dd');
 
-	$: formattedDate = format(new Date().toLocaleDateString(), 'yyyy-MM-dd');
-
-	$: alphaState = defaultAlphaState();
+	$: alphaState = new Map();
 
 	$: updatesState = defaultUpdatesState(updateNames);
 
 	$: preferences = new Map() as PrefMap;
 
 	$: getTierByMoves = () => {
-		const diff = moveAmount + replenishAmt + swaps.filter((b) => !b).length - data.minMoves;
-		const factor = diff > 0 ? diff : 0;
+		const factor = getTierFactoring(moveAmount, replenishAmt, swaps);
+		const usedOnlyCipherLetters = factor === 0 && checkAlphaStateIsDiminshed();
+
+		if (usedOnlyCipherLetters) {
+			return tiers[7];
+		}
 		return tiers[factor || 0] || tiers[6];
 	};
 
-	function defaultAlphaState(): Map<string, number> {
-		const alphaSet = new Map();
-		for (const l of alpha) {
-			const lettersInCipher = cipherState.filter((c) => c === l);
-			alphaSet.set(l, lettersInCipher.length > 0 ? Infinity : vowels.includes(l) ? 3 : 1);
-		}
-		return alphaSet;
+	function getTierFactoring(moveAmt: number, replenishAmt: number, swaps: boolean[]) {
+		const diff = moveAmt + replenishAmt + swaps.filter((b) => !b).length - data.minMoves;
+		return diff > 0 ? diff : 0;
 	}
 
 	function toggleModalOpen(val: boolean) {
 		modalOpen = val;
+	}
+
+	function checkAlphaStateIsDiminshed() {
+		const initialAlphaState = defaultAlphaState(alpha, data.cipherWord.split(''), vowels);
+
+		return alpha.every((letter) => {
+			return initialAlphaState.get(letter) === alphaState.get(letter);
+		});
 	}
 
 	function onSelect(letter: string) {
@@ -172,7 +186,7 @@
 		usedLetters = [];
 		replenishAmt = 0;
 		swaps = [];
-		alphaState = defaultAlphaState();
+		alphaState = defaultAlphaState(alpha, cipherState, vowels);
 		Object.entries(StorageKeys).forEach(([key, value]) => {
 			if (value !== StorageKeys.viewed) {
 				localStorage.removeItem(key);
@@ -210,7 +224,11 @@
 		}
 		if (lettersUsed) {
 			usedLetters = JSON.parse(lettersUsed);
-			alphaState = handleUpdateAlphaMap(alpha, usedLetters, defaultAlphaState());
+			alphaState = handleUpdateAlphaMap(
+				alpha,
+				usedLetters,
+				defaultAlphaState(alpha, cipherState, vowels)
+			);
 		}
 		if (replenishAmount) {
 			replenishAmt = JSON.parse(replenishAmount);
@@ -287,7 +305,7 @@
 		}
 	}
 
-	//  this only happens if there are duplicate letters
+	// this only happens if there are duplicate letters
 	// the user can then click on the letter
 	function chooseStartingIndex(index: number) {
 		if (cipherState[index] === selected[0]) {
@@ -305,9 +323,9 @@
 	function handleUpdateAlphaMap(
 		alpha: string[],
 		usedLetters: string[],
-		defaultState: Map<string, number>
+		defaultState: SvelteMap<string, number>
 	) {
-		const newAlphaState = new Map<string, number>();
+		const newAlphaState = new SvelteMap<string, number>();
 		alpha.forEach((l) => {
 			const hasUsedLetters = usedLetters.filter((ul) => l === ul).length;
 			const currentKey = defaultState.get(l) as number;
@@ -351,7 +369,11 @@
 		allowChooseIndex = result.allowChooseIndex;
 
 		// We need to update map of letters based on their usage
-		alphaState = handleUpdateAlphaMap(alpha, usedLetters, defaultAlphaState());
+		alphaState = handleUpdateAlphaMap(
+			alpha,
+			usedLetters,
+			defaultAlphaState(alpha, cipherState, vowels)
+		);
 
 		localStorage.setItem(StorageKeys.guesses, JSON.stringify(guesses));
 		localStorage.setItem(StorageKeys.moves, JSON.stringify(moveAmount));
@@ -370,17 +392,26 @@
 			return rows;
 		}
 
+		function checkIfOnlyUsedCipherLetters() {
+			return (
+				getTierFactoring(moveAmount, replenishAmt, swaps) === 0 && checkAlphaStateIsDiminshed()
+			);
+		}
+
+		const isCipherWizard = checkIfOnlyUsedCipherLetters();
+
 		const rows = getRows();
 		const rowsText = rows
 			.map((row) => {
-				return row.map((b) => (b ? '🟩' : '🟥')).join('');
+				return row.map((b) => (b ? '🧩' : '❌')).join('');
 			})
 			.join('\n');
-
+		const clo = `🧩 🔠 🏆 ⁉`;
 		const shareText = `🔐 Cipher #${data.id} ${getTierByMoves()?.emoji}
 ⬆️ ${moveAmount} moves
-${rowsText}
+${isCipherWizard ? clo : rowsText}
 🔄 ${replenishAmt} reps used`.trim();
+
 		const shareData = {
 			text: shareText,
 			title: `Cipher #${data.id}`,
@@ -389,7 +420,7 @@ ${rowsText}
 		if (navigator.canShare(shareData)) {
 			navigator.share(shareData);
 		} else {
-			await navigator.clipboard.writeText(shareText);
+			await navigator.clipboard.writeText(shareData.text);
 			alert('copied to clipboard!');
 		}
 	}
@@ -406,6 +437,8 @@ ${rowsText}
 			preferences = checkStorageForPreferences(PreferenceKeys);
 			const interval = setInterval(checkTodaysPuzzle, 60 * 1000); // every minute
 			hydrated = true;
+			alphaState = defaultAlphaState(alpha, cipherState, vowels);
+			checkAlphaStateIsDiminshed();
 			return () => clearInterval(interval);
 		}
 	});
@@ -557,14 +590,6 @@ ${rowsText}
 				const { newSelection } = removeLetterFromSelection(selected);
 				selected = newSelection;
 			}}
-			showUpdatePopup={getUpdateMapValue(updateNames.keyboard, updatesState)}
-			toggleUpdatePopup={() => {
-				updatesState = toggleUpdatePopup(
-					updatesState,
-					updateNames.keyboard,
-					!getUpdateMapValue(updateNames.keyboard, updatesState)
-				);
-			}}
 		/>
 
 		<!-- Action buttons -->
@@ -581,7 +606,7 @@ ${rowsText}
 					const clearedLetters = clearUsedLetters({ moveAmount, replenishAmt });
 					usedLetters = clearedLetters.usedLetters;
 					replenishAmt = clearedLetters.replenishAmt;
-					alphaState = defaultAlphaState();
+					alphaState = defaultAlphaState(alpha, cipherState, vowels);
 					localStorage.removeItem(StorageKeys.usedLetters);
 					localStorage.setItem(StorageKeys.moves, JSON.stringify(moveAmount));
 					localStorage.setItem(StorageKeys.replenishAmt, JSON.stringify(replenishAmt));
@@ -592,14 +617,6 @@ ${rowsText}
 				}}
 				guess={handleGuess}
 				{selected}
-				showUpdatePopup={getUpdateMapValue(updateNames.replenish, updatesState)}
-				toggleUpdatePopup={() => {
-					updatesState = toggleUpdatePopup(
-						updatesState,
-						updateNames.replenish,
-						!getUpdateMapValue(updateNames.replenish, updatesState)
-					);
-				}}
 				{usedLetters}
 			/>
 		{/if}

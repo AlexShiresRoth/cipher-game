@@ -1,16 +1,25 @@
 <script>
 	import clsx from 'clsx';
+	import ResultsAndScoring from './results-and-scoring.svelte';
 </script>
 
 <section
 	id="how-to-play"
-	class="mx-auto max-w-xl border-2 border-black p-6 font-mono leading-relaxed md:max-w-1/2 dark:border-white/50"
+	class="mx-auto max-w-xl border border-black p-6 font-mono leading-relaxed md:max-w-1/2 dark:border-white/50"
 >
-	<h2 class="mb-4 border-b-2 border-black pb-2 text-xl font-bold">How to Play Cipher</h2>
+	<h2 class="mb-2 border-b-2 border-black pb-2 text-xl font-bold">How to Play Cipher</h2>
+
+	<div
+		class="mb-6 flex flex-col gap-2 rounded border p-2 dark:border-white/20 dark:bg-white/10 dark:text-gray-400"
+	>
+		<p>
+			Want to try a step by step <a href="/tutorial" class="text-amber-500 underline">tutorial</a>?
+		</p>
+	</div>
 
 	<p><strong>Goal:</strong> Unscramble the shuffled 8 letter word (the <em>cipher</em>).</p>
 
-	<hr class="my-4 border-black" />
+	<hr class="my-2 border-black" />
 
 	<h3 class="text-lg font-semibold text-amber-500">How it works</h3>
 	<p>
@@ -131,43 +140,7 @@
 		{/each}
 	</div>
 
-	<h3 class="text-lg font-semibold text-amber-500">Results & Scoring</h3>
-	<ul class="mb-4 ml-4 list-inside list-disc">
-		<li>You win when your cipher matches the original word exactly.</li>
-		<li>Each letter placed in the wrong position counts as a mistake.</li>
-		<li>
-			Each Cipher can be solved in a certain amount of moves. Each move, over that amount, will add
-			to the scoring and cause a lower ranking 😢.
-		</li>
-		<table class="my-4 table-fixed border-collapse border border-gray-300 text-left">
-			<thead>
-				<tr class="">
-					<th class="w-1/2 border border-gray-300 px-3 py-1 text-sm"
-						>Mistakes + Replenishes + Moves(over the minimum)</th
-					>
-					<th class="w-1/2 border border-gray-300 px-3 py-1">Tier</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td class="border border-gray-300 px-3 py-1">0</td>
-					<td class="border border-gray-300 px-3 py-1">💎 Diamond</td>
-				</tr>
-				<tr>
-					<td class="border border-gray-300 px-3 py-1">1</td>
-					<td class="border border-gray-300 px-3 py-1">🥇 Gold</td>
-				</tr>
-				<tr>
-					<td class="border border-gray-300 px-3 py-1">2</td>
-					<td class="border border-gray-300 px-3 py-1">🥈 Silver</td>
-				</tr>
-				<tr>
-					<td class="border border-gray-300 px-3 py-1">3+</td>
-					<td class="border border-gray-300 px-3 py-1">🥉 Bronze</td>
-				</tr>
-			</tbody>
-		</table>
-	</ul>
+	<ResultsAndScoring />
 
 	<h3 class="text-lg font-semibold text-amber-500">Share</h3>
 	<p>After finishing, tap <strong>Share Results</strong> to post your Cipher stats with friends!</p>

@@ -222,3 +222,16 @@ export async function guess({
 		errors
 	};
 }
+
+export function defaultAlphaState(
+	alpha: string[],
+	cipherState: string[],
+	vowels: string[]
+): SvelteMap<string, number> {
+	const alphaSet = new SvelteMap<string, number>();
+	for (const l of alpha) {
+		const lettersInCipher = cipherState.filter((c) => c === l);
+		alphaSet.set(l, lettersInCipher.length > 0 ? Infinity : vowels.includes(l) ? 3 : 1);
+	}
+	return alphaSet;
+}
