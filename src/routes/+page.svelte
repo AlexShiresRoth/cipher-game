@@ -81,9 +81,8 @@
 		},
 		7: {
 			mistakes: 0,
-			emoji: '🥷',
-			phrase: `Your agility and technique led you here.
-			Incredible.\n You only used cipher letters.`
+			emoji: '⭐️',
+			phrase: `A true star — the Cipher alone was enough.`
 		}
 	};
 
@@ -398,10 +397,10 @@
 				return row.map((b) => (b ? '🧩' : '❌')).join('');
 			})
 			.join('\n');
-		const shareText = `🔐 Cipher #${data.id} ${getTierByMoves()?.emoji}
-⬆️ ${moveAmount} moves
+		const shareText = `Cipher #${data.id} ${getTierByMoves()?.emoji}
+${moveAmount} moves
 ${rowsText}
-🔄 ${replenishAmt} reps used`.trim();
+${replenishAmt} reps used`.trim();
 
 		const shareData = {
 			text: shareText,
