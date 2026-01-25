@@ -28,6 +28,8 @@
 	import { fly } from 'svelte/transition';
 	import type { CipherPuzzle } from '../types';
 
+	type Tier = Record<number, { mistakes: number; emoji: string; phrase: string }>;
+
 	const StorageKeys = {
 		usedLetters: 'usedLetters',
 		moves: 'moves',
@@ -43,7 +45,8 @@
 
 	const maxWordLength = 12;
 
-	const tiers: Record<number, { mistakes: number; emoji: string; phrase: string }> = {
+	// TODO fix failing tests
+	const tiers: Tier = {
 		0: {
 			mistakes: 0,
 			emoji: '💎',
@@ -114,21 +117,28 @@
 	let correctPositions = cipherState.filter((l, i) => l === word[i]).length;
 	let formattedDate = format(date.toLocaleDateString(), 'yyyy-MM-dd');
 
-	$: alphaState = new Map();
+	$: alphaState = new Map<string, number>();
 
 	$: updatesState = defaultUpdatesState(updateNames);
 
 	$: preferences = new Map() as PrefMap;
 
-	$: getTierByMoves = () => {
-		const factor = getTierFactoring(moveAmount, replenishAmt, swaps);
-		const usedOnlyCipherLetters = factor === 0 && checkAlphaStateIsDiminshed();
+	$: shouldAllowReplenish = false;
+
+	function getTierByMoves(
+		moveAmt: number,
+		replenishAmt: number,
+		swaps: boolean[],
+		alphaStateMap: Map<string, number>
+	) {
+		const factor = getTierFactoring(moveAmt, replenishAmt, swaps);
+		const usedOnlyCipherLetters = factor === 0 && !checkAlphaStateIsDiminshed(alphaStateMap);
 
 		if (usedOnlyCipherLetters) {
 			return tiers[7];
 		}
 		return tiers[factor || 0] || tiers[6];
-	};
+	}
 
 	function getTierFactoring(moveAmt: number, replenishAmt: number, swaps: boolean[]) {
 		const diff = moveAmt + replenishAmt + swaps.filter((b) => !b).length - data.minMoves;
@@ -139,11 +149,11 @@
 		modalOpen = val;
 	}
 
-	function checkAlphaStateIsDiminshed() {
+	function checkAlphaStateIsDiminshed(alphaStateMap: Map<string, number>) {
 		const initialAlphaState = defaultAlphaState(alpha, data.cipherWord.split(''), vowels);
 
-		return alpha.every((letter) => {
-			return initialAlphaState.get(letter) === alphaState.get(letter);
+		return !alpha.every((letter) => {
+			return initialAlphaState.get(letter) === alphaStateMap.get(letter);
 		});
 	}
 
@@ -221,6 +231,13 @@
 		if (storedCipher) {
 			cipherState = storedCipher.split('');
 		}
+
+		if (replenishAmount) {
+			replenishAmt = JSON.parse(replenishAmount);
+		}
+		if (correctGuesses) {
+			swaps = JSON.parse(correctGuesses);
+		}
 		if (lettersUsed) {
 			usedLetters = JSON.parse(lettersUsed);
 			alphaState = handleUpdateAlphaMap(
@@ -228,12 +245,9 @@
 				usedLetters,
 				defaultAlphaState(alpha, cipherState, vowels)
 			);
-		}
-		if (replenishAmount) {
-			replenishAmt = JSON.parse(replenishAmount);
-		}
-		if (correctGuesses) {
-			swaps = JSON.parse(correctGuesses);
+			shouldAllowReplenish = checkAlphaStateIsDiminshed(alphaState);
+		} else {
+			alphaState = defaultAlphaState(alpha, cipherState, vowels);
 		}
 	}
 
@@ -374,6 +388,8 @@
 			defaultAlphaState(alpha, cipherState, vowels)
 		);
 
+		shouldAllowReplenish = checkAlphaStateIsDiminshed(alphaState);
+
 		localStorage.setItem(StorageKeys.guesses, JSON.stringify(guesses));
 		localStorage.setItem(StorageKeys.moves, JSON.stringify(moveAmount));
 		localStorage.setItem(StorageKeys.cipher, cipherState.join(''));
@@ -397,7 +413,8 @@
 				return row.map((b) => (b ? '🧩' : '❌')).join('');
 			})
 			.join('\n');
-		const shareText = `Cipher #${data.id} ${getTierByMoves()?.emoji}
+		const shareText =
+			`Cipher #${data.id} ${getTierByMoves(moveAmount, replenishAmt, swaps, alphaState).emoji}
 ${moveAmount} moves
 ${rowsText}
 ${replenishAmt} reps used`.trim();
@@ -427,8 +444,6 @@ ${replenishAmt} reps used`.trim();
 			preferences = checkStorageForPreferences(PreferenceKeys);
 			const interval = setInterval(checkTodaysPuzzle, 60 * 1000); // every minute
 			hydrated = true;
-			alphaState = defaultAlphaState(alpha, cipherState, vowels);
-			checkAlphaStateIsDiminshed();
 			return () => clearInterval(interval);
 		}
 	});
@@ -443,7 +458,6 @@ ${replenishAmt} reps used`.trim();
 		checkForGameStatus();
 		checkForErrors();
 		checkSelection();
-		getTierByMoves();
 		showLetters = false;
 
 		tick().then(() => {
@@ -478,7 +492,11 @@ ${replenishAmt} reps used`.trim();
 		{replenishAmt}
 		{moveAmount}
 		solvableAmt={data.minMoves}
-		emoji={getTierByMoves()?.emoji}
+		emoji={(() => {
+			const alphaStateMap =
+				alphaState.size === 0 ? defaultAlphaState(alpha, cipherState, vowels) : alphaState;
+			return getTierByMoves(moveAmount, replenishAmt, swaps, alphaStateMap).emoji;
+		})()}
 		mistakeAmount={swaps.filter((b) => !b).length}
 		showSolutionUpdate={getUpdateMapValue(updateNames.solution, updatesState)}
 		toggleUpdatePopup={() => {
@@ -511,7 +529,7 @@ ${replenishAmt} reps used`.trim();
 			{shareResults}
 			{win}
 			{showLetters}
-			tier={getTierByMoves()}
+			tier={getTierByMoves(moveAmount, replenishAmt, swaps, alphaState)}
 			{toggleModalOpen}
 			solvableAmt={data.minMoves}
 			{replenishAmt}
@@ -533,7 +551,10 @@ ${replenishAmt} reps used`.trim();
 			<div class="my-4 flex w-full flex-wrap justify-between gap-4 text-sm">
 				{#if preferences.get(PreferenceKeys.showRank)?.show}
 					<div class="flex items-center gap-1">
-						<p>Status <span>{getTierByMoves().emoji}</span></p>
+						<p>
+							Status <span>{getTierByMoves(moveAmount, replenishAmt, swaps, alphaState).emoji}</span
+							>
+						</p>
 					</div>
 				{/if}
 				{#if preferences.get(PreferenceKeys.showMistakes)?.show}
@@ -596,6 +617,7 @@ ${replenishAmt} reps used`.trim();
 					const clearedLetters = clearUsedLetters({ moveAmount, replenishAmt });
 					usedLetters = clearedLetters.usedLetters;
 					replenishAmt = clearedLetters.replenishAmt;
+					shouldAllowReplenish = clearedLetters.shouldAllowReplenish;
 					alphaState = defaultAlphaState(alpha, cipherState, vowels);
 					localStorage.removeItem(StorageKeys.usedLetters);
 					localStorage.setItem(StorageKeys.moves, JSON.stringify(moveAmount));
@@ -607,7 +629,7 @@ ${replenishAmt} reps used`.trim();
 				}}
 				guess={handleGuess}
 				{selected}
-				{usedLetters}
+				{shouldAllowReplenish}
 			/>
 		{/if}
 	</div>

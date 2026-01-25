@@ -23,7 +23,6 @@
 	};
 
 	$: isAvailable = (l: string) => {
-		// console.log('alphaState', alphaState);
 		const uses = alphaState.get(l) || 0;
 		return uses > 0;
 	};

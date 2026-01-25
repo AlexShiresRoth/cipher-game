@@ -4,11 +4,11 @@
 	import { fly } from 'svelte/transition';
 
 	export let clearUsedLetters: () => void;
-	export let usedLetters: string[];
 	export let clearSelection;
 	export let selected: string[];
 	export let removeLetterFromSelection: () => void;
 	export let guess;
+	export let shouldAllowReplenish = false;
 
 	$: showKey = false;
 </script>
@@ -19,14 +19,13 @@
 			<button
 				data-testid="replenish-keyboard"
 				on:click={() => {
-					if (usedLetters.length > 0) {
+					if (shouldAllowReplenish) {
 						clearUsedLetters();
 					}
 				}}
 				class={clsx('rounded p-2 transition-colors md:text-lg', {
-					'bg-gray-100 text-black/80 dark:bg-gray-100/50 dark:text-black/60':
-						usedLetters.length === 0,
-					' bg-amber-500 text-black': usedLetters.length > 0
+					'bg-gray-100 text-black/80 dark:bg-gray-100/50 dark:text-black/60': !shouldAllowReplenish,
+					' bg-amber-500 text-black': shouldAllowReplenish
 				})}><RotateCcw size={23} /></button
 			>
 		</div>
