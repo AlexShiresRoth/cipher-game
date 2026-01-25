@@ -25,14 +25,15 @@ type CULParams = {
 	usedLetters: string[];
 	moveAmount: number;
 	replenishAmt: number;
+	shouldAllowReplenish: boolean;
 };
 export function clearUsedLetters({
 	moveAmount,
 	replenishAmt
-}: Omit<CULParams, 'usedLetters'>): CULParams {
+}: Omit<CULParams, 'usedLetters' | 'shouldAllowReplenish'>): CULParams {
 	const prevMvAmt = moveAmount;
 	const prevRepAmt = replenishAmt;
-	return { usedLetters: [], moveAmount: prevMvAmt + 1, replenishAmt: prevRepAmt + 1 };
+	return { usedLetters: [], moveAmount: prevMvAmt + 1, replenishAmt: prevRepAmt + 1, shouldAllowReplenish: false };
 }
 
 /**
