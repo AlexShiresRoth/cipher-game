@@ -84,8 +84,8 @@
 		},
 		7: {
 			mistakes: 0,
-			emoji: '⭐️',
-			phrase: `A true star — the Cipher alone was enough.`
+			emoji: '⭐️🥷⭐️',
+			phrase: `Your skill and technique led you here. Incredible. Cipher letters only.`
 		}
 	};
 
