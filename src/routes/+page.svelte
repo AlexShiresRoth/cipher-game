@@ -129,12 +129,13 @@
 		moveAmt: number,
 		replenishAmt: number,
 		swaps: boolean[],
-		alphaStateMap: Map<string, number>
+		alphaStateMap: Map<string, number>,
+		isGameOver: boolean
 	) {
 		const factor = getTierFactoring(moveAmt, replenishAmt, swaps);
 		const usedOnlyCipherLetters = factor === 0 && !checkAlphaStateIsDiminshed(alphaStateMap);
 
-		if (usedOnlyCipherLetters) {
+		if (usedOnlyCipherLetters && isGameOver) {
 			return tiers[7];
 		}
 		return tiers[factor || 0] || tiers[6];
@@ -414,7 +415,7 @@
 			})
 			.join('\n');
 		const shareText =
-			`Cipher #${data.id} ${getTierByMoves(moveAmount, replenishAmt, swaps, alphaState).emoji}
+			`Cipher #${data.id} ${getTierByMoves(moveAmount, replenishAmt, swaps, alphaState, gameOver).emoji}
 ${moveAmount} moves
 ${rowsText}
 ${replenishAmt} reps used`.trim();
@@ -495,7 +496,7 @@ ${replenishAmt} reps used`.trim();
 		emoji={(() => {
 			const alphaStateMap =
 				alphaState.size === 0 ? defaultAlphaState(alpha, cipherState, vowels) : alphaState;
-			return getTierByMoves(moveAmount, replenishAmt, swaps, alphaStateMap).emoji;
+			return getTierByMoves(moveAmount, replenishAmt, swaps, alphaStateMap, gameOver).emoji;
 		})()}
 		mistakeAmount={swaps.filter((b) => !b).length}
 		showSolutionUpdate={getUpdateMapValue(updateNames.solution, updatesState)}
@@ -529,7 +530,7 @@ ${replenishAmt} reps used`.trim();
 			{shareResults}
 			{win}
 			{showLetters}
-			tier={getTierByMoves(moveAmount, replenishAmt, swaps, alphaState)}
+			tier={getTierByMoves(moveAmount, replenishAmt, swaps, alphaState, gameOver)}
 			{toggleModalOpen}
 			solvableAmt={data.minMoves}
 			{replenishAmt}
@@ -552,7 +553,8 @@ ${replenishAmt} reps used`.trim();
 				{#if preferences.get(PreferenceKeys.showRank)?.show}
 					<div class="flex items-center gap-1">
 						<p>
-							Status <span>{getTierByMoves(moveAmount, replenishAmt, swaps, alphaState).emoji}</span
+							Status <span
+								>{getTierByMoves(moveAmount, replenishAmt, swaps, alphaState, gameOver).emoji}</span
 							>
 						</p>
 					</div>
