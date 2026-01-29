@@ -1,8 +1,10 @@
 <script lang="ts">
-	import { ChartNoAxesColumn, Route } from '@lucide/svelte';
+	import { enhance } from '$app/forms';
+	import { ChartNoAxesColumn, Puzzle, Route } from '@lucide/svelte';
 	import clsx from 'clsx';
 	import { onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
+	import type { CipherPuzzle } from '../../types';
 	import SolutionPath from './solution-path.svelte';
 	import Stats from './stats.svelte';
 	import UpdatePopup from './update-popup.svelte';
@@ -20,14 +22,23 @@
 	export let word: string;
 	export let showSolutionUpdate: boolean;
 	export let toggleUpdatePopup;
+	export let guesses: string[] | undefined;
+	export let cipherData: CipherPuzzle & { id: string };
+
 	$: showStats = false;
 	$: showSolution = false;
+	$: showCommonGuesses = false;
 
 	onMount(() => {
 		window.addEventListener('resize', () => {
 			showSolution = false;
 		});
 	});
+
+	// TODO make an icon button a form
+	// call the action, in that action add the players guesses to the db
+	// need to check if they already added them, so maybe we can give a user an id?
+	// then show the modal after response with the puzzles common guesses
 </script>
 
 <nav class="relative flex w-full">
@@ -38,7 +49,7 @@
 			<a href="/" class="text-xl font-bold uppercase dark:text-white">CIPHER</a>
 		</div>
 		<div
-			class="relative flex w-full items-center justify-end gap-4"
+			class="relative flex w-full items-center justify-end gap-2"
 			on:mouseleave={() => {
 				showNavModal = false;
 			}}
@@ -46,13 +57,49 @@
 			tabindex="0"
 		>
 			{#if !showHome}
-				<div class="relative flex items-center justify-center">
+				<div class="relative flex items-center justify-center gap-2">
+					<form
+						use:enhance={({}) => {
+							return async ({ result }) => {
+								if (result.type === 'success') {
+									console.log('guesses', guesses, result);
+									showSolution = false;
+									showNavModal = false;
+									showStats = false;
+									showCommonGuesses = !showCommonGuesses;
+								}
+							};
+						}}
+						method="POST"
+						action="?/checkPuzzleGuesses"
+						class="flex items-center"
+					>
+						<!-- TODO set this as an object with a userId and the rest of the cipher data -->
+						<input
+							defaultValue={JSON.stringify({
+								guesses,
+								cipherId: cipherData.id,
+								date: cipherData.date
+							})}
+							readonly
+							name="puzzleData"
+							class="hidden"
+						/>
+						<button
+							disabled={!gameOver}
+							class={clsx('transition-colors hover:cursor-pointer', {
+								'text-emerald-500': showCommonGuesses,
+								'text-indigo-500': showCommonGuesses,
+								'text-gray-100/50': !gameOver && !showCommonGuesses
+							})}><Puzzle size={16} /></button
+						>
+					</form>
 					<button
 						disabled={!gameOver}
 						class={clsx('transition-colors hover:cursor-pointer', {
 							'text-emerald-500': showSolution,
 							'text-amber-500': showSolutionUpdate,
-							'text-gray-100/50': !gameOver && !showSolutionUpdate
+							'text-gray-300 dark:text-gray-100/50': !gameOver && !showSolutionUpdate
 						})}
 						on:click={() => (
 							(showSolution = !showSolution),
@@ -60,7 +107,19 @@
 							(showNavModal = false)
 						)}
 					>
-						<Route size={19} />
+						<Route size={16} />
+					</button>
+					<button
+						on:click={() => (
+							(showStats = !showStats),
+							(showNavModal = false),
+							(showSolution = false)
+						)}
+						class={clsx('relative hover:cursor-pointer', {
+							'text-amber-300': showStats
+						})}
+					>
+						<ChartNoAxesColumn size={16} />
 					</button>
 					{#if showSolutionUpdate}
 						<UpdatePopup alignCarat="top-middle" {toggleUpdatePopup} alignClasses="top-[150%]"
@@ -72,19 +131,6 @@
 						>
 					{/if}
 				</div>
-
-				<button
-					on:click={() => (
-						(showStats = !showStats),
-						(showNavModal = false),
-						(showSolution = false)
-					)}
-					class={clsx('relative hover:cursor-pointer', {
-						'text-amber-300': showStats
-					})}
-				>
-					<ChartNoAxesColumn size={20} />
-				</button>
 			{/if}
 			<button
 				on:click={() => {

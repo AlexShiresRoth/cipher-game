@@ -1,1 +1,1 @@
-ALTER TABLE "cipherPuzzle" ADD COLUMN "maxAttempts" integer;
+-- ALTER TABLE "cipherPuzzle" ADD COLUMN "maxAttempts" integer;

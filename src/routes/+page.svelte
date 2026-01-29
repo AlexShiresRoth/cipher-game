@@ -44,7 +44,6 @@
 
 	const maxWordLength = 12;
 
-	// TODO fix failing tests
 	const tiers: Tier = {
 		0: {
 			mistakes: 0,
@@ -94,6 +93,7 @@
 	export let word = data.word;
 	export let cipher = data.cipherWord;
 	export let cipherState = cipher.split('');
+
 	let errors: string[] = [];
 	let win = false;
 	let lose = false;
@@ -490,6 +490,8 @@ ${replenishAmt} reps used`.trim();
 		{toggleModalOpen}
 		{replenishAmt}
 		{moveAmount}
+		{guesses}
+		cipherData={data}
 		solvableAmt={data.minMoves}
 		emoji={(() => {
 			const alphaStateMap =
