@@ -15,7 +15,6 @@
 		defaultAlphaState,
 		getMoveToIndex,
 		guess,
-		isValidWord,
 		PreferenceKeys,
 		removeLetterFromSelection,
 		toggleUpdatePopup,
@@ -55,7 +54,7 @@
 		1: {
 			mistakes: 1,
 			emoji: '🥇',
-			phrase: 'Excellent! Just one move over perfect 😎'
+			phrase: 'Excellent! Just one point over perfect 😎'
 		},
 		2: {
 			mistakes: 2,
@@ -361,7 +360,6 @@
 			swaps,
 			selected,
 			startIndex,
-			isValidWord,
 			moveAmount,
 			usedLetters,
 			cipherState,

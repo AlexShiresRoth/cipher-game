@@ -1,12 +1,4 @@
-import {
-	clearSelection,
-	clearUsedLetters,
-	getMoveToIndex,
-	guess,
-	isValidWord,
-	toggleUpdatePopup
-} from '$lib/logic';
-import { defaultUpdatesState, updateNames } from '$lib/logic/updates';
+import { clearSelection, clearUsedLetters, getMoveToIndex, guess, isValidWord } from '$lib/logic';
 import '@testing-library/jest-dom/vitest';
 import { fireEvent, render } from '@testing-library/svelte';
 import { describe, expect, it, vi } from 'vitest';
@@ -45,12 +37,6 @@ vi.mock('../logic/actions.svelte.ts', async () => {
 	};
 });
 
-const usedLetters: string[] = [];
-const showUpdatePopup: boolean = false;
-const toggleUpdatePopupMock = vi.fn(
-	(updateMap: Map<string, boolean>, key: string, value: boolean) =>
-		toggleUpdatePopup(updateMap, key, value)
-);
 const selected: string[] = [];
 const removeLetterFromSelection = vi.fn();
 const guessMock = vi.fn((args) => guess(args));
@@ -82,10 +68,8 @@ describe('Action Buttons', () => {
 			const result = render(ActionButtons, {
 				props: {
 					clearSelection,
-					usedLetters,
+					shouldAllowReplenish: false,
 					clearUsedLetters: () => clearUsedLettersMock({ moveAmount: 1, replenishAmt: 0 }),
-					showUpdatePopup,
-					toggleUpdatePopup,
 					selected,
 					guess: () => guessMock(guessParams),
 					removeLetterFromSelection
@@ -100,10 +84,8 @@ describe('Action Buttons', () => {
 			const result = render(ActionButtons, {
 				props: {
 					clearSelection,
-					usedLetters: ['a', 'b', 'c'],
+					shouldAllowReplenish: true,
 					clearUsedLetters: () => clearUsedLettersMock({ moveAmount: 1, replenishAmt: 0 }),
-					showUpdatePopup,
-					toggleUpdatePopup,
 					selected,
 					guess: () => guessMock(guessParams),
 					removeLetterFromSelection
@@ -117,18 +99,17 @@ describe('Action Buttons', () => {
 			expect(clearUsedLettersMock.mock.results[0].value).toEqual({
 				usedLetters: [],
 				moveAmount: 2,
-				replenishAmt: 1
+				replenishAmt: 1,
+				shouldAllowReplenish: false
 			});
 		});
 
-		it('should not call clear used letters if usedLetters is empty or undefined', async () => {
+		it('should not call clear used letters if shouldAllowReplenish is false', async () => {
 			const result = render(ActionButtons, {
 				props: {
 					clearSelection,
-					usedLetters,
+					shouldAllowReplenish: false,
 					clearUsedLetters: () => clearUsedLettersMock({ moveAmount: 1, replenishAmt: 0 }),
-					showUpdatePopup,
-					toggleUpdatePopup,
 					selected,
 					guess: () => guessMock(guessParams),
 					removeLetterFromSelection
@@ -147,10 +128,8 @@ describe('Action Buttons', () => {
 			const result = render(ActionButtons, {
 				props: {
 					clearSelection,
-					usedLetters,
+					shouldAllowReplenish: false,
 					clearUsedLetters: () => clearUsedLettersMock({ moveAmount: 10, replenishAmt: 0 }),
-					showUpdatePopup: true,
-					toggleUpdatePopup,
 					selected,
 					guess: () => guessMock(guessParams),
 					removeLetterFromSelection
@@ -166,60 +145,13 @@ describe('Action Buttons', () => {
 		});
 	});
 
-	describe('Update poup', () => {
-		it('should render update popup', async () => {
-			const result = render(ActionButtons, {
-				props: {
-					clearSelection,
-					usedLetters,
-					clearUsedLetters: () => clearUsedLettersMock({ moveAmount: 10, replenishAmt: 0 }),
-					showUpdatePopup: true,
-					toggleUpdatePopup,
-					selected,
-					guess: () => guessMock(guessParams),
-					removeLetterFromSelection
-				}
-			});
-
-			const updateBtn = await result.findByTestId('update-popup');
-
-			expect(updateBtn).toBeInTheDocument();
-		});
-
-		it('should call toggle update popup if popup is rendered', async () => {
-			const result = render(ActionButtons, {
-				props: {
-					clearSelection,
-					usedLetters,
-					clearUsedLetters: () => clearUsedLettersMock({ moveAmount: 10, replenishAmt: 0 }),
-					showUpdatePopup: true,
-					toggleUpdatePopup: () =>
-						toggleUpdatePopupMock(defaultUpdatesState(updateNames), 'replenish', true),
-					selected,
-					guess: () => guessMock(guessParams),
-					removeLetterFromSelection
-				}
-			});
-
-			const updateBtn = await result.findByTestId('update-popup');
-
-			fireEvent.click(updateBtn);
-
-			expect(toggleUpdatePopupMock).toHaveBeenCalled();
-			const updateMap = toggleUpdatePopupMock.mock.results[0].value;
-			expect(updateMap.get('replenish')).toBe(true);
-		});
-	});
-
 	describe('clear selection', () => {
 		it('should call clear selection', async () => {
 			const result = render(ActionButtons, {
 				props: {
 					clearSelection: () => clearSelectionMock(),
-					usedLetters,
+					shouldAllowReplenish: false,
 					clearUsedLetters: () => clearUsedLettersMock({ moveAmount: 10, replenishAmt: 0 }),
-					showUpdatePopup: true,
-					toggleUpdatePopup: vi.fn(),
 					selected: ['t', 'e', 's', 't'],
 					guess: () => guessMock(guessParams),
 					removeLetterFromSelection
@@ -242,10 +174,8 @@ describe('Action Buttons', () => {
 			const result = render(ActionButtons, {
 				props: {
 					clearSelection: () => clearSelectionMock(),
-					usedLetters,
+					shouldAllowReplenish: false,
 					clearUsedLetters: () => clearUsedLettersMock({ moveAmount: 10, replenishAmt: 0 }),
-					showUpdatePopup: true,
-					toggleUpdatePopup: vi.fn(),
 					selected: [],
 					guess: () => guessMock(guessParams),
 					removeLetterFromSelection
@@ -265,10 +195,7 @@ describe('Action Buttons', () => {
 			const result = render(ActionButtons, {
 				props: {
 					clearSelection: () => clearSelectionMock(),
-					usedLetters,
 					clearUsedLetters: () => clearUsedLettersMock({ moveAmount: 10, replenishAmt: 0 }),
-					showUpdatePopup: true,
-					toggleUpdatePopup: vi.fn(),
 					selected: ['t', 'r', 's'],
 					guess: () =>
 						guessMock({
@@ -304,10 +231,7 @@ describe('Action Buttons', () => {
 			const result = render(ActionButtons, {
 				props: {
 					clearSelection: () => clearSelectionMock(),
-					usedLetters,
 					clearUsedLetters: () => clearUsedLettersMock({ moveAmount: 10, replenishAmt: 0 }),
-					showUpdatePopup: true,
-					toggleUpdatePopup: vi.fn(),
 					selected: ['t', 'o'],
 					guess: () =>
 						guessMock({
@@ -337,10 +261,7 @@ describe('Action Buttons', () => {
 			const result = render(ActionButtons, {
 				props: {
 					clearSelection: () => clearSelectionMock(),
-					usedLetters,
 					clearUsedLetters: () => clearUsedLettersMock({ moveAmount: 10, replenishAmt: 0 }),
-					showUpdatePopup: true,
-					toggleUpdatePopup: vi.fn(),
 					selected: ['z', 'e', 's', 't'],
 					guess: () =>
 						guessMock({
@@ -376,10 +297,7 @@ describe('Action Buttons', () => {
 			const result = render(ActionButtons, {
 				props: {
 					clearSelection: () => clearSelectionMock(),
-					usedLetters,
 					clearUsedLetters: () => clearUsedLettersMock({ moveAmount: 10, replenishAmt: 0 }),
-					showUpdatePopup: true,
-					toggleUpdatePopup: vi.fn(),
 					selected: ['t', 'u', 'r', 'p'],
 					guess: () =>
 						guessMock({
@@ -415,10 +333,7 @@ describe('Action Buttons', () => {
 			const result = render(ActionButtons, {
 				props: {
 					clearSelection: () => clearSelectionMock(),
-					usedLetters,
 					clearUsedLetters: () => clearUsedLettersMock({ moveAmount: 10, replenishAmt: 0 }),
-					showUpdatePopup: true,
-					toggleUpdatePopup: vi.fn(),
 					selected: ['t', 'r', 'i', 'a', 'n', 'g', 'l', 'e'],
 					guess: () =>
 						guessMock({
@@ -462,11 +377,9 @@ describe('Action Buttons', () => {
 			const result = render(ActionButtons, {
 				props: {
 					clearSelection: () => clearSelectionMock(),
-					usedLetters,
 					clearUsedLetters: () => clearUsedLettersMock({ moveAmount: 10, replenishAmt: 0 }),
-					showUpdatePopup: true,
-					toggleUpdatePopup: vi.fn(),
 					selected: ['r', 'e', 'a', 's', 'o', 'n', 's'],
+					shouldAllowReplenish: false,
 					guess: () =>
 						guessMock({
 							...guessParams,
@@ -510,10 +423,7 @@ describe('Action Buttons', () => {
 			const result = render(ActionButtons, {
 				props: {
 					clearSelection: () => clearSelectionMock(),
-					usedLetters,
 					clearUsedLetters: () => clearUsedLettersMock({ moveAmount: 10, replenishAmt: 0 }),
-					showUpdatePopup: true,
-					toggleUpdatePopup: vi.fn(),
 					selected: [],
 					guess: () =>
 						guessMock({

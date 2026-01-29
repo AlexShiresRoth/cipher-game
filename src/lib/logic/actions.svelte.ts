@@ -33,7 +33,12 @@ export function clearUsedLetters({
 }: Omit<CULParams, 'usedLetters' | 'shouldAllowReplenish'>): CULParams {
 	const prevMvAmt = moveAmount;
 	const prevRepAmt = replenishAmt;
-	return { usedLetters: [], moveAmount: prevMvAmt + 1, replenishAmt: prevRepAmt + 1, shouldAllowReplenish: false };
+	return {
+		usedLetters: [],
+		moveAmount: prevMvAmt + 1,
+		replenishAmt: prevRepAmt + 1,
+		shouldAllowReplenish: false
+	};
 }
 
 /**
@@ -112,7 +117,6 @@ type GuessParams = {
 	swaps: boolean[];
 	moveAmount: number;
 	usedLetters: string[];
-	isValidWord: (val: string) => { valid: boolean };
 	getMoveToIndex: () => number;
 };
 
@@ -124,7 +128,6 @@ export async function guess({
 	errors,
 	word,
 	correctPositions,
-	isValidWord,
 	getMoveToIndex,
 	swaps,
 	moveAmount,
@@ -139,7 +142,7 @@ export async function guess({
 		tooShort: selected.length < 3, // this should not really be called, extra precaution
 		notInCipher: !cipherState.includes(selected[0]),
 		samePosition: moveIndex === startIndex,
-		sameLetter: cipherState[moveIndex] === cipherState[startIndex]
+		sameLetter: cipherState[moveIndex] === cipherState[startIndex] && moveIndex !== startIndex
 	};
 
 	const { valid } = isValidWord(joined);
