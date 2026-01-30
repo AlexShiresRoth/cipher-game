@@ -38,7 +38,7 @@
 		swaps: 'swaps',
 		gameStatus: 'gameStatus',
 		puzzle: 'puzzle',
-		viewed: 'viewedV4',
+		viewed: 'viewedV5',
 		date: 'date'
 	};
 
