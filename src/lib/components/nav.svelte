@@ -90,9 +90,8 @@
 									disabled={!gameOver}
 									class={clsx('transition-colors hover:cursor-pointer', {
 										'text-indigo-500': showCommonGuesses,
-										'text-gray-100/50': !gameOver && !showCommonGuesses,
-										'text-amber-500': showPlayerGuessUpdate,
-										'text-gray-300 dark:text-gray-100/50': !gameOver && !showPlayerGuessUpdate
+										'text-gray-100/50': !gameOver && !showCommonGuesses && !showPlayerGuessUpdate,
+										'text-amber-500': showPlayerGuessUpdate
 									})}><Puzzle size={16} /></button
 								>
 							</form>
@@ -118,7 +117,8 @@
 					<button
 						disabled={!gameOver}
 						class={clsx('transition-colors hover:cursor-pointer', {
-							'text-emerald-500': showSolution
+							'text-emerald-500': showSolution,
+							'text-gray-100/50': !gameOver && !showSolution
 						})}
 						on:click={() => (
 							(showSolution = !showSolution),
