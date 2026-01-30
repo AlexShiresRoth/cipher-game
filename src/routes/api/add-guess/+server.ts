@@ -14,11 +14,10 @@ type CipherRequestBody = {
 	date: string;
 };
 
-// just for migrating new column
 export const POST = async ({ request, cookies }) => {
 	const secret = request.headers.get('x-api-key');
-
-	if (!secret || !cookies.get('playerId')) {
+	const playerId = cookies.get('playerId');
+	if (!secret || !playerId) {
 		return new Response('Unauthorized', { status: 401, statusText: 'Unauthorized' });
 	}
 
@@ -41,16 +40,61 @@ export const POST = async ({ request, cookies }) => {
 	const foundPuzzleGuessData = await db
 		.select()
 		.from(cipherGuesses)
-		.where(eq(cipherGuesses.cipherId, parseInt(parsedData.cipherId)));
+		.where(eq(cipherGuesses.cipherId, parseInt(parsedData.cipherId)))
+		.limit(1);
 
-	console.log('puzzle data', foundPuzzleGuessData);
+	const newGuessObj: Record<string, number> = {};
 
-	// TODO need to determine if user already added guesses
 	if (!foundPuzzleGuessData.length) {
-		await db.insert(cipherGuesses).values({
-			date: parsedData.date
-		});
+		parsedData.guesses.forEach((guess) => (newGuessObj[guess] = 1));
+
+		const res = await db
+			.insert(cipherGuesses)
+			.values({
+				date: parsedData.date,
+				cipherId: parseInt(parsedData.cipherId),
+				wordsGuessed: newGuessObj,
+				contributors: [playerId]
+			})
+			.returning({
+				cipherId: cipherGuesses.cipherId,
+				wordsGuessed: cipherGuesses.wordsGuessed,
+				id: cipherGuesses.id
+			});
+
+		return json(res);
 	}
 
-	return json({ msg: 'hi' });
+	if (!foundPuzzleGuessData[0].contributors.includes(playerId)) {
+		parsedData.guesses.forEach((guess) => {
+			const prev = foundPuzzleGuessData[0].wordsGuessed[guess] ?? 0;
+			newGuessObj[guess] = prev + 1;
+		});
+
+		const updatedGuessData = {
+			date: parsedData.date,
+			cipherId: parseInt(parsedData.cipherId),
+			wordsGuessed: { ...foundPuzzleGuessData[0].wordsGuessed, ...newGuessObj },
+			contributors: [...foundPuzzleGuessData[0].contributors, playerId]
+		};
+
+		const res = await db
+			.update(cipherGuesses)
+			.set({
+				wordsGuessed: updatedGuessData.wordsGuessed,
+				contributors: updatedGuessData.contributors
+			})
+			.where(eq(cipherGuesses.cipherId, parseInt(parsedData.cipherId)))
+			.returning({
+				cipherId: cipherGuesses.cipherId,
+				wordsGuessed: cipherGuesses.wordsGuessed,
+				id: cipherGuesses.id
+			});
+
+		return json(res);
+	}
+
+	const { id, cipherId, wordsGuessed } = foundPuzzleGuessData[0];
+
+	return json({ id, wordsGuessed, cipherId });
 };

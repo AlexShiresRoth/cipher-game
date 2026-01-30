@@ -4,7 +4,9 @@
 	import clsx from 'clsx';
 	import { onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
+	import type { ActionData } from '../../routes/$types';
 	import type { CipherPuzzle } from '../../types';
+	import PlayerGuesses from './player-guesses.svelte';
 	import SolutionPath from './solution-path.svelte';
 	import Stats from './stats.svelte';
 	import UpdatePopup from './update-popup.svelte';
@@ -29,16 +31,13 @@
 	$: showSolution = false;
 	$: showCommonGuesses = false;
 
+	let puzzleData: ActionData;
+
 	onMount(() => {
 		window.addEventListener('resize', () => {
 			showSolution = false;
 		});
 	});
-
-	// TODO make an icon button a form
-	// call the action, in that action add the players guesses to the db
-	// need to check if they already added them, so maybe we can give a user an id?
-	// then show the modal after response with the puzzles common guesses
 </script>
 
 <nav class="relative flex w-full">
@@ -59,14 +58,15 @@
 			{#if !showHome}
 				<div class="relative flex items-center justify-center gap-2">
 					<form
-						use:enhance={({}) => {
+						use:enhance={() => {
 							return async ({ result }) => {
 								if (result.type === 'success') {
-									console.log('guesses', guesses, result);
+									const data = result.data as ActionData;
 									showSolution = false;
 									showNavModal = false;
 									showStats = false;
 									showCommonGuesses = !showCommonGuesses;
+									puzzleData = data;
 								}
 							};
 						}}
@@ -200,6 +200,15 @@
 				There are many ways to solve this puzzle, here is one way
 			</p>
 			<SolutionPath {solutionPath} {word} />
+		</div>
+	{/if}
+	{#if showCommonGuesses && puzzleData}
+		<div
+			class="absolute top-full z-10 mt-1 flex w-full flex-col bg-white p-4 dark:bg-black"
+			transition:fly={{ y: -100 }}
+		>
+			<h2 class="text-2xl uppercase">Words players used to solve today's Cipher</h2>
+			<PlayerGuesses {puzzleData} {guesses} />
 		</div>
 	{/if}
 </nav>

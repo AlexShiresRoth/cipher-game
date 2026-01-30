@@ -23,5 +23,6 @@ export const cipherGuesses = pgTable('cipherGuesses', {
 	wordsGuessed: jsonb('words_guessed').$type<Record<string, number>>().notNull().default({}),
 	cipherId: integer('cipher_id')
 		.notNull()
-		.references(() => cipherPuzzle.id, { onDelete: 'cascade' })
+		.references(() => cipherPuzzle.id, { onDelete: 'cascade' }),
+	contributors: text('contributors').array().notNull()
 });

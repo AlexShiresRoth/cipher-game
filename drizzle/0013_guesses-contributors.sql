@@ -1,0 +1,1 @@
+ALTER TABLE "cipherGuesses" ADD COLUMN "contributors" text[] NOT NULL;

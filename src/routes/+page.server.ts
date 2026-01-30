@@ -1,11 +1,18 @@
 import { CRON_SECRET } from '$env/static/private';
 import { db } from '$lib/server/db';
 import { cipherPuzzle } from '$lib/server/db/schema';
+import type { Actions } from '@sveltejs/kit';
 import { formatInTimeZone } from 'date-fns-tz';
 import { eq } from 'drizzle-orm';
 import { v4 } from 'uuid';
 export const prerender = false;
 const PLAYER_COOKIE = 'playerId';
+
+type PuzzleGuessesResponse = {
+	cipherId: string;
+	id: string;
+	wordsGuessed: Record<string, number>;
+};
 export const load = async ({ setHeaders, cookies }) => {
 	const playerCookie = cookies.get(PLAYER_COOKIE);
 
@@ -34,8 +41,12 @@ export const load = async ({ setHeaders, cookies }) => {
 	return { ...cipher[0] };
 };
 
-export const actions = {
-	checkPuzzleGuesses: async ({ request, cookies, fetch }) => {
+export const actions: Actions = {
+	checkPuzzleGuesses: async ({
+		request,
+		cookies,
+		fetch
+	}): Promise<PuzzleGuessesResponse | { msg: string }> => {
 		const formData = await request.formData();
 
 		const playerCookie = cookies.get(PLAYER_COOKIE);
@@ -54,7 +65,6 @@ export const actions = {
 			}
 		});
 
-		console.log('form data', res);
-		return { msg: JSON.stringify(formData.values()) };
+		return await res.json();
 	}
 };
