@@ -1,4 +1,4 @@
-import { CRON_SECRET } from '$env/static/private';
+import { CRON_SECRET, NODE_ENV } from '$env/static/private';
 import { db } from '$lib/server/db';
 import { cipherPuzzle } from '$lib/server/db/schema';
 import type { Actions } from '@sveltejs/kit';
@@ -17,8 +17,15 @@ export const load = async ({ setHeaders, cookies }) => {
 	const playerCookie = cookies.get(PLAYER_COOKIE);
 
 	if (!playerCookie) {
+		const isProd = NODE_ENV === 'production';
+
 		cookies.set(PLAYER_COOKIE, v4(), {
-			path: '/'
+			path: '/',
+			httpOnly: true,
+			secure: isProd,
+			sameSite: 'lax',
+			maxAge: 60 * 60 * 24 * 365,
+			...(isProd && { domain: 'play-cipher.com' })
 		});
 	}
 
