@@ -1,11 +1,27 @@
+import { CRON_SECRET } from '$env/static/private';
 import { db } from '$lib/server/db';
 import { cipherPuzzle } from '$lib/server/db/schema';
+import type { Actions } from '@sveltejs/kit';
 import { formatInTimeZone } from 'date-fns-tz';
 import { eq } from 'drizzle-orm';
-
+import { v4 } from 'uuid';
 export const prerender = false;
+const PLAYER_COOKIE = 'playerId';
 
-export const load = async ({ setHeaders }) => {
+type PuzzleGuessesResponse = {
+	cipherId: string;
+	id: string;
+	wordsGuessed: Record<string, number>;
+};
+export const load = async ({ setHeaders, cookies }) => {
+	const playerCookie = cookies.get(PLAYER_COOKIE);
+
+	if (!playerCookie) {
+		cookies.set(PLAYER_COOKIE, v4(), {
+			path: '/'
+		});
+	}
+
 	setHeaders({
 		'cache-control': 'no-store, max-age=0, must-revalidate',
 		pragma: 'no-cache',
@@ -23,4 +39,32 @@ export const load = async ({ setHeaders }) => {
 		return null;
 	}
 	return { ...cipher[0] };
+};
+
+export const actions: Actions = {
+	checkPuzzleGuesses: async ({
+		request,
+		cookies,
+		fetch
+	}): Promise<PuzzleGuessesResponse | { msg: string }> => {
+		const formData = await request.formData();
+
+		const playerCookie = cookies.get(PLAYER_COOKIE);
+
+		if (!playerCookie) {
+			return { msg: 'failed to add guesses, no player id' };
+		}
+
+		const puzzleData = formData.get('puzzleData');
+
+		const res = await fetch('api/add-guess', {
+			method: 'POST',
+			body: JSON.stringify(puzzleData),
+			headers: {
+				'x-api-key': btoa(CRON_SECRET)
+			}
+		});
+
+		return await res.json();
+	}
 };

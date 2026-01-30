@@ -1,0 +1,207 @@
+{
+  "id": "d5fa9dce-d181-48d4-9b83-8be575f3a6b6",
+  "prevId": "71ad9372-0d06-4446-a4bf-9ab98acb967c",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.cipherGuesses": {
+      "name": "cipherGuesses",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "date": {
+          "name": "date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "words_guessed": {
+          "name": "words_guessed",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        "cipher_id": {
+          "name": "cipher_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "contributors": {
+          "name": "contributors",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "cipherGuesses_cipher_id_cipherPuzzle_id_fk": {
+          "name": "cipherGuesses_cipher_id_cipherPuzzle_id_fk",
+          "tableFrom": "cipherGuesses",
+          "tableTo": "cipherPuzzle",
+          "columnsFrom": [
+            "cipher_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "cipherGuesses_date_unique": {
+          "name": "cipherGuesses_date_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "date"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.cipherPuzzle": {
+      "name": "cipherPuzzle",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "word": {
+          "name": "word",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cipherWord": {
+          "name": "cipherWord",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "date": {
+          "name": "date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "minMoves": {
+          "name": "minMoves",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "solutionPath": {
+          "name": "solutionPath",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "cipherPuzzle_word_unique": {
+          "name": "cipherPuzzle_word_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "word"
+          ]
+        },
+        "cipherPuzzle_date_unique": {
+          "name": "cipherPuzzle_date_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "date"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.cipherPuzzlePathUpdate": {
+      "name": "cipherPuzzlePathUpdate",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "word": {
+          "name": "word",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cipherWord": {
+          "name": "cipherWord",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "date": {
+          "name": "date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "solutionPath": {
+          "name": "solutionPath",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "cipherPuzzlePathUpdate_word_unique": {
+          "name": "cipherPuzzlePathUpdate_word_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "word"
+          ]
+        },
+        "cipherPuzzlePathUpdate_date_unique": {
+          "name": "cipherPuzzlePathUpdate_date_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "date"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

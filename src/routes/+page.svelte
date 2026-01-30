@@ -38,13 +38,12 @@
 		swaps: 'swaps',
 		gameStatus: 'gameStatus',
 		puzzle: 'puzzle',
-		viewed: 'viewedV3',
+		viewed: 'viewedV4',
 		date: 'date'
 	};
 
 	const maxWordLength = 12;
 
-	// TODO fix failing tests
 	const tiers: Tier = {
 		0: {
 			mistakes: 0,
@@ -94,6 +93,7 @@
 	export let word = data.word;
 	export let cipher = data.cipherWord;
 	export let cipherState = cipher.split('');
+
 	let errors: string[] = [];
 	let win = false;
 	let lose = false;
@@ -490,6 +490,8 @@ ${replenishAmt} reps used`.trim();
 		{toggleModalOpen}
 		{replenishAmt}
 		{moveAmount}
+		{guesses}
+		cipherData={data}
 		solvableAmt={data.minMoves}
 		emoji={(() => {
 			const alphaStateMap =
@@ -497,12 +499,12 @@ ${replenishAmt} reps used`.trim();
 			return getTierByMoves(moveAmount, replenishAmt, swaps, alphaStateMap, gameOver).emoji;
 		})()}
 		mistakeAmount={swaps.filter((b) => !b).length}
-		showSolutionUpdate={getUpdateMapValue(updateNames.solution, updatesState)}
+		showPlayerGuessUpdate={getUpdateMapValue(updateNames.playerGuesses, updatesState)}
 		toggleUpdatePopup={() => {
 			updatesState = toggleUpdatePopup(
 				updatesState,
-				updateNames.solution,
-				!getUpdateMapValue(updateNames.solution, updatesState)
+				updateNames.playerGuesses,
+				!getUpdateMapValue(updateNames.playerGuesses, updatesState)
 			);
 		}}
 	/>
