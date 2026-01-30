@@ -38,7 +38,7 @@
 		swaps: 'swaps',
 		gameStatus: 'gameStatus',
 		puzzle: 'puzzle',
-		viewed: 'viewedV3',
+		viewed: 'viewedV4',
 		date: 'date'
 	};
 
@@ -499,12 +499,12 @@ ${replenishAmt} reps used`.trim();
 			return getTierByMoves(moveAmount, replenishAmt, swaps, alphaStateMap, gameOver).emoji;
 		})()}
 		mistakeAmount={swaps.filter((b) => !b).length}
-		showSolutionUpdate={getUpdateMapValue(updateNames.solution, updatesState)}
+		showPlayerGuessUpdate={getUpdateMapValue(updateNames.playerGuesses, updatesState)}
 		toggleUpdatePopup={() => {
 			updatesState = toggleUpdatePopup(
 				updatesState,
-				updateNames.solution,
-				!getUpdateMapValue(updateNames.solution, updatesState)
+				updateNames.playerGuesses,
+				!getUpdateMapValue(updateNames.playerGuesses, updatesState)
 			);
 		}}
 	/>

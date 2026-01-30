@@ -2,7 +2,7 @@
 	import { enhance } from '$app/forms';
 	import { ChartNoAxesColumn, Puzzle, Route } from '@lucide/svelte';
 	import clsx from 'clsx';
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { fly } from 'svelte/transition';
 	import type { ActionData } from '../../routes/$types';
 	import type { CipherPuzzle } from '../../types';
@@ -22,16 +22,15 @@
 	export let replenishAmt: number;
 	export let solutionPath: string[];
 	export let word: string;
-	export let showSolutionUpdate: boolean;
+	export let showPlayerGuessUpdate: boolean;
 	export let toggleUpdatePopup;
-	export let guesses: string[] | undefined;
+	export let guesses: string[] = [];
 	export let cipherData: CipherPuzzle & { id: string };
 
 	$: showStats = false;
 	$: showSolution = false;
 	$: showCommonGuesses = false;
-
-	let puzzleData: ActionData;
+	$: puzzleData = null as ActionData;
 
 	onMount(() => {
 		window.addEventListener('resize', () => {
@@ -57,54 +56,75 @@
 		>
 			{#if !showHome}
 				<div class="relative flex items-center justify-center gap-2">
-					<form
-						use:enhance={() => {
-							return async ({ result }) => {
-								if (result.type === 'success') {
-									const data = result.data as ActionData;
-									showSolution = false;
-									showNavModal = false;
-									showStats = false;
-									showCommonGuesses = !showCommonGuesses;
-									puzzleData = data;
-								}
-							};
-						}}
-						method="POST"
-						action="?/checkPuzzleGuesses"
-						class="flex items-center"
-					>
-						<!-- TODO set this as an object with a userId and the rest of the cipher data -->
-						<input
-							defaultValue={JSON.stringify({
-								guesses,
-								cipherId: cipherData.id,
-								date: cipherData.date
-							})}
-							readonly
-							name="puzzleData"
-							class="hidden"
-						/>
+					{#if !showCommonGuesses}
+						<div class="relative flex flex-col items-center">
+							<form
+								use:enhance={() => {
+									return async ({ result }) => {
+										if (result.type === 'success') {
+											const data = result.data as ActionData;
+											showSolution = false;
+											showNavModal = false;
+											showStats = false;
+											puzzleData = data;
+											await tick();
+											showCommonGuesses = true;
+										}
+									};
+								}}
+								method="POST"
+								action="?/checkPuzzleGuesses"
+								class="relative flex items-center"
+							>
+								<input
+									defaultValue={JSON.stringify({
+										guesses,
+										cipherId: cipherData.id,
+										date: cipherData.date
+									})}
+									readonly
+									name="puzzleData"
+									class="hidden"
+								/>
+								<button
+									disabled={!gameOver}
+									class={clsx('transition-colors hover:cursor-pointer', {
+										'text-indigo-500': showCommonGuesses,
+										'text-gray-100/50': !gameOver && !showCommonGuesses,
+										'text-amber-500': showPlayerGuessUpdate,
+										'text-gray-300 dark:text-gray-100/50': !gameOver && !showPlayerGuessUpdate
+									})}><Puzzle size={16} /></button
+								>
+							</form>
+							{#if showPlayerGuessUpdate}
+								<UpdatePopup alignCarat="top-middle" {toggleUpdatePopup} alignClasses="top-[150%]"
+									><p class="text-xs dark:text-white">
+										<strong class="text-amber-500">UPDATE</strong>: {` `} You can now view the words
+										other players used to solve today’s Cipher.
+									</p></UpdatePopup
+								>
+							{/if}
+						</div>
+					{:else}
 						<button
 							disabled={!gameOver}
+							on:click={() => (showCommonGuesses = false)}
 							class={clsx('transition-colors hover:cursor-pointer', {
-								'text-emerald-500': showCommonGuesses,
 								'text-indigo-500': showCommonGuesses,
 								'text-gray-100/50': !gameOver && !showCommonGuesses
 							})}><Puzzle size={16} /></button
 						>
-					</form>
+					{/if}
 					<button
 						disabled={!gameOver}
 						class={clsx('transition-colors hover:cursor-pointer', {
-							'text-emerald-500': showSolution,
-							'text-amber-500': showSolutionUpdate,
-							'text-gray-300 dark:text-gray-100/50': !gameOver && !showSolutionUpdate
+							'text-emerald-500': showSolution
 						})}
 						on:click={() => (
 							(showSolution = !showSolution),
 							(showStats = false),
-							(showNavModal = false)
+							(showNavModal = false),
+							(showCommonGuesses = false)
 						)}
 					>
 						<Route size={16} />
@@ -113,7 +133,8 @@
 						on:click={() => (
 							(showStats = !showStats),
 							(showNavModal = false),
-							(showSolution = false)
+							(showSolution = false),
+							(showCommonGuesses = false)
 						)}
 						class={clsx('relative hover:cursor-pointer', {
 							'text-amber-300': showStats
@@ -121,15 +142,6 @@
 					>
 						<ChartNoAxesColumn size={16} />
 					</button>
-					{#if showSolutionUpdate}
-						<UpdatePopup alignCarat="top-middle" {toggleUpdatePopup} alignClasses="top-[150%]"
-							><p class="text-xs dark:text-white">
-								<strong class="text-amber-500">UPDATE</strong>: {` `} You can now view how the algorithm
-								would solve the puzzle, once you complete the puzzle. This is just an example, there
-								is more than one way!
-							</p></UpdatePopup
-						>
-					{/if}
 				</div>
 			{/if}
 			<button
@@ -197,18 +209,21 @@
 		>
 			<h2 class="text-3xl uppercase">Solution Example</h2>
 			<p class="font-regular mb-2 text-sm dark:text-gray-300">
-				There are many ways to solve this puzzle, here is one way
+				There are many ways to solve this puzzle, here is one way.
 			</p>
 			<SolutionPath {solutionPath} {word} />
 		</div>
 	{/if}
 	{#if showCommonGuesses && puzzleData}
 		<div
-			class="absolute top-full z-10 mt-1 flex w-full flex-col bg-white p-4 dark:bg-black"
+			class="absolute top-full z-10 mt-1 flex w-full flex-col gap-2 bg-white p-4 dark:bg-black"
 			transition:fly={{ y: -100 }}
 		>
-			<h2 class="text-2xl uppercase">Words players used to solve today's Cipher</h2>
-			<PlayerGuesses {puzzleData} {guesses} />
+			<h2 class="text-xl">These are the words players used to solve the Cipher.</h2>
+			<p class="text-sm text-gray-400 dark:text-white/80">
+				The highlighted ones are the words you used.
+			</p>
+			<PlayerGuesses {puzzleData} {guesses} cipherWord={word} />
 		</div>
 	{/if}
 </nav>

@@ -62,7 +62,7 @@ export const POST = async ({ request, cookies }) => {
 				id: cipherGuesses.id
 			});
 
-		return json(res);
+		return json(res[0]);
 	}
 
 	if (!foundPuzzleGuessData[0].contributors.includes(playerId)) {
@@ -91,7 +91,7 @@ export const POST = async ({ request, cookies }) => {
 				id: cipherGuesses.id
 			});
 
-		return json(res);
+		return json(res[0]);
 	}
 
 	const { id, cipherId, wordsGuessed } = foundPuzzleGuessData[0];
