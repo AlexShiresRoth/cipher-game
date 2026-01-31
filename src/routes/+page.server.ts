@@ -1,18 +1,12 @@
-import { CRON_SECRET, NODE_ENV } from '$env/static/private';
+import { NODE_ENV } from '$env/static/private';
 import { db } from '$lib/server/db';
-import { cipherPuzzle } from '$lib/server/db/schema';
-import type { Actions } from '@sveltejs/kit';
+import { cipherGuesses, cipherPuzzle } from '$lib/server/db/schema';
 import { formatInTimeZone } from 'date-fns-tz';
 import { eq } from 'drizzle-orm';
 import { v4 } from 'uuid';
 export const prerender = false;
 const PLAYER_COOKIE = 'playerId';
 
-type PuzzleGuessesResponse = {
-	cipherId: string;
-	id: string;
-	wordsGuessed: Record<string, number>;
-};
 export const load = async ({ setHeaders, cookies }) => {
 	const playerCookie = cookies.get(PLAYER_COOKIE);
 
@@ -45,33 +39,18 @@ export const load = async ({ setHeaders, cookies }) => {
 	if (cipher.length === 0) {
 		return null;
 	}
-	return { ...cipher[0] };
-};
 
-export const actions: Actions = {
-	checkPuzzleGuesses: async ({
-		request,
-		cookies,
-		fetch
-	}): Promise<PuzzleGuessesResponse | { msg: string }> => {
-		const formData = await request.formData();
+	const cipherPlayerData = await db
+		.select()
+		.from(cipherGuesses)
+		.where(eq(cipherGuesses.cipherId, cipher[0].id))
+		.limit(1);
 
-		const playerCookie = cookies.get(PLAYER_COOKIE);
-
-		if (!playerCookie) {
-			return { msg: 'failed to add guesses, no player id' };
-		}
-
-		const puzzleData = formData.get('puzzleData');
-
-		const res = await fetch('api/add-guess', {
-			method: 'POST',
-			body: JSON.stringify(puzzleData),
-			headers: {
-				'x-api-key': btoa(CRON_SECRET)
-			}
-		});
-
-		return await res.json();
+	if (!cipherPlayerData[0]) {
+		return { ...cipher[0] };
 	}
+
+	const { wordsGuessed, cipherId, date } = cipherPlayerData[0];
+
+	return { ...cipher[0], cipherPlayerData: { wordsGuessed, cipherId, date } };
 };
