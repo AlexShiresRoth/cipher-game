@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { type PrefMap } from '$lib';
+	import { type PrefMap, type PuzzleGuessesResponse } from '$lib';
 	import ActionButtons from '$lib/components/action-buttons.svelte';
 	import Cipher from '$lib/components/cipher.svelte';
 	import GameOverModal from '$lib/components/game-over-modal.svelte';
@@ -89,10 +89,11 @@
 
 	const date = new Date();
 
-	export let data: CipherPuzzle & { id: string };
+	export let data: CipherPuzzle & { id: string } & { cipherPlayerData: PuzzleGuessesResponse };
 	export let word = data.word;
 	export let cipher = data.cipherWord;
 	export let cipherState = cipher.split('');
+	export let cipherPlayerData = data.cipherPlayerData;
 
 	let errors: string[] = [];
 	let win = false;
@@ -276,8 +277,21 @@
 		}
 	}
 
+	async function submitPlayerUsedWords(
+		playerGuesses: string[],
+		cipherId: string,
+		date: string
+	): Promise<PuzzleGuessesResponse> {
+		const res = await fetch('api/add-guess', {
+			method: 'POST',
+			body: JSON.stringify({ guesses: playerGuesses, cipherId, date })
+		});
+
+		return await res.json();
+	}
+
 	// check for when user has either won or lost game
-	function checkForGameStatus() {
+	async function checkForGameStatus() {
 		if (!gameOver && cipherState.join('') === word) {
 			win = true;
 			gameOver = true;
@@ -286,6 +300,9 @@
 			localStorage.setItem(StorageKeys.moves, String(moveAmount));
 			localStorage.setItem(StorageKeys.cipher, word);
 			localStorage.setItem(StorageKeys.date, formattedDate);
+			// add the words players used to solve the cipher to the db, on win
+			cipherPlayerData = await submitPlayerUsedWords(guesses, data.id, data.date);
+
 			return;
 		}
 
@@ -491,8 +508,8 @@ ${replenishAmt} reps used`.trim();
 		{replenishAmt}
 		{moveAmount}
 		{guesses}
-		cipherData={data}
 		solvableAmt={data.minMoves}
+		puzzleData={cipherPlayerData}
 		emoji={(() => {
 			const alphaStateMap =
 				alphaState.size === 0 ? defaultAlphaState(alpha, cipherState, vowels) : alphaState;

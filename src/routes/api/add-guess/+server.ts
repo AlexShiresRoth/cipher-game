@@ -1,4 +1,3 @@
-import { CRON_SECRET } from '$env/static/private';
 import { db } from '$lib/server/db';
 import { cipherGuesses } from '$lib/server/db/schema.js';
 import { json } from '@sveltejs/kit';
@@ -15,27 +14,17 @@ type CipherRequestBody = {
 };
 
 export const POST = async ({ request, cookies }) => {
-	const secret = request.headers.get('x-api-key');
 	const playerId = cookies.get('playerId');
-	if (!secret || !playerId) {
+
+	if (!playerId) {
 		return new Response('Unauthorized', { status: 401, statusText: 'Unauthorized' });
 	}
 
-	const decryptedSecret = atob(secret);
+	const parsedData: CipherRequestBody = await request.json();
 
-	const isAuthed = decryptedSecret === CRON_SECRET;
-
-	if (!isAuthed) {
-		return new Response('Unauthorized', { status: 401, statusText: 'Unauthorized' });
-	}
-
-	const data = await request.json();
-
-	if (!data) {
+	if (!parsedData) {
 		return new Response('Internal Server Error', { status: 500, statusText: 'Server Error' });
 	}
-
-	const parsedData: CipherRequestBody = JSON.parse(data);
 
 	const foundPuzzleGuessData = await db
 		.select()

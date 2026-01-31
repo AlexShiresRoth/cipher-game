@@ -1,11 +1,8 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
 	import { ChartNoAxesColumn, Puzzle, Route } from '@lucide/svelte';
 	import clsx from 'clsx';
-	import { onMount, tick } from 'svelte';
+	import { onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
-	import type { ActionData } from '../../routes/$types';
-	import type { CipherPuzzle } from '../../types';
 	import PlayerGuesses from './player-guesses.svelte';
 	import SolutionPath from './solution-path.svelte';
 	import Stats from './stats.svelte';
@@ -24,13 +21,12 @@
 	export let word: string;
 	export let showPlayerGuessUpdate: boolean;
 	export let toggleUpdatePopup;
+	export let puzzleData;
 	export let guesses: string[] = [];
-	export let cipherData: CipherPuzzle & { id: string };
 
 	$: showStats = false;
 	$: showSolution = false;
 	$: showCommonGuesses = false;
-	$: puzzleData = null as ActionData;
 
 	onMount(() => {
 		window.addEventListener('resize', () => {
@@ -56,64 +52,31 @@
 		>
 			{#if !showHome}
 				<div class="relative flex items-center justify-center gap-2">
-					{#if !showCommonGuesses}
-						<div class="relative flex flex-col items-center">
-							<form
-								use:enhance={() => {
-									return async ({ result }) => {
-										if (result.type === 'success') {
-											const data = result.data as ActionData;
-											showSolution = false;
-											showNavModal = false;
-											showStats = false;
-											puzzleData = data;
-											await tick();
-											showCommonGuesses = true;
-										}
-									};
-								}}
-								method="POST"
-								action="?/checkPuzzleGuesses"
-								class="relative flex items-center"
-							>
-								<input
-									defaultValue={JSON.stringify({
-										guesses,
-										cipherId: cipherData.id,
-										date: cipherData.date
-									})}
-									readonly
-									name="puzzleData"
-									class="hidden"
-								/>
-								<button
-									disabled={!gameOver}
-									class={clsx('transition-colors hover:cursor-pointer', {
-										'text-indigo-500': showCommonGuesses,
-										'text-gray-100/50': !gameOver && !showCommonGuesses && !showPlayerGuessUpdate,
-										'text-amber-500': showPlayerGuessUpdate
-									})}><Puzzle size={16} /></button
-								>
-							</form>
-							{#if showPlayerGuessUpdate}
-								<UpdatePopup alignCarat="top-middle" {toggleUpdatePopup} alignClasses="top-[150%]"
-									><p class="text-xs dark:text-white">
-										<strong class="text-amber-500">UPDATE</strong>: {` `} You can now view the words
-										other players used to solve today’s Cipher.
-									</p></UpdatePopup
-								>
-							{/if}
-						</div>
-					{:else}
+					<div class="relative flex flex-col items-center">
 						<button
 							disabled={!gameOver}
-							on:click={() => (showCommonGuesses = false)}
+							on:click={() => {
+								showSolution = false;
+								showNavModal = false;
+								showStats = false;
+								showCommonGuesses = !showCommonGuesses;
+							}}
 							class={clsx('transition-colors hover:cursor-pointer', {
 								'text-indigo-500': showCommonGuesses,
-								'text-gray-100/50': !gameOver && !showCommonGuesses
+								'text-gray-100/50': !gameOver && !showCommonGuesses && !showPlayerGuessUpdate,
+								'text-amber-500': showPlayerGuessUpdate
 							})}><Puzzle size={16} /></button
 						>
-					{/if}
+						{#if showPlayerGuessUpdate}
+							<UpdatePopup alignCarat="top-middle" {toggleUpdatePopup} alignClasses="top-[150%]"
+								><p class="text-xs dark:text-white">
+									<strong class="text-amber-500">UPDATE</strong>: {` `} You can now view the words other
+									players used to solve today’s Cipher.
+								</p></UpdatePopup
+							>
+						{/if}
+					</div>
+
 					<button
 						disabled={!gameOver}
 						class={clsx('transition-colors hover:cursor-pointer', {
