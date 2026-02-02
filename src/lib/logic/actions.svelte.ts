@@ -167,7 +167,8 @@ export async function guess({
 	if (newErrors.length < 5) {
 		for (const { condition, msg } of possibleErrors) {
 			const handled = handleErrorOnGuess({ condition, newErrorMsg: msg, errors });
-			if (handled) newErrors = [...errors, ...handled];
+
+			if (handled) newErrors = [...handled];
 		}
 	}
 

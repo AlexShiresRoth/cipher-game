@@ -95,14 +95,12 @@
 	export let cipherState = cipher.split('');
 	export let cipherPlayerData = data.cipherPlayerData;
 
-	let errors: string[] = [];
 	let win = false;
 	let lose = false;
-	let gameOver = false;
+
 	let moveAmount = 0;
 	let modalOpen = false;
 	let showNavModal = false;
-	let selected: string[] = [];
 	let guesses: string[] = [];
 	let usedLetters: string[] = [];
 	let swaps: boolean[] = [];
@@ -110,20 +108,21 @@
 	let startIndex: number = -1;
 	let allowChooseIndex = false;
 	let showLetters = false;
-	let loading = true;
 	let showTutorial = false;
 	let replenishAmt = 0;
-	let hydrated = false;
+
 	let correctPositions = cipherState.filter((l, i) => l === word[i]).length;
 	let formattedDate = format(date.toLocaleDateString(), 'yyyy-MM-dd');
 
 	$: alphaState = new Map<string, number>();
-
 	$: updatesState = defaultUpdatesState(updateNames);
-
 	$: preferences = new Map() as PrefMap;
-
 	$: shouldAllowReplenish = false;
+	$: selected = [] as string[];
+	$: hydrated = false;
+	$: loading = true;
+	$: errors = [] as string[];
+	$: gameOver = false;
 
 	function getTierByMoves(
 		moveAmt: number,
@@ -213,6 +212,7 @@
 		const lettersUsed = localStorage.getItem(StorageKeys.usedLetters);
 		const correctGuesses = localStorage.getItem(StorageKeys.swaps);
 		const replenishAmount = localStorage.getItem(StorageKeys.replenishAmt);
+
 		if (savedGuesses && moves) {
 			guesses = JSON.parse(savedGuesses);
 			moveAmount = parseInt(moves);
@@ -292,32 +292,24 @@
 
 	// check for when user has either won or lost game
 	async function checkForGameStatus() {
-		if (!gameOver && cipherState.join('') === word) {
-			win = true;
-			gameOver = true;
-			modalOpen = true;
-			localStorage.setItem(StorageKeys.gameStatus, 'win');
-			localStorage.setItem(StorageKeys.moves, String(moveAmount));
-			localStorage.setItem(StorageKeys.cipher, word);
-			localStorage.setItem(StorageKeys.date, formattedDate);
-			// add the words players used to solve the cipher to the db, on win
-			cipherPlayerData = await submitPlayerUsedWords(guesses, data.id, data.date);
-
-			return;
-		}
-
-		loading = false;
+		win = true;
+		gameOver = true;
+		modalOpen = true;
+		localStorage.setItem(StorageKeys.gameStatus, 'win');
+		localStorage.setItem(StorageKeys.moves, String(moveAmount));
+		localStorage.setItem(StorageKeys.cipher, word);
+		localStorage.setItem(StorageKeys.date, formattedDate);
+		// add the words players used to solve the cipher to the db, on win
+		cipherPlayerData = await submitPlayerUsedWords(guesses, data.id, data.date);
 	}
 
 	// render any errors & remove after set time
 	function checkForErrors() {
-		if (errors.length > 0) {
-			setTimeout(() => {
-				const newErrors = [...errors];
-				newErrors.pop();
-				errors = newErrors.slice(0, 5);
-			}, 3000);
-		}
+		setTimeout(() => {
+			const newErrors = [...errors];
+			newErrors.pop();
+			errors = newErrors.slice(0, 5);
+		}, 3000);
 	}
 
 	// handle user selection & interaction
@@ -458,27 +450,34 @@ ${replenishAmt} reps used`.trim();
 			addTodaysPuzzleToStorage(word);
 			shouldShowTutorial();
 			preferences = checkStorageForPreferences(PreferenceKeys);
-			const interval = setInterval(checkTodaysPuzzle, 60 * 1000); // every minute
 			hydrated = true;
-			return () => clearInterval(interval);
+			loading = false;
 		}
 	});
 
-	// reactive effects
-	$: (() => {
-		(startIndex, indexToSwap, selected, allowChooseIndex, guesses, win, lose, gameOver);
-		(moveAmount, modalOpen, showNavModal, loading, usedLetters, swaps, alphaState);
+	$: if (cipherState.join('') === word && !gameOver) {
+		checkForGameStatus();
+	}
 
+	$: if (errors.length > 0) {
+		checkForErrors();
+	}
+
+	$: (() => {
 		if (typeof window === 'undefined') return;
 
-		checkForGameStatus();
-		checkForErrors();
-		checkSelection();
 		showLetters = false;
 
 		tick().then(() => {
 			setTimeout(() => (showLetters = true), 200);
 		});
+	})();
+
+	// reactive effects
+	$: (() => {
+		selected;
+
+		checkSelection();
 	})();
 </script>
 
