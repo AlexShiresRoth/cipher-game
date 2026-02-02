@@ -1,7 +1,7 @@
 <script lang="ts">
 	import '../app.css';
 	let { children } = $props();
-	const version = `1.0.0`;
+	const version = `1.1.1`;
 </script>
 
 <main class="mb-28 flex min-h-screen w-screen flex-col items-center overflow-x-hidden">
