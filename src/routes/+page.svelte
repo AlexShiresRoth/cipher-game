@@ -432,11 +432,21 @@ ${replenishAmt} reps used`.trim();
 			title: `Cipher #${data.id}`,
 			url: 'https://play-cipher.com'
 		};
-		if (navigator.canShare(shareData)) {
-			navigator.share(shareData);
-		} else {
-			await navigator.clipboard.writeText(shareData.text);
-			alert('copied to clipboard!');
+
+		const canNativeShare =
+			typeof navigator !== 'undefined' &&
+			'navigator' in window &&
+			typeof navigator.share === 'function';
+
+		try {
+			if (canNativeShare) {
+				await navigator.share(shareData);
+			} else {
+				await navigator.clipboard.writeText(shareData.text);
+				alert('copied to clipboard!');
+			}
+		} catch (error) {
+			console.info('Player aborted share');
 		}
 	}
 
