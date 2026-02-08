@@ -9,11 +9,13 @@
 	import Selection from '$lib/components/selection.svelte';
 	import {
 		alpha,
+		checkAlphaStateIsDiminshed,
 		checkStorageForPreferences,
 		clearSelection,
 		clearUsedLetters,
 		defaultAlphaState,
 		getMoveToIndex,
+		getTierByMoves,
 		guess,
 		PreferenceKeys,
 		removeLetterFromSelection,
@@ -26,8 +28,6 @@
 	import { SvelteMap } from 'svelte/reactivity';
 	import { fly } from 'svelte/transition';
 	import type { CipherPuzzle } from '../types';
-
-	type Tier = Record<number, { mistakes: number; emoji: string; phrase: string }>;
 
 	const StorageKeys = {
 		usedLetters: 'usedLetters',
@@ -43,49 +43,6 @@
 	};
 
 	const maxWordLength = 12;
-
-	const tiers: Tier = {
-		0: {
-			mistakes: 0,
-			emoji: '💎',
-			phrase: 'Righteous solve! No mistakes — few crack this optimally 🤯'
-		},
-		1: {
-			mistakes: 1,
-			emoji: '🥇',
-			phrase: 'Excellent! Just one point over perfect 😎'
-		},
-		2: {
-			mistakes: 2,
-			emoji: '🥈',
-			phrase: 'Solid work — the cipher did not win today 👌'
-		},
-		3: {
-			mistakes: 3,
-			emoji: '🥉',
-			phrase: 'You got there! That one fought back 🥹'
-		},
-		4: {
-			mistakes: 5,
-			emoji: '🤔',
-			phrase: 'Ouch, that one was tougher than it seemed.'
-		},
-		5: {
-			mistakes: 8,
-			emoji: '🤯',
-			phrase: `Hey, you didn't quit and that's great`
-		},
-		6: {
-			mistakes: 10,
-			emoji: '😢',
-			phrase: `Woof`
-		},
-		7: {
-			mistakes: 0,
-			emoji: '⭐️🥷⭐️',
-			phrase: `Your skill and technique led you here. Incredible. Cipher letters only.`
-		}
-	};
 
 	const date = new Date();
 
@@ -124,37 +81,8 @@
 	$: errors = [] as string[];
 	$: gameOver = false;
 
-	function getTierByMoves(
-		moveAmt: number,
-		replenishAmt: number,
-		swaps: boolean[],
-		alphaStateMap: Map<string, number>,
-		isGameOver: boolean
-	) {
-		const factor = getTierFactoring(moveAmt, replenishAmt, swaps);
-		const usedOnlyCipherLetters = factor === 0 && !checkAlphaStateIsDiminshed(alphaStateMap);
-
-		if (usedOnlyCipherLetters && isGameOver) {
-			return tiers[7];
-		}
-		return tiers[factor || 0] || tiers[6];
-	}
-
-	function getTierFactoring(moveAmt: number, replenishAmt: number, swaps: boolean[]) {
-		const diff = moveAmt + replenishAmt + swaps.filter((b) => !b).length - data.minMoves;
-		return diff > 0 ? diff : 0;
-	}
-
 	function toggleModalOpen(val: boolean) {
 		modalOpen = val;
-	}
-
-	function checkAlphaStateIsDiminshed(alphaStateMap: Map<string, number>) {
-		const initialAlphaState = defaultAlphaState(alpha, data.cipherWord.split(''), vowels);
-
-		return !alpha.every((letter) => {
-			return initialAlphaState.get(letter) === alphaStateMap.get(letter);
-		});
 	}
 
 	function onSelect(letter: string) {
@@ -246,7 +174,7 @@
 				usedLetters,
 				defaultAlphaState(alpha, cipherState, vowels)
 			);
-			shouldAllowReplenish = checkAlphaStateIsDiminshed(alphaState);
+			shouldAllowReplenish = checkAlphaStateIsDiminshed(alphaState, data.cipherWord.split(''));
 		} else {
 			alphaState = defaultAlphaState(alpha, cipherState, vowels);
 		}
@@ -396,7 +324,7 @@
 			defaultAlphaState(alpha, cipherState, vowels)
 		);
 
-		shouldAllowReplenish = checkAlphaStateIsDiminshed(alphaState);
+		shouldAllowReplenish = checkAlphaStateIsDiminshed(alphaState, data.cipherWord.split(''));
 
 		localStorage.setItem(StorageKeys.guesses, JSON.stringify(guesses));
 		localStorage.setItem(StorageKeys.moves, JSON.stringify(moveAmount));
@@ -422,7 +350,7 @@
 			})
 			.join('\n');
 		const shareText =
-			`Cipher #${data.id} ${getTierByMoves(moveAmount, replenishAmt, swaps, alphaState, gameOver).emoji}
+			`Cipher #${data.id} ${getTierByMoves(moveAmount, replenishAmt, swaps, alphaState, gameOver, data.minMoves, data.cipherWord.split('')).emoji}
 ${moveAmount} moves
 ${rowsText}
 ${replenishAmt} reps used`.trim();
@@ -492,7 +420,7 @@ ${replenishAmt} reps used`.trim();
 </script>
 
 <svelte:head>
-	<title>Play CIPHER {`#`}{data.id} - The daily word-shuffle game</title>
+	<title>Play CIPHER {`#`}{data.id} - Daily Word-Shuffle Puzzle</title>
 	<meta
 		name="description"
 		content="Play Cipher, the daily interactive word-shuffle puzzle game. Decipher the shuffled word using clever moves, swapping mechanics, and logic-based strategy."
@@ -505,6 +433,7 @@ ${replenishAmt} reps used`.trim();
 	<meta property="og:type" content="game" />
 	<meta property="og:url" content="https://play-cipher.com" />
 	<meta property="og:image" content="https://play-cipher.com/og-image.png" />
+	<link rel="canonical" href="https://play-cipher.com/" />
 </svelte:head>
 
 <div class:hidden={!hydrated && loading} class="flex w-full flex-col items-center">
@@ -522,7 +451,15 @@ ${replenishAmt} reps used`.trim();
 		emoji={(() => {
 			const alphaStateMap =
 				alphaState.size === 0 ? defaultAlphaState(alpha, cipherState, vowels) : alphaState;
-			return getTierByMoves(moveAmount, replenishAmt, swaps, alphaStateMap, gameOver).emoji;
+			return getTierByMoves(
+				moveAmount,
+				replenishAmt,
+				swaps,
+				alphaStateMap,
+				gameOver,
+				data.minMoves,
+				data.cipherWord.split('')
+			).emoji;
 		})()}
 		mistakeAmount={swaps.filter((b) => !b).length}
 		showPlayerGuessUpdate={getUpdateMapValue(updateNames.playerGuesses, updatesState)}
@@ -556,7 +493,15 @@ ${replenishAmt} reps used`.trim();
 			{shareResults}
 			{win}
 			{showLetters}
-			tier={getTierByMoves(moveAmount, replenishAmt, swaps, alphaState, gameOver)}
+			tier={getTierByMoves(
+				moveAmount,
+				replenishAmt,
+				swaps,
+				alphaState,
+				gameOver,
+				data.minMoves,
+				data.cipherWord.split('')
+			)}
 			{toggleModalOpen}
 			solvableAmt={data.minMoves}
 			{replenishAmt}
@@ -580,7 +525,15 @@ ${replenishAmt} reps used`.trim();
 					<div class="flex items-center gap-1">
 						<p>
 							Status <span
-								>{getTierByMoves(moveAmount, replenishAmt, swaps, alphaState, gameOver).emoji}</span
+								>{getTierByMoves(
+									moveAmount,
+									replenishAmt,
+									swaps,
+									alphaState,
+									gameOver,
+									data.minMoves,
+									data.cipherWord.split('')
+								).emoji}</span
 							>
 						</p>
 					</div>

@@ -3,3 +3,4 @@ export * from './constants';
 export * from './errors.svelte';
 export * from './preferences';
 export * from './shuffle';
+export * from './tiers';
