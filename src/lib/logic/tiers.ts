@@ -56,6 +56,12 @@ function getTierFactoring(
 	return diff > 0 ? diff : 0;
 }
 
+/**
+ *
+ * @param alphaStateMap
+ * @param cipherWordArr
+ * @returns boolean; true if alpha state has been used
+ */
 export function checkAlphaStateIsDiminshed(
 	alphaStateMap: Map<string, number>,
 	cipherWordArr: string[]
@@ -67,6 +73,17 @@ export function checkAlphaStateIsDiminshed(
 	});
 }
 
+/**
+ *
+ * @param moveAmt
+ * @param replenishAmt
+ * @param swaps
+ * @param alphaStateMap
+ * @param isGameOver
+ * @param minMoves
+ * @param cipherWordArr
+ * @returns a tier object to utilize fields, 'emoji', 'phrase' and 'mistakes'
+ */
 export function getTierByMoves(
 	moveAmt: number,
 	replenishAmt: number,

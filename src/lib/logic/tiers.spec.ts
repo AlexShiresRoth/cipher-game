@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { defaultAlphaState } from './actions.svelte';
 import { alpha, vowels } from './constants';
-import { getTierByMoves, tiers } from './tiers';
+import { checkAlphaStateIsDiminshed, getTierByMoves, tiers } from './tiers';
 
 const mockCipherWord = 'audience';
 const mockCipherState = 'eacenidu'.split('');
@@ -41,5 +41,38 @@ describe('getTiersByMoves', () => {
 		expect(tier.mistakes).toEqual(tiers[7].mistakes);
 		expect(tier.emoji).toBe(tiers[7].emoji);
 		expect(tier.phrase).toEqual(tiers[7].phrase);
+	});
+
+	it('should return the lowest tier', () => {
+		const tier = getTierByMoves(
+			9,
+			3,
+			[true, false, false, true, true, false, false, false],
+			getAlphaState(mockCipherState),
+			true,
+			5,
+			mockCipherState
+		);
+
+		expect(tier.mistakes).toEqual(tiers[6].mistakes);
+		expect(tier.emoji).toBe(tiers[6].emoji);
+		expect(tier.phrase).toEqual(tiers[6].phrase);
+	});
+});
+
+describe('checkAlphaStateIsDiminished', () => {
+	it('should return false that alpha state has not been used', () => {
+		const state = getAlphaState(mockCipherState);
+
+		const isAlphaStateUsed = checkAlphaStateIsDiminshed(state, mockCipherState);
+
+		expect(isAlphaStateUsed).toBe(false);
+	});
+
+	it('should return true, that alphaState should be used', () => {
+		const state = getAlphaState(mockCipherState);
+		state.set('b', 0);
+		const isAlphaStateUsed = checkAlphaStateIsDiminshed(state, mockCipherState);
+		expect(isAlphaStateUsed).toBe(true);
 	});
 });
