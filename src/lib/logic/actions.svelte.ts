@@ -240,3 +240,38 @@ export function defaultAlphaState(
 	}
 	return alphaSet;
 }
+
+/**
+ *
+ * @param letter
+ * @param selected
+ * @param cipherState
+ * @param startIndex
+ * @desc handle selection on the keyboard
+ */
+export function onSelect(
+	letter: string,
+	selected: string[],
+	cipherState: string[],
+	startIndex: number
+) {
+	let allowChooseIndex = false;
+
+	selected = [...selected, letter];
+
+	if (selected.length <= 1) {
+		startIndex = cipherState.indexOf(selected[0]);
+	}
+
+	// we need to allow selecting starting index if there are duplicate letters
+	if (selected[0] === letter) {
+		if (cipherState.filter((l) => l === letter).length > 1) {
+			allowChooseIndex = true;
+		}
+	}
+	if (selected.length > 1) {
+		allowChooseIndex = false;
+	}
+
+	return { selected, startIndex, allowChooseIndex };
+}
