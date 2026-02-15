@@ -17,8 +17,11 @@
 		getMoveToIndex,
 		getTierByMoves,
 		guess,
+		maxWordLength,
+		onSelect,
 		PreferenceKeys,
 		removeLetterFromSelection,
+		StorageKeys,
 		toggleUpdatePopup,
 		vowels
 	} from '$lib/logic';
@@ -29,21 +32,6 @@
 	import { fly } from 'svelte/transition';
 	import type { CipherPuzzle } from '../types';
 
-	const StorageKeys = {
-		usedLetters: 'usedLetters',
-		moves: 'moves',
-		replenishAmt: 'replenishAmt',
-		guesses: 'guesses',
-		cipher: 'cipher',
-		swaps: 'swaps',
-		gameStatus: 'gameStatus',
-		puzzle: 'puzzle',
-		viewed: 'viewedV5',
-		date: 'date'
-	};
-
-	const maxWordLength = 12;
-
 	const date = new Date();
 
 	export let data: CipherPuzzle & { id: string } & { cipherPlayerData: PuzzleGuessesResponse };
@@ -53,8 +41,6 @@
 	export let cipherPlayerData = data.cipherPlayerData;
 
 	let win = false;
-	let lose = false;
-
 	let moveAmount = 0;
 	let modalOpen = false;
 	let showNavModal = false;
@@ -85,31 +71,9 @@
 		modalOpen = val;
 	}
 
-	function onSelect(letter: string) {
-		if (gameOver) return;
-		if (selected.length >= maxWordLength) return;
-
-		selected = [...selected, letter];
-
-		if (selected.length <= 1) {
-			startIndex = cipherState.indexOf(selected[0]);
-		}
-
-		// we need to allow selecting starting index if there are duplicate letters
-		if (selected[0] === letter) {
-			if (cipherState.filter((l) => l === letter).length > 1) {
-				allowChooseIndex = true;
-			}
-		}
-		if (selected.length > 1) {
-			allowChooseIndex = false;
-		}
-	}
-
 	// remove all stored data
 	function resetStorage() {
 		win = false;
-		lose = false;
 		gameOver = false;
 		modalOpen = false;
 		const cleared = clearSelection();
@@ -574,7 +538,16 @@ ${replenishAmt} reps used`.trim();
 		<!-- Letter selection box -->
 		<Keyboard
 			{selected}
-			handleSelect={(l: string) => onSelect(l)}
+			handleSelect={(l: string) => {
+				if (gameOver) return;
+				if (selected.length >= maxWordLength) return;
+
+				const data = onSelect(l, selected, cipherState, startIndex);
+
+				selected = data.selected;
+				startIndex = data.startIndex;
+				allowChooseIndex = data.allowChooseIndex;
+			}}
 			{alpha}
 			{alphaState}
 			guess={handleGuess}
