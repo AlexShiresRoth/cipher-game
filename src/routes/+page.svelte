@@ -7,6 +7,7 @@
 	import Keyboard from '$lib/components/keyboard.svelte';
 	import Nav from '$lib/components/nav.svelte';
 	import Selection from '$lib/components/selection.svelte';
+	import SolutionPath from '$lib/components/solution-path.svelte';
 	import {
 		alpha,
 		checkAlphaStateIsDiminshed,
@@ -26,6 +27,7 @@
 		vowels
 	} from '$lib/logic';
 	import { defaultUpdatesState, getUpdateMapValue, updateNames } from '$lib/logic/updates';
+	import clsx from 'clsx';
 	import { format } from 'date-fns';
 	import { onMount, tick } from 'svelte';
 	import { SvelteMap } from 'svelte/reactivity';
@@ -50,10 +52,9 @@
 	let indexToSwap: number;
 	let startIndex: number = -1;
 	let allowChooseIndex = false;
-	let showLetters = false;
 	let showTutorial = false;
 	let replenishAmt = 0;
-
+	let cipherStateHistory: string[] = [];
 	let correctPositions = cipherState.filter((l, i) => l === word[i]).length;
 	let formattedDate = format(date.toLocaleDateString(), 'yyyy-MM-dd');
 
@@ -66,6 +67,8 @@
 	$: loading = true;
 	$: errors = [] as string[];
 	$: gameOver = false;
+	$: showLetters = false;
+	$: showMySolution = false;
 
 	function toggleModalOpen(val: boolean) {
 		modalOpen = val;
@@ -84,6 +87,7 @@
 		guesses = [];
 		moveAmount = 0;
 		cipherState = data.cipherWord.split('');
+		cipherStateHistory = [];
 		usedLetters = [];
 		replenishAmt = 0;
 		swaps = [];
@@ -104,7 +108,11 @@
 		const lettersUsed = localStorage.getItem(StorageKeys.usedLetters);
 		const correctGuesses = localStorage.getItem(StorageKeys.swaps);
 		const replenishAmount = localStorage.getItem(StorageKeys.replenishAmt);
+		const cipherStateHistoryStored = localStorage.getItem(StorageKeys.cipherStateHistory);
 
+		if (cipherStateHistoryStored) {
+			cipherStateHistory = JSON.parse(cipherStateHistoryStored);
+		}
 		if (savedGuesses && moves) {
 			guesses = JSON.parse(savedGuesses);
 			moveAmount = parseInt(moves);
@@ -281,6 +289,13 @@
 		usedLetters = result.usedLetters;
 		allowChooseIndex = result.allowChooseIndex;
 
+		if (!result.invalidGuess) {
+			if (cipherStateHistory.length === 0) {
+				cipherStateHistory = [data.cipherWord];
+			}
+			cipherStateHistory = [...cipherStateHistory, result.cipherState.join('')];
+		}
+
 		// We need to update map of letters based on their usage
 		alphaState = handleUpdateAlphaMap(
 			alpha,
@@ -295,6 +310,7 @@
 		localStorage.setItem(StorageKeys.cipher, cipherState.join(''));
 		localStorage.setItem(StorageKeys.usedLetters, JSON.stringify(usedLetters));
 		localStorage.setItem(StorageKeys.swaps, JSON.stringify(swaps));
+		localStorage.setItem(StorageKeys.cipherStateHistory, JSON.stringify(cipherStateHistory));
 	}
 
 	// social results game sharing
@@ -366,6 +382,8 @@ ${replenishAmt} reps used`.trim();
 	}
 
 	$: (() => {
+		modalOpen;
+
 		if (typeof window === 'undefined') return;
 
 		showLetters = false;
@@ -451,11 +469,12 @@ ${replenishAmt} reps used`.trim();
 		</div>
 	{/if}
 
+	<!-- GAME OVER STATE -->
 	{#if gameOver && modalOpen}
+		<!-- Game over share modal -->
 		<GameOverModal
 			{word}
 			{shareResults}
-			{win}
 			{showLetters}
 			tier={getTierByMoves(
 				moveAmount,
@@ -474,6 +493,7 @@ ${replenishAmt} reps used`.trim();
 		/>
 	{/if}
 
+	<!-- PLAY STATE UI-->
 	<div class="absolute top-10 flex flex-col gap-2">
 		{#each errors.slice(0, 5) as error, i (`${error}-${i}`)}
 			<button transition:fly={{ y: -100 }} class="bg-black p-2 text-sm text-white shadow-lg"
@@ -483,6 +503,7 @@ ${replenishAmt} reps used`.trim();
 	</div>
 
 	<div class="flex w-11/12 flex-col items-center md:w-2/3 lg:w-1/2">
+		<!-- PREFERENCES UI -->
 		{#if checkIfPreferenceSettingExist(preferences)}
 			<div class="my-4 flex w-full flex-wrap justify-between gap-4 text-sm">
 				{#if preferences.get(PreferenceKeys.showRank)?.show}
@@ -518,73 +539,104 @@ ${replenishAmt} reps used`.trim();
 				{/if}
 			</div>
 		{/if}
-		<!-- Current user selection row -->
-		<Selection {selected} shouldHaveMargin={!checkIfPreferenceSettingExist(preferences)} />
-		<!-- Cipher blocks row -->
-		<Cipher
-			{word}
-			{cipherState}
-			{allowChooseIndex}
-			{selected}
-			{startIndex}
-			{indexToSwap}
-			chooseStartingIndex={(index: number) => {
-				if (allowChooseIndex) {
-					chooseStartingIndex(index);
-				}
-			}}
-		/>
 
-		<!-- Letter selection box -->
-		<Keyboard
-			{selected}
-			handleSelect={(l: string) => {
-				if (gameOver) return;
-				if (selected.length >= maxWordLength) return;
+		{#if showMySolution && gameOver}
+			<div class="flex flex-col">
+				<div class="w-full pt-4">
+					<h2 class="text-3xl uppercase">My Solution</h2>
+				</div>
+				<SolutionPath {word} solutionPath={cipherStateHistory} {guesses} />
+			</div>
+		{/if}
 
-				const data = onSelect(l, selected, cipherState, startIndex);
-
-				selected = data.selected;
-				startIndex = data.startIndex;
-				allowChooseIndex = data.allowChooseIndex;
-			}}
-			{alpha}
-			{alphaState}
-			guess={handleGuess}
-			removeLetterFromSelection={() => {
-				const { newSelection } = removeLetterFromSelection(selected);
-				selected = newSelection;
-			}}
-		/>
-
-		<!-- Action buttons -->
-		{#if !gameOver}
-			<ActionButtons
-				clearSelection={() => {
-					const cleared = clearSelection();
-					selected = cleared.selected;
-					indexToSwap = cleared.indexToSwap;
-					startIndex = cleared.startIndex;
-					allowChooseIndex = cleared.allowChooseIndex;
+		{#if !showMySolution}
+			<!-- Current user selection row -->
+			<Selection {selected} shouldHaveMargin={!checkIfPreferenceSettingExist(preferences)} />
+			<!-- Cipher blocks row -->
+			<Cipher
+				{word}
+				{cipherState}
+				{allowChooseIndex}
+				{selected}
+				{startIndex}
+				{indexToSwap}
+				chooseStartingIndex={(index: number) => {
+					if (allowChooseIndex) {
+						chooseStartingIndex(index);
+					}
 				}}
-				clearUsedLetters={() => {
-					const clearedLetters = clearUsedLetters({ moveAmount, replenishAmt });
-					usedLetters = clearedLetters.usedLetters;
-					replenishAmt = clearedLetters.replenishAmt;
-					shouldAllowReplenish = clearedLetters.shouldAllowReplenish;
-					alphaState = defaultAlphaState(alpha, cipherState, vowels);
-					localStorage.removeItem(StorageKeys.usedLetters);
-					localStorage.setItem(StorageKeys.moves, JSON.stringify(moveAmount));
-					localStorage.setItem(StorageKeys.replenishAmt, JSON.stringify(replenishAmt));
+			/>
+
+			<!-- Letter selection box -->
+			<Keyboard
+				{selected}
+				handleSelect={(l: string) => {
+					if (gameOver) return;
+					if (selected.length >= maxWordLength) return;
+
+					const data = onSelect(l, selected, cipherState, startIndex);
+
+					selected = data.selected;
+					startIndex = data.startIndex;
+					allowChooseIndex = data.allowChooseIndex;
 				}}
+				{alpha}
+				{alphaState}
+				guess={handleGuess}
 				removeLetterFromSelection={() => {
 					const { newSelection } = removeLetterFromSelection(selected);
 					selected = newSelection;
 				}}
-				guess={handleGuess}
-				{selected}
-				{shouldAllowReplenish}
 			/>
+
+			<!-- Action buttons -->
+			{#if !gameOver}
+				<ActionButtons
+					clearSelection={() => {
+						const cleared = clearSelection();
+						selected = cleared.selected;
+						indexToSwap = cleared.indexToSwap;
+						startIndex = cleared.startIndex;
+						allowChooseIndex = cleared.allowChooseIndex;
+					}}
+					clearUsedLetters={() => {
+						const clearedLetters = clearUsedLetters({ moveAmount, replenishAmt });
+						usedLetters = clearedLetters.usedLetters;
+						replenishAmt = clearedLetters.replenishAmt;
+						shouldAllowReplenish = clearedLetters.shouldAllowReplenish;
+						alphaState = defaultAlphaState(alpha, cipherState, vowels);
+						localStorage.removeItem(StorageKeys.usedLetters);
+						localStorage.setItem(StorageKeys.moves, JSON.stringify(moveAmount));
+						localStorage.setItem(StorageKeys.replenishAmt, JSON.stringify(replenishAmt));
+					}}
+					removeLetterFromSelection={() => {
+						const { newSelection } = removeLetterFromSelection(selected);
+						selected = newSelection;
+					}}
+					guess={handleGuess}
+					{selected}
+					{shouldAllowReplenish}
+				/>
+			{/if}
+		{/if}
+
+		<!-- TOGGLE PLAYER SOLUTION AND ENDGAME STATE -->
+		{#if gameOver}
+			<div class="flex items-center gap-2 py-8">
+				<button
+					on:click={() => {
+						showMySolution = !showMySolution;
+						window.scrollTo({
+							behavior: 'smooth',
+							top: 0
+						});
+					}}
+					class={clsx('rounded px-4 py-2 uppercase dark:text-black', {
+						'bg-black text-white dark:bg-emerald-500': showMySolution,
+						'bg-black text-white dark:bg-indigo-500': !showMySolution
+					})}>{showMySolution ? 'View Game' : 'View solution'}</button
+				>
+			</div>
 		{/if}
 	</div>
 </div>

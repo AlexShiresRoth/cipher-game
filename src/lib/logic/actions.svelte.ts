@@ -191,7 +191,8 @@ export async function guess({
 			guesses,
 			usedLetters,
 			moveAmount,
-			cipherState
+			cipherState,
+			invalidGuess
 		};
 	}
 
@@ -224,7 +225,8 @@ export async function guess({
 		allowChooseIndex: cleared.allowChooseIndex,
 		moveAmount: moveAmount + 1,
 		cipherState: newCipherState,
-		errors
+		errors,
+		invalidGuess
 	};
 }
 
