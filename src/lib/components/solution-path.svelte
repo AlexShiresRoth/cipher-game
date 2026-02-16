@@ -5,7 +5,10 @@
 	type SwappedLetterPaths = { [key: string]: number };
 	export let solutionPath: string[] = [];
 	export let word: string;
+	export let guesses: string[] | undefined;
+
 	let swappedLettersPerPath: SwappedLetterPaths[][] = [];
+
 	$: elements = [] as HTMLElement[][];
 
 	function findSwappedLetters(paths: string[]) {
@@ -39,6 +42,23 @@
 		return Object.keys(obj)[0];
 	}
 
+	function getLetter(pathStep: number, index: number) {
+		return getLetterKey(swappedLettersPerPath[pathStep][index]);
+	}
+
+	function getLetterSwaps(pathStep: number) {
+		const letterA = getLetter(pathStep, 0);
+		const letterB = getLetter(pathStep, 1);
+
+		const guess = guesses?.[pathStep]?.[0];
+
+		if (!guess) {
+			return [letterA, letterB];
+		}
+
+		return guess === letterA ? [letterA, letterB] : [letterB, letterA];
+	}
+
 	function onCreateNode(node: HTMLElement, data: number) {
 		const pairs = [...elements];
 		if (pairs[data]) {
@@ -57,8 +77,44 @@
 <div class="flex w-full gap-2 pt-2">
 	<div class="flex w-full flex-col items-center gap-2">
 		{#each solutionPath as path, pathStep}
-			<div class="flex w-full flex-col gap-2">
-				<p>Step {pathStep + 1}</p>
+			<div
+				class="flex w-full flex-col gap-2 border-2 p-4 pb-8 dark:border-white/20 dark:bg-gray-200/10"
+			>
+				{#if pathStep + 1 < solutionPath.length}
+					{#if !!guesses}
+						<div class="flex items-center">
+							<p>
+								<span class="font-bold text-amber-500">
+									{guesses?.[pathStep]?.toUpperCase()}
+								</span>
+							</p>
+						</div>
+					{/if}
+					<div class="flex w-full items-center justify-between">
+						<p>
+							Move {pathStep + 1}
+						</p>
+						{#if !!swappedLettersPerPath[pathStep] && pathStep + 1 < solutionPath.length}
+							<div class="flex flex-col items-center">
+								<div class="flex items-center gap-2">
+									<p>Swap</p>
+
+									<p class="text-amber-500 uppercase">
+										{getLetterSwaps(pathStep)[0]}
+									</p>
+
+									<p>and</p>
+
+									<p class="text-amber-500 uppercase">
+										{getLetterSwaps(pathStep)[1]}
+									</p>
+								</div>
+							</div>
+						{/if}
+					</div>
+				{:else}
+					<p>Done 🎉</p>
+				{/if}
 				<div class="flex w-full gap-2">
 					{#each path.split('') as part, i}
 						<SolutionStep
@@ -77,23 +133,6 @@
 					<LetterSwapLine nodePair={elements[pathStep]} />
 				{/if}
 			</div>
-
-			{#if !!swappedLettersPerPath[pathStep] && pathStep + 1 < solutionPath.length}
-				<div class="flex w-full flex-col items-center">
-					<div class="flex items-center gap-2">
-						<p>Swap</p>
-						<p class="text-amber-500 uppercase">
-							{getLetterKey(swappedLettersPerPath[pathStep][0])}
-						</p>
-						<p>with</p>
-						<p class="text-amber-500 uppercase">
-							{getLetterKey(swappedLettersPerPath[pathStep][1])}
-						</p>
-					</div>
-				</div>
-			{:else}
-				<div class="flex w-full flex-col items-center"><p>Done 🎉</p></div>
-			{/if}
 		{/each}
 	</div>
 </div>

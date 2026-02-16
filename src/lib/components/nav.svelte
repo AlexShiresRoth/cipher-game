@@ -146,7 +146,7 @@
 
 					{#if gameOver}
 						<button
-							class="w-full border-t border-t-white/40 px-2 py-1 text-left uppercase"
+							class="w-full border-t border-t-white/40 px-2 py-1 text-left uppercase hover:cursor-pointer hover:text-amber-500 hover:underline"
 							on:click={() => {
 								toggleModalOpen(true);
 							}}>share</button
@@ -167,14 +167,14 @@
 	{/if}
 	{#if showSolution}
 		<div
-			class="absolute top-full z-10 mt-1 flex w-full flex-col bg-white p-4 dark:bg-black"
+			class="absolute top-full z-10 mt-1 flex w-full flex-col bg-white p-4 shadow-2xl dark:bg-black"
 			transition:fly={{ y: -100 }}
 		>
 			<h2 class="text-3xl uppercase">Solution Example</h2>
 			<p class="font-regular mb-2 text-sm dark:text-gray-300">
 				There are many ways to solve this puzzle, here is one way.
 			</p>
-			<SolutionPath {solutionPath} {word} />
+			<SolutionPath {solutionPath} {word} guesses={[]} />
 		</div>
 	{/if}
 	{#if showCommonGuesses && puzzleData}

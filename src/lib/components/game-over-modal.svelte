@@ -1,7 +1,6 @@
 <script>
 	import { fade, fly } from 'svelte/transition';
 	import Stats from './stats.svelte';
-	export let win;
 	export let showLetters;
 	export let word;
 	export let shareResults;
@@ -25,51 +24,46 @@
 	</div>
 
 	<div class="flex h-full w-full flex-col items-center justify-center">
-		{#if win}
-			<div class="flex w-full flex-col items-center justify-center gap-8">
-				<div class="flex w-11/12 flex-col items-center justify-center gap-2">
-					{#if showLetters}
-						<div class="flex w-full justify-center">
-							<p class="text-7xl dark:text-white">{tier.emoji}</p>
-						</div>
-						<h2 transition:fly={{ y: 100, delay: 10 }}>The Cipher Was:</h2>
-					{/if}
-					<div class="flex w-full items-center justify-center gap-2">
-						{#each word.split('') as letter, i (`${letter}-${i}`)}
-							{#if showLetters}
-								<div
-									transition:fly={{ y: -100, delay: i * 80, duration: 400 }}
-									class="w-12 border-2 border-emerald-500 p-2 text-center text-emerald-500 uppercase"
-								>
-									<p>{letter}</p>
-								</div>
-							{/if}
-							{#if !showLetters}
-								<div class="opacity-0"><p>{letter}</p></div>
-							{/if}
-						{/each}
-					</div>
-				</div>
-
+		<div class="flex w-full flex-col items-center justify-center gap-8">
+			<div class="flex w-11/12 flex-col items-center justify-center gap-2">
 				{#if showLetters}
-					<div class="flex flex-col items-center gap-4 px-2">
-						<h1
-							transition:fly={{ y: 100, delay: 200 }}
-							class="text-center text-2xl font-bold uppercase"
-						>
-							{tier.phrase}
-						</h1>
-						<div class="mb-2 w-11/12 md:w-1/2" transition:fade>
-							<Stats emoji={tier.emoji} {moveAmount} {solvableAmt} {replenishAmt} {mistakeAmount} />
-						</div>
-						<button
-							transition:fly={{ y: 100, delay: 300 }}
-							class="rounded-full bg-black px-4 py-2 text-white hover:cursor-pointer dark:bg-emerald-500 dark:text-black"
-							on:click={shareResults}>Share with friends & enemies</button
-						>
+					<div class="flex w-full justify-center">
+						<p class="text-7xl dark:text-white">{tier.emoji}</p>
 					</div>
+					<h2 in:fly={{ y: 100, delay: 10 }}>The Cipher Was:</h2>
 				{/if}
+				<div class="flex w-full items-center justify-center gap-2">
+					{#each word.split('') as letter, i (`${letter}-${i}`)}
+						{#if showLetters}
+							<div
+								in:fly={{ y: -100, delay: i * 80, duration: 400 }}
+								class="w-12 border-2 border-emerald-500 p-2 text-center text-emerald-500 uppercase"
+							>
+								<p>{letter}</p>
+							</div>
+						{/if}
+						{#if !showLetters}
+							<div class="opacity-0"><p>{letter}</p></div>
+						{/if}
+					{/each}
+				</div>
 			</div>
-		{/if}
+
+			{#if showLetters}
+				<div class="flex flex-col items-center gap-4 px-2">
+					<h1 in:fly={{ y: 100, delay: 200 }} class="text-center text-2xl font-bold uppercase">
+						{tier.phrase}
+					</h1>
+					<div class="mb-2 w-11/12 md:w-1/2" in:fade>
+						<Stats emoji={tier.emoji} {moveAmount} {solvableAmt} {replenishAmt} {mistakeAmount} />
+					</div>
+					<button
+						in:fly={{ y: 100, delay: 300 }}
+						class="rounded-full bg-black px-4 py-2 text-white hover:cursor-pointer dark:bg-emerald-500 dark:text-black"
+						on:click={shareResults}>Share with friends & enemies</button
+					>
+				</div>
+			{/if}
+		</div>
 	</div>
 </div>

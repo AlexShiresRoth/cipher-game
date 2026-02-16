@@ -7,6 +7,7 @@
 	import Keyboard from '$lib/components/keyboard.svelte';
 	import Nav from '$lib/components/nav.svelte';
 	import Selection from '$lib/components/selection.svelte';
+	import SolutionPath from '$lib/components/solution-path.svelte';
 	import {
 		alpha,
 		checkAlphaStateIsDiminshed,
@@ -53,7 +54,7 @@
 	let showLetters = false;
 	let showTutorial = false;
 	let replenishAmt = 0;
-
+	let cipherStateHistory: string[] = [];
 	let correctPositions = cipherState.filter((l, i) => l === word[i]).length;
 	let formattedDate = format(date.toLocaleDateString(), 'yyyy-MM-dd');
 
@@ -69,6 +70,7 @@
 
 	function toggleModalOpen(val: boolean) {
 		modalOpen = val;
+		showLetters = val;
 	}
 
 	// remove all stored data
@@ -84,6 +86,7 @@
 		guesses = [];
 		moveAmount = 0;
 		cipherState = data.cipherWord.split('');
+		cipherStateHistory = [];
 		usedLetters = [];
 		replenishAmt = 0;
 		swaps = [];
@@ -104,7 +107,11 @@
 		const lettersUsed = localStorage.getItem(StorageKeys.usedLetters);
 		const correctGuesses = localStorage.getItem(StorageKeys.swaps);
 		const replenishAmount = localStorage.getItem(StorageKeys.replenishAmt);
+		const cipherStateHistoryStored = localStorage.getItem(StorageKeys.cipherStateHistory);
 
+		if (cipherStateHistoryStored) {
+			cipherStateHistory = JSON.parse(cipherStateHistoryStored);
+		}
 		if (savedGuesses && moves) {
 			guesses = JSON.parse(savedGuesses);
 			moveAmount = parseInt(moves);
@@ -281,6 +288,13 @@
 		usedLetters = result.usedLetters;
 		allowChooseIndex = result.allowChooseIndex;
 
+		if (!result.invalidGuess) {
+			if (cipherStateHistory.length === 0) {
+				cipherStateHistory = [data.cipherWord];
+			}
+			cipherStateHistory = [...cipherStateHistory, result.cipherState.join('')];
+		}
+
 		// We need to update map of letters based on their usage
 		alphaState = handleUpdateAlphaMap(
 			alpha,
@@ -295,6 +309,7 @@
 		localStorage.setItem(StorageKeys.cipher, cipherState.join(''));
 		localStorage.setItem(StorageKeys.usedLetters, JSON.stringify(usedLetters));
 		localStorage.setItem(StorageKeys.swaps, JSON.stringify(swaps));
+		localStorage.setItem(StorageKeys.cipherStateHistory, JSON.stringify(cipherStateHistory));
 	}
 
 	// social results game sharing
@@ -451,114 +466,126 @@ ${replenishAmt} reps used`.trim();
 		</div>
 	{/if}
 
-	{#if gameOver && modalOpen}
-		<GameOverModal
-			{word}
-			{shareResults}
-			{win}
-			{showLetters}
-			tier={getTierByMoves(
-				moveAmount,
-				replenishAmt,
-				swaps,
-				alphaState,
-				gameOver,
-				data.minMoves,
-				data.cipherWord.split('')
-			)}
-			{toggleModalOpen}
-			solvableAmt={data.minMoves}
-			{replenishAmt}
-			{moveAmount}
-			mistakeAmount={swaps.filter((b) => !b).length}
-		/>
+	<!-- GAME OVER STATE -->
+	{#if gameOver}
+		<!-- Game over share modal -->
+		{#if modalOpen}
+			<GameOverModal
+				{word}
+				{shareResults}
+				{showLetters}
+				tier={getTierByMoves(
+					moveAmount,
+					replenishAmt,
+					swaps,
+					alphaState,
+					gameOver,
+					data.minMoves,
+					data.cipherWord.split('')
+				)}
+				{toggleModalOpen}
+				solvableAmt={data.minMoves}
+				{replenishAmt}
+				{moveAmount}
+				mistakeAmount={swaps.filter((b) => !b).length}
+			/>
+		{/if}
+
+		<div class="flex w-11/12 flex-col items-center py-4 md:w-2/3 lg:w-1/2">
+			<div class="w-full py-4">
+				<h2 class="text-3xl uppercase">Your Solution</h2>
+			</div>
+			<SolutionPath {word} solutionPath={cipherStateHistory} {guesses} />
+		</div>
 	{/if}
 
-	<div class="absolute top-10 flex flex-col gap-2">
-		{#each errors.slice(0, 5) as error, i (`${error}-${i}`)}
-			<button transition:fly={{ y: -100 }} class="bg-black p-2 text-sm text-white shadow-lg"
-				>{error}</button
-			>
-		{/each}
-	</div>
+	<!-- PLAY STATE -->
+	{#if !gameOver}
+		<div class="absolute top-10 flex flex-col gap-2">
+			{#each errors.slice(0, 5) as error, i (`${error}-${i}`)}
+				<button transition:fly={{ y: -100 }} class="bg-black p-2 text-sm text-white shadow-lg"
+					>{error}</button
+				>
+			{/each}
+		</div>
 
-	<div class="flex w-11/12 flex-col items-center md:w-2/3 lg:w-1/2">
-		{#if checkIfPreferenceSettingExist(preferences)}
-			<div class="my-4 flex w-full flex-wrap justify-between gap-4 text-sm">
-				{#if preferences.get(PreferenceKeys.showRank)?.show}
-					<div class="flex items-center gap-1">
-						<p>
-							Status <span
-								>{getTierByMoves(
-									moveAmount,
-									replenishAmt,
-									swaps,
-									alphaState,
-									gameOver,
-									data.minMoves,
-									data.cipherWord.split('')
-								).emoji}</span
-							>
-						</p>
-					</div>
-				{/if}
-				{#if preferences.get(PreferenceKeys.showMistakes)?.show}
-					<div class="flex items-center gap-1">
-						<p>Mistakes <span>{swaps.filter((b) => !b).length}</span></p>
-					</div>
-				{/if}
-				{#if preferences.get(PreferenceKeys.showMoves)?.show}
-					<div class="flex items-center gap-1"><p>Moves <span>{moveAmount}</span></p></div>
-				{/if}
-				{#if preferences.get(PreferenceKeys.showReps)?.show}
-					<div class="flex items-center gap-1"><p>Reps <span>{replenishAmt}</span></p></div>
-				{/if}
-				{#if preferences.get(PreferenceKeys.showSolvable)?.show}
-					<div class="flex items-center gap-1"><p>Solvable <span>{data.minMoves}</span></p></div>
-				{/if}
-			</div>
-		{/if}
-		<!-- Current user selection row -->
-		<Selection {selected} shouldHaveMargin={!checkIfPreferenceSettingExist(preferences)} />
-		<!-- Cipher blocks row -->
-		<Cipher
-			{word}
-			{cipherState}
-			{allowChooseIndex}
-			{selected}
-			{startIndex}
-			{indexToSwap}
-			chooseStartingIndex={(index: number) => {
-				if (allowChooseIndex) {
-					chooseStartingIndex(index);
-				}
-			}}
-		/>
+		<div class="flex w-11/12 flex-col items-center md:w-2/3 lg:w-1/2">
+			{#if checkIfPreferenceSettingExist(preferences)}
+				<div class="my-4 flex w-full flex-wrap justify-between gap-4 text-sm">
+					{#if preferences.get(PreferenceKeys.showRank)?.show}
+						<div class="flex items-center gap-1">
+							<p>
+								Status <span
+									>{getTierByMoves(
+										moveAmount,
+										replenishAmt,
+										swaps,
+										alphaState,
+										gameOver,
+										data.minMoves,
+										data.cipherWord.split('')
+									).emoji}</span
+								>
+							</p>
+						</div>
+					{/if}
+					{#if preferences.get(PreferenceKeys.showMistakes)?.show}
+						<div class="flex items-center gap-1">
+							<p>Mistakes <span>{swaps.filter((b) => !b).length}</span></p>
+						</div>
+					{/if}
+					{#if preferences.get(PreferenceKeys.showMoves)?.show}
+						<div class="flex items-center gap-1"><p>Moves <span>{moveAmount}</span></p></div>
+					{/if}
+					{#if preferences.get(PreferenceKeys.showReps)?.show}
+						<div class="flex items-center gap-1"><p>Reps <span>{replenishAmt}</span></p></div>
+					{/if}
+					{#if preferences.get(PreferenceKeys.showSolvable)?.show}
+						<div class="flex items-center gap-1"><p>Solvable <span>{data.minMoves}</span></p></div>
+					{/if}
+				</div>
+			{/if}
+			<!-- Current user selection row -->
+			<Selection {selected} shouldHaveMargin={!checkIfPreferenceSettingExist(preferences)} />
+			<!-- Cipher blocks row -->
+			<Cipher
+				{word}
+				{cipherState}
+				{allowChooseIndex}
+				{selected}
+				{startIndex}
+				{indexToSwap}
+				chooseStartingIndex={(index: number) => {
+					if (allowChooseIndex) {
+						chooseStartingIndex(index);
+					}
+				}}
+			/>
 
-		<!-- Letter selection box -->
-		<Keyboard
-			{selected}
-			handleSelect={(l: string) => {
-				if (gameOver) return;
-				if (selected.length >= maxWordLength) return;
+			<!-- Letter selection box -->
+			<Keyboard
+				{selected}
+				handleSelect={(l: string) => {
+					if (gameOver) return;
+					if (selected.length >= maxWordLength) return;
 
-				const data = onSelect(l, selected, cipherState, startIndex);
+					const data = onSelect(l, selected, cipherState, startIndex);
 
-				selected = data.selected;
-				startIndex = data.startIndex;
-				allowChooseIndex = data.allowChooseIndex;
-			}}
-			{alpha}
-			{alphaState}
-			guess={handleGuess}
-			removeLetterFromSelection={() => {
-				const { newSelection } = removeLetterFromSelection(selected);
-				selected = newSelection;
-			}}
-		/>
+					selected = data.selected;
+					startIndex = data.startIndex;
+					allowChooseIndex = data.allowChooseIndex;
+				}}
+				{alpha}
+				{alphaState}
+				guess={handleGuess}
+				removeLetterFromSelection={() => {
+					const { newSelection } = removeLetterFromSelection(selected);
+					selected = newSelection;
+				}}
+			/>
 
-		<!-- Action buttons -->
-		{#if !gameOver}
+			<!-- Action buttons -->
+
 			<ActionButtons
 				clearSelection={() => {
 					const cleared = clearSelection();
@@ -585,8 +612,8 @@ ${replenishAmt} reps used`.trim();
 				{selected}
 				{shouldAllowReplenish}
 			/>
-		{/if}
-	</div>
+		</div>
+	{/if}
 </div>
 
 <div class:hidden={hydrated && !loading}>

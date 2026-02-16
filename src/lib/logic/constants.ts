@@ -11,7 +11,8 @@ export const StorageKeys = {
 	gameStatus: 'gameStatus',
 	puzzle: 'puzzle',
 	viewed: 'viewedV5',
-	date: 'date'
+	date: 'date',
+	cipherStateHistory: 'cipherStateHistory'
 };
 
 export const maxWordLength = 12;
