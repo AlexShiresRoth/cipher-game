@@ -59,7 +59,8 @@ const guessParams = {
 	allowChooseIndex: 0,
 	isValidWord: isValidWordMock,
 	getMoveToIndex: getMoveToIndexMock,
-	word: 'triangle'
+	word: 'triangle',
+	invalidGuess: false
 };
 
 describe('Action Buttons', () => {
@@ -224,7 +225,8 @@ describe('Action Buttons', () => {
 				guesses: [],
 				usedLetters: [],
 				moveAmount: 0,
-				cipherState: ['t', 'i', 'r', 'a', 'l', 'e', 'n', 'g']
+				cipherState: ['t', 'i', 'r', 'a', 'l', 'e', 'n', 'g'],
+				invalidGuess: true
 			});
 		});
 		it('should not call guess if selected is too short', async () => {
@@ -289,7 +291,8 @@ describe('Action Buttons', () => {
 				guesses: [],
 				usedLetters: [],
 				moveAmount: 0,
-				cipherState: ['t', 'i', 'r', 'a', 'l', 'e', 'n', 'g']
+				cipherState: ['t', 'i', 'r', 'a', 'l', 'e', 'n', 'g'],
+				invalidGuess: false
 			});
 		});
 
@@ -325,7 +328,8 @@ describe('Action Buttons', () => {
 				guesses: [],
 				usedLetters: [],
 				moveAmount: 0,
-				cipherState: ['t', 'i', 'r', 'a', 'l', 'e', 'n', 'g']
+				cipherState: ['t', 'i', 'r', 'a', 'l', 'e', 'n', 'g'],
+				invalidGuess: true
 			});
 		});
 
@@ -370,7 +374,8 @@ describe('Action Buttons', () => {
 				guesses: [],
 				usedLetters: [],
 				moveAmount: 0,
-				cipherState: ['t', 'i', 'r', 'a', 'l', 'e', 'n', 'g']
+				cipherState: ['t', 'i', 'r', 'a', 'l', 'e', 'n', 'g'],
+				invalidGuess: false
 			});
 		});
 		it('should call guess button with success', async () => {
@@ -415,7 +420,8 @@ describe('Action Buttons', () => {
 				allowChooseIndex: false,
 				moveAmount: 1,
 				cipherState: ['t', 'r', 'i', 'a', 'l', 'e', 'n', 'g'],
-				errors: []
+				errors: [],
+				invalidGuess: false
 			});
 		});
 
