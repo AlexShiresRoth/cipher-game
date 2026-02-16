@@ -27,6 +27,7 @@
 		vowels
 	} from '$lib/logic';
 	import { defaultUpdatesState, getUpdateMapValue, updateNames } from '$lib/logic/updates';
+	import clsx from 'clsx';
 	import { format } from 'date-fns';
 	import { onMount, tick } from 'svelte';
 	import { SvelteMap } from 'svelte/reactivity';
@@ -51,7 +52,6 @@
 	let indexToSwap: number;
 	let startIndex: number = -1;
 	let allowChooseIndex = false;
-	let showLetters = false;
 	let showTutorial = false;
 	let replenishAmt = 0;
 	let cipherStateHistory: string[] = [];
@@ -67,10 +67,11 @@
 	$: loading = true;
 	$: errors = [] as string[];
 	$: gameOver = false;
+	$: showLetters = false;
+	$: showMySolution = false;
 
 	function toggleModalOpen(val: boolean) {
 		modalOpen = val;
-		showLetters = val;
 	}
 
 	// remove all stored data
@@ -381,6 +382,8 @@ ${replenishAmt} reps used`.trim();
 	}
 
 	$: (() => {
+		modalOpen;
+
 		if (typeof window === 'undefined') return;
 
 		showLetters = false;
@@ -467,84 +470,86 @@ ${replenishAmt} reps used`.trim();
 	{/if}
 
 	<!-- GAME OVER STATE -->
-	{#if gameOver}
+	{#if gameOver && modalOpen}
 		<!-- Game over share modal -->
-		{#if modalOpen}
-			<GameOverModal
-				{word}
-				{shareResults}
-				{showLetters}
-				tier={getTierByMoves(
-					moveAmount,
-					replenishAmt,
-					swaps,
-					alphaState,
-					gameOver,
-					data.minMoves,
-					data.cipherWord.split('')
-				)}
-				{toggleModalOpen}
-				solvableAmt={data.minMoves}
-				{replenishAmt}
-				{moveAmount}
-				mistakeAmount={swaps.filter((b) => !b).length}
-			/>
-		{/if}
-
-		<div class="flex w-11/12 flex-col items-center py-4 md:w-2/3 lg:w-1/2">
-			<div class="w-full py-4">
-				<h2 class="text-3xl uppercase">Your Solution</h2>
-			</div>
-			<SolutionPath {word} solutionPath={cipherStateHistory} {guesses} />
-		</div>
+		<GameOverModal
+			{word}
+			{shareResults}
+			{showLetters}
+			tier={getTierByMoves(
+				moveAmount,
+				replenishAmt,
+				swaps,
+				alphaState,
+				gameOver,
+				data.minMoves,
+				data.cipherWord.split('')
+			)}
+			{toggleModalOpen}
+			solvableAmt={data.minMoves}
+			{replenishAmt}
+			{moveAmount}
+			mistakeAmount={swaps.filter((b) => !b).length}
+		/>
 	{/if}
 
-	<!-- PLAY STATE -->
-	{#if !gameOver}
-		<div class="absolute top-10 flex flex-col gap-2">
-			{#each errors.slice(0, 5) as error, i (`${error}-${i}`)}
-				<button transition:fly={{ y: -100 }} class="bg-black p-2 text-sm text-white shadow-lg"
-					>{error}</button
-				>
-			{/each}
-		</div>
+	<!-- PLAY STATE UI-->
+	<div class="absolute top-10 flex flex-col gap-2">
+		{#each errors.slice(0, 5) as error, i (`${error}-${i}`)}
+			<button transition:fly={{ y: -100 }} class="bg-black p-2 text-sm text-white shadow-lg"
+				>{error}</button
+			>
+		{/each}
+	</div>
 
-		<div class="flex w-11/12 flex-col items-center md:w-2/3 lg:w-1/2">
-			{#if checkIfPreferenceSettingExist(preferences)}
-				<div class="my-4 flex w-full flex-wrap justify-between gap-4 text-sm">
-					{#if preferences.get(PreferenceKeys.showRank)?.show}
-						<div class="flex items-center gap-1">
-							<p>
-								Status <span
-									>{getTierByMoves(
-										moveAmount,
-										replenishAmt,
-										swaps,
-										alphaState,
-										gameOver,
-										data.minMoves,
-										data.cipherWord.split('')
-									).emoji}</span
-								>
-							</p>
-						</div>
-					{/if}
-					{#if preferences.get(PreferenceKeys.showMistakes)?.show}
-						<div class="flex items-center gap-1">
-							<p>Mistakes <span>{swaps.filter((b) => !b).length}</span></p>
-						</div>
-					{/if}
-					{#if preferences.get(PreferenceKeys.showMoves)?.show}
-						<div class="flex items-center gap-1"><p>Moves <span>{moveAmount}</span></p></div>
-					{/if}
-					{#if preferences.get(PreferenceKeys.showReps)?.show}
-						<div class="flex items-center gap-1"><p>Reps <span>{replenishAmt}</span></p></div>
-					{/if}
-					{#if preferences.get(PreferenceKeys.showSolvable)?.show}
-						<div class="flex items-center gap-1"><p>Solvable <span>{data.minMoves}</span></p></div>
-					{/if}
+	<div class="flex w-11/12 flex-col items-center md:w-2/3 lg:w-1/2">
+		<!-- PREFERENCES UI -->
+		{#if checkIfPreferenceSettingExist(preferences)}
+			<div class="my-4 flex w-full flex-wrap justify-between gap-4 text-sm">
+				{#if preferences.get(PreferenceKeys.showRank)?.show}
+					<div class="flex items-center gap-1">
+						<p>
+							Status <span
+								>{getTierByMoves(
+									moveAmount,
+									replenishAmt,
+									swaps,
+									alphaState,
+									gameOver,
+									data.minMoves,
+									data.cipherWord.split('')
+								).emoji}</span
+							>
+						</p>
+					</div>
+				{/if}
+				{#if preferences.get(PreferenceKeys.showMistakes)?.show}
+					<div class="flex items-center gap-1">
+						<p>Mistakes <span>{swaps.filter((b) => !b).length}</span></p>
+					</div>
+				{/if}
+				{#if preferences.get(PreferenceKeys.showMoves)?.show}
+					<div class="flex items-center gap-1"><p>Moves <span>{moveAmount}</span></p></div>
+				{/if}
+				{#if preferences.get(PreferenceKeys.showReps)?.show}
+					<div class="flex items-center gap-1"><p>Reps <span>{replenishAmt}</span></p></div>
+				{/if}
+				{#if preferences.get(PreferenceKeys.showSolvable)?.show}
+					<div class="flex items-center gap-1"><p>Solvable <span>{data.minMoves}</span></p></div>
+				{/if}
+			</div>
+		{/if}
+
+		{#if showMySolution && gameOver}
+			<div class="flex flex-col">
+				<div class="w-full pt-4">
+					<h2 class="text-3xl uppercase">My Solution</h2>
 				</div>
-			{/if}
+				<SolutionPath {word} solutionPath={cipherStateHistory} {guesses} />
+			</div>
+		{/if}
+
+		{#if !showMySolution}
 			<!-- Current user selection row -->
 			<Selection {selected} shouldHaveMargin={!checkIfPreferenceSettingExist(preferences)} />
 			<!-- Cipher blocks row -->
@@ -585,35 +590,55 @@ ${replenishAmt} reps used`.trim();
 			/>
 
 			<!-- Action buttons -->
+			{#if !gameOver}
+				<ActionButtons
+					clearSelection={() => {
+						const cleared = clearSelection();
+						selected = cleared.selected;
+						indexToSwap = cleared.indexToSwap;
+						startIndex = cleared.startIndex;
+						allowChooseIndex = cleared.allowChooseIndex;
+					}}
+					clearUsedLetters={() => {
+						const clearedLetters = clearUsedLetters({ moveAmount, replenishAmt });
+						usedLetters = clearedLetters.usedLetters;
+						replenishAmt = clearedLetters.replenishAmt;
+						shouldAllowReplenish = clearedLetters.shouldAllowReplenish;
+						alphaState = defaultAlphaState(alpha, cipherState, vowels);
+						localStorage.removeItem(StorageKeys.usedLetters);
+						localStorage.setItem(StorageKeys.moves, JSON.stringify(moveAmount));
+						localStorage.setItem(StorageKeys.replenishAmt, JSON.stringify(replenishAmt));
+					}}
+					removeLetterFromSelection={() => {
+						const { newSelection } = removeLetterFromSelection(selected);
+						selected = newSelection;
+					}}
+					guess={handleGuess}
+					{selected}
+					{shouldAllowReplenish}
+				/>
+			{/if}
+		{/if}
 
-			<ActionButtons
-				clearSelection={() => {
-					const cleared = clearSelection();
-					selected = cleared.selected;
-					indexToSwap = cleared.indexToSwap;
-					startIndex = cleared.startIndex;
-					allowChooseIndex = cleared.allowChooseIndex;
-				}}
-				clearUsedLetters={() => {
-					const clearedLetters = clearUsedLetters({ moveAmount, replenishAmt });
-					usedLetters = clearedLetters.usedLetters;
-					replenishAmt = clearedLetters.replenishAmt;
-					shouldAllowReplenish = clearedLetters.shouldAllowReplenish;
-					alphaState = defaultAlphaState(alpha, cipherState, vowels);
-					localStorage.removeItem(StorageKeys.usedLetters);
-					localStorage.setItem(StorageKeys.moves, JSON.stringify(moveAmount));
-					localStorage.setItem(StorageKeys.replenishAmt, JSON.stringify(replenishAmt));
-				}}
-				removeLetterFromSelection={() => {
-					const { newSelection } = removeLetterFromSelection(selected);
-					selected = newSelection;
-				}}
-				guess={handleGuess}
-				{selected}
-				{shouldAllowReplenish}
-			/>
-		</div>
-	{/if}
+		<!-- TOGGLE PLAYER SOLUTION AND ENDGAME STATE -->
+		{#if gameOver}
+			<div class="flex items-center gap-2 py-8">
+				<button
+					on:click={() => {
+						showMySolution = !showMySolution;
+						window.scrollTo({
+							behavior: 'smooth',
+							top: 0
+						});
+					}}
+					class={clsx('rounded px-4 py-2 uppercase dark:text-black', {
+						'bg-black text-white dark:bg-emerald-500': showMySolution,
+						'bg-black text-white dark:bg-indigo-500': !showMySolution
+					})}>{showMySolution ? 'View Game' : 'View solution'}</button
+				>
+			</div>
+		{/if}
+	</div>
 </div>
 
 <div class:hidden={hydrated && !loading}>
