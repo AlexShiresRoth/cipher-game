@@ -541,7 +541,7 @@ ${replenishAmt} reps used`.trim();
 		{/if}
 
 		{#if showMySolution && gameOver}
-			<div class="flex flex-col">
+			<div class="flex w-full flex-col">
 				<div class="w-full pt-4">
 					<h2 class="text-3xl uppercase">My Solution</h2>
 				</div>

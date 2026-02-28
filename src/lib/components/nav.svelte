@@ -33,6 +33,18 @@
 			showSolution = false;
 		});
 	});
+
+	$: (() => {
+		(showStats, showSolution, showCommonGuesses);
+
+		if (typeof window !== 'undefined') {
+			if (showSolution || showStats || showCommonGuesses) {
+				document.body.style.overflow = 'hidden';
+			} else if (!showSolution && !showStats && !showCommonGuesses) {
+				document.body.style.overflow = 'visible';
+			}
+		}
+	})();
 </script>
 
 <nav class="relative flex w-full">
@@ -158,35 +170,41 @@
 	</div>
 	{#if showStats}
 		<div
-			class="absolute top-full z-10 mt-1 flex h-screen w-full flex-col justify-center bg-white p-4 dark:bg-black"
+			class="fixed top-0 z-10 flex h-full w-full flex-col items-center justify-center gap-2 overflow-scroll bg-white p-4 py-16 dark:bg-black"
 			transition:fly={{ y: -100 }}
 		>
-			<h2 class="text-3xl uppercase">Stats</h2>
-			<Stats {emoji} {moveAmount} {mistakeAmount} {solvableAmt} {replenishAmt} />
+			<div class="w-full md:w-1/2">
+				<h2 class="text-3xl uppercase">Stats</h2>
+				<Stats {emoji} {moveAmount} {mistakeAmount} {solvableAmt} {replenishAmt} />
+			</div>
 		</div>
 	{/if}
 	{#if showSolution}
 		<div
-			class="absolute top-full z-10 mt-1 flex w-full flex-col bg-white p-4 shadow-2xl dark:bg-black"
+			class="fixed top-0 z-10 flex h-full w-full flex-col items-center gap-2 overflow-scroll bg-white p-4 py-16 dark:bg-black"
 			transition:fly={{ y: -100 }}
 		>
-			<h2 class="text-3xl uppercase">Solution Example</h2>
-			<p class="font-regular mb-2 text-sm dark:text-gray-300">
-				There are many ways to solve this puzzle, here is one way.
-			</p>
-			<SolutionPath {solutionPath} {word} guesses={[]} />
+			<div class="w-full md:w-1/2">
+				<h2 class="text-3xl uppercase">Solution Example</h2>
+				<p class="font-regular mb-2 text-sm dark:text-gray-300">
+					There are many ways to solve this puzzle, here is one way.
+				</p>
+				<SolutionPath {solutionPath} {word} guesses={[]} />
+			</div>
 		</div>
 	{/if}
 	{#if showCommonGuesses && puzzleData}
 		<div
-			class="absolute top-full z-10 mt-1 flex w-full flex-col gap-2 bg-white p-4 dark:bg-black"
+			class="fixed top-0 z-10 flex h-full w-full flex-col items-center gap-2 overflow-scroll bg-white p-4 py-16 dark:bg-black"
 			transition:fly={{ y: -100 }}
 		>
-			<h2 class="text-xl">These are the words players used to solve the Cipher.</h2>
-			<p class="text-sm text-gray-400 dark:text-white/80">
-				The highlighted ones are the words you used.
-			</p>
-			<PlayerGuesses {puzzleData} {guesses} cipherWord={word} />
+			<div class="w-full md:w-1/2">
+				<h2 class="text-xl">These are the words players used to solve the Cipher.</h2>
+				<p class="text-sm text-gray-400 dark:text-white/80">
+					The highlighted ones are the words you used.
+				</p>
+				<PlayerGuesses {puzzleData} {guesses} cipherWord={word} />
+			</div>
 		</div>
 	{/if}
 </nav>
