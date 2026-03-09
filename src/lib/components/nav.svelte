@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { ChartNoAxesColumn, Puzzle, Route } from '@lucide/svelte';
 	import clsx from 'clsx';
-	import { onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
 	import PlayerGuesses from './player-guesses.svelte';
 	import SolutionPath from './solution-path.svelte';
@@ -27,12 +26,6 @@
 	$: showStats = false;
 	$: showSolution = false;
 	$: showCommonGuesses = false;
-
-	onMount(() => {
-		window.addEventListener('resize', () => {
-			showSolution = false;
-		});
-	});
 
 	$: (() => {
 		(showStats, showSolution, showCommonGuesses);
