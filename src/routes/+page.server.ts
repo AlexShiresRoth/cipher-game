@@ -36,8 +36,8 @@ export const load = async ({ setHeaders, cookies }) => {
 
 	console.log('cipher', cipher, tzTime);
 
-	if (cipher.length === 0) {
-		return null;
+	if (cipher.length === 0 || !cipher) {
+		return { id: -1, word: '', cipherWord: '', date: tzTime, minMoves: -1, solutionPath: [] };
 	}
 
 	const cipherPlayerData = await db

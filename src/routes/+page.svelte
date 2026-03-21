@@ -31,16 +31,83 @@
 	import { format } from 'date-fns';
 	import { onMount, tick } from 'svelte';
 	import { SvelteMap } from 'svelte/reactivity';
+	import { writable } from 'svelte/store';
 	import { fly } from 'svelte/transition';
 	import type { CipherPuzzle } from '../types';
 
+	type GameLogicState = {
+		moveAmount: number;
+		guesses: string[];
+		usedLetters: string[];
+		swaps: boolean[];
+		indexToSwap: number;
+		startIndex: number;
+		allowChooseIndex: boolean;
+		replenishAmt: number;
+	};
+
+	type GameUIState = {
+		modalOpen: boolean;
+		showTutorial: boolean;
+		showMySolution: boolean;
+		formattedDate: string;
+		showLetters: boolean;
+		showNavModal: boolean;
+	};
+
+	type GameSystemState = {
+		win: boolean;
+		hydrated: boolean;
+		gameOver: boolean;
+		internalError: boolean;
+		errors: string[];
+		cipherStateHistory: string[];
+		updatesState: Map<string, boolean>;
+		loading: boolean;
+	};
+
 	const date = new Date();
 
-	export let data: CipherPuzzle & { id: string } & { cipherPlayerData: PuzzleGuessesResponse };
+	export let data: CipherPuzzle & { id: number } & { cipherPlayerData: PuzzleGuessesResponse };
 	export let word = data.word;
 	export let cipher = data.cipherWord;
 	export let cipherState = cipher.split('');
 	export let cipherPlayerData = data.cipherPlayerData;
+
+	const gameLogicStore = writable<GameLogicState>({
+		moveAmount: 0,
+		guesses: [],
+		usedLetters: [],
+		swaps: [],
+		indexToSwap: -1,
+		startIndex: -1,
+		allowChooseIndex: false,
+		replenishAmt: 0
+	});
+
+	const gameUIStore = writable<GameUIState>({
+		showLetters: false,
+		showMySolution: false,
+		showNavModal: false,
+		showTutorial: false,
+		formattedDate: format(date.toLocaleDateString(), 'yyyy-MM-dd'),
+		modalOpen: false
+	});
+
+	const gameSystemStore = writable<GameSystemState>({
+		win: false,
+		cipherStateHistory: [],
+		hydrated: false,
+		loading: true,
+		updatesState: defaultUpdatesState(updateNames),
+		internalError: false,
+		gameOver: false,
+		errors: []
+	});
+
+	$: gameLogic = $gameLogicStore;
+	$: gameUI = $gameUIStore;
+	$: gameSystem = $gameSystemStore;
 
 	let win = false;
 	let moveAmount = 0;
@@ -55,8 +122,10 @@
 	let showTutorial = false;
 	let replenishAmt = 0;
 	let cipherStateHistory: string[] = [];
-	let correctPositions = cipherState.filter((l, i) => l === word[i]).length;
+
+	// TODO - handle derived states separately
 	let formattedDate = format(date.toLocaleDateString(), 'yyyy-MM-dd');
+	$: correctPositions = cipherState.filter((l, i) => l === word[i]).length;
 
 	$: alphaState = new Map<string, number>();
 	$: updatesState = defaultUpdatesState(updateNames);
@@ -69,6 +138,7 @@
 	$: gameOver = false;
 	$: showLetters = false;
 	$: showMySolution = false;
+	$: internalError = false;
 
 	function toggleModalOpen(val: boolean) {
 		modalOpen = val;
@@ -99,6 +169,7 @@
 		});
 	}
 
+	// TODO - need to refactor for using gamestores
 	// handle if user has already completed todays game
 	function checkTodaysPuzzle() {
 		const savedGuesses = localStorage.getItem(StorageKeys.guesses);
@@ -132,7 +203,6 @@
 		if (storedCipher) {
 			cipherState = storedCipher.split('');
 		}
-
 		if (replenishAmount) {
 			replenishAmt = JSON.parse(replenishAmount);
 		}
@@ -190,8 +260,10 @@
 		return await res.json();
 	}
 
+	// TODO - refactor this too
 	// check for when user has either won or lost game
 	async function checkForGameStatus() {
+		if (!internalError) return;
 		win = true;
 		gameOver = true;
 		modalOpen = true;
@@ -263,6 +335,7 @@
 		return newAlphaState;
 	}
 
+	// TODO - refactor this monstrosity
 	async function handleGuess() {
 		const result = await guess({
 			errors,
@@ -295,6 +368,14 @@
 			}
 			cipherStateHistory = [...cipherStateHistory, result.cipherState.join('')];
 		}
+
+		gameLogicStore.update((state) => ({
+			...state,
+			guesses: result.guesses,
+			startIndex: result.startIndex,
+			indexToSwap: result.indexToSwap,
+			swaps: result.swaps
+		}));
 
 		// We need to update map of letters based on their usage
 		alphaState = handleUpdateAlphaMap(
@@ -362,7 +443,17 @@ ${replenishAmt} reps used`.trim();
 		return preferences && Array.from(preferences.values()).some((val) => val.show);
 	}
 
+	function checkForInternalErrors(id: number) {
+		return id < 0;
+	}
+
 	onMount(() => {
+		// there seems to be some missing dates in DB, we need a fallback
+		// besides fixing the data
+		internalError = checkForInternalErrors(data.id);
+
+		if (internalError) return;
+
 		if (word) {
 			checkTodaysPuzzle();
 			addTodaysPuzzleToStorage(word);
@@ -402,12 +493,15 @@ ${replenishAmt} reps used`.trim();
 </script>
 
 <svelte:head>
-	<title>Play CIPHER {`#`}{data.id} - Daily Word-Shuffle Puzzle</title>
+	<title>Play CIPHER {`#`}{data.id || 'Uh oh :('} - Daily Word-Shuffle Puzzle</title>
 	<meta
 		name="description"
 		content="Play Cipher, the daily interactive word-shuffle puzzle game. Decipher the shuffled word using clever moves, swapping mechanics, and logic-based strategy."
 	/>
-	<meta property="og:title" content={`CIPHER #${data.id} – Daily Word-Shuffle Puzzle`} />
+	<meta
+		property="og:title"
+		content={`CIPHER #${data.id || 'Uh oh :('} – Daily Word-Shuffle Puzzle`}
+	/>
 	<meta
 		property="og:description"
 		content="Decipher shuffled words and challenge yourself with the daily brain-teaser."
@@ -417,6 +511,10 @@ ${replenishAmt} reps used`.trim();
 	<meta property="og:image" content="https://play-cipher.com/og-image.png" />
 	<link rel="canonical" href="https://play-cipher.com/" />
 </svelte:head>
+
+{#if internalError}
+	<div><p>Uh oh</p></div>
+{/if}
 
 <div class:hidden={!hydrated && loading} class="flex w-full flex-col items-center">
 	<Nav
