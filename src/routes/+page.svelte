@@ -50,7 +50,6 @@
 		modalOpen: boolean;
 		showTutorial: boolean;
 		showMySolution: boolean;
-		formattedDate: string;
 		showLetters: boolean;
 		showNavModal: boolean;
 	};
@@ -66,15 +65,15 @@
 		loading: boolean;
 	};
 
+	/*** Init Vars ***/
 	const date = new Date();
-
 	export let data: CipherPuzzle & { id: number } & { cipherPlayerData: PuzzleGuessesResponse };
 	export let word = data.word;
 	export let cipher = data.cipherWord;
 	export let cipherState = cipher.split('');
 	export let cipherPlayerData = data.cipherPlayerData;
 
-	const gameLogicStore = writable<GameLogicState>({
+	const defaultGameLogic: GameLogicState = {
 		moveAmount: 0,
 		guesses: [],
 		usedLetters: [],
@@ -83,18 +82,17 @@
 		startIndex: -1,
 		allowChooseIndex: false,
 		replenishAmt: 0
-	});
+	};
 
-	const gameUIStore = writable<GameUIState>({
+	const defaultUIState: GameUIState = {
 		showLetters: false,
 		showMySolution: false,
 		showNavModal: false,
 		showTutorial: false,
-		formattedDate: format(date.toLocaleDateString(), 'yyyy-MM-dd'),
 		modalOpen: false
-	});
+	};
 
-	const gameSystemStore = writable<GameSystemState>({
+	const defaultGameSystemState: GameSystemState = {
 		win: false,
 		cipherStateHistory: [],
 		hydrated: false,
@@ -103,7 +101,11 @@
 		internalError: false,
 		gameOver: false,
 		errors: []
-	});
+	};
+
+	const gameLogicStore = writable<GameLogicState>(defaultGameLogic);
+	const gameUIStore = writable<GameUIState>(defaultUIState);
+	const gameSystemStore = writable<GameSystemState>(defaultGameSystemState);
 
 	$: gameLogic = $gameLogicStore;
 	$: gameUI = $gameUIStore;
@@ -124,7 +126,7 @@
 	let cipherStateHistory: string[] = [];
 
 	// TODO - handle derived states separately
-	let formattedDate = format(date.toLocaleDateString(), 'yyyy-MM-dd');
+	const formattedDate = format(date.toLocaleDateString(), 'yyyy-MM-dd');
 	$: correctPositions = cipherState.filter((l, i) => l === word[i]).length;
 
 	$: alphaState = new Map<string, number>();
@@ -141,14 +143,38 @@
 	$: internalError = false;
 
 	function toggleModalOpen(val: boolean) {
+		// TODO - remove this variable once store is being read
 		modalOpen = val;
+
+		gameUIStore.update((state) => ({
+			...state,
+			modalOpen: val
+		}));
 	}
 
-	// remove all stored data
-	function resetStorage() {
+	/**
+	 *
+	 * @param exceptions
+	 * @desc resets local storage to default game state but
+	 * keeps some params that should persist across games
+	 */
+	function removeLocalStorageItemsWithExceptions(exceptions: string[]) {
+		return Object.entries(StorageKeys).forEach(([key, value]) => {
+			if (!exceptions.includes(value)) {
+				localStorage.removeItem(key);
+			}
+		});
+	}
+
+	/**
+	 * @desc resets game to initial state
+	 */
+	function resetGame() {
+		// TODO - GET RID OF LOCAL VARIABLES
 		win = false;
 		gameOver = false;
 		modalOpen = false;
+		// I don't think we will need this anymore
 		const cleared = clearSelection();
 		selected = cleared.selected;
 		indexToSwap = cleared.indexToSwap;
@@ -156,56 +182,117 @@
 		allowChooseIndex = cleared.allowChooseIndex;
 		guesses = [];
 		moveAmount = 0;
-		cipherState = data.cipherWord.split('');
 		cipherStateHistory = [];
 		usedLetters = [];
 		replenishAmt = 0;
 		swaps = [];
+
+		// TODO - these should be moved
+		cipherState = data.cipherWord.split('');
 		alphaState = defaultAlphaState(alpha, cipherState, vowels);
-		Object.entries(StorageKeys).forEach(([key, value]) => {
-			if (value !== StorageKeys.viewed) {
-				localStorage.removeItem(key);
-			}
-		});
+
+		gameLogicStore.set(defaultGameLogic);
+		gameUIStore.set(defaultUIState);
+		gameSystemStore.set(defaultGameSystemState);
+
+		removeLocalStorageItemsWithExceptions([StorageKeys.viewed]);
+	}
+
+	/**
+	 * @param keys
+	 * @desc get a list of things from local storage based on provided keys
+	 */
+	function getItemsFromStorage(keys: string[]) {
+		return keys.map((key) => localStorage.getItem(key));
+	}
+
+	function parseJSON(json: string) {
+		return JSON.parse(json);
 	}
 
 	// TODO - need to refactor for using gamestores
 	// handle if user has already completed todays game
 	function checkTodaysPuzzle() {
-		const savedGuesses = localStorage.getItem(StorageKeys.guesses);
-		const moves = localStorage.getItem(StorageKeys.moves);
-		const puzzle = localStorage.getItem(StorageKeys.puzzle);
-		const storedCipher = localStorage.getItem(StorageKeys.cipher);
-		const lettersUsed = localStorage.getItem(StorageKeys.usedLetters);
-		const correctGuesses = localStorage.getItem(StorageKeys.swaps);
-		const replenishAmount = localStorage.getItem(StorageKeys.replenishAmt);
-		const cipherStateHistoryStored = localStorage.getItem(StorageKeys.cipherStateHistory);
+		const [
+			savedGuesses,
+			moves,
+			puzzle,
+			storedCipher,
+			lettersUsed,
+			correctGuesses,
+			replenishAmount,
+			cipherStateHistoryStored,
+			gameStatus
+		] = getItemsFromStorage([
+			StorageKeys.guesses,
+			StorageKeys.moves,
+			StorageKeys.puzzle,
+			StorageKeys.cipher,
+			StorageKeys.usedLetters,
+			StorageKeys.swaps,
+			StorageKeys.replenishAmt,
+			StorageKeys.cipherStateHistory,
+			StorageKeys.gameStatus
+		]);
 
+		if (puzzle !== word) {
+			resetGame();
+			return;
+		}
+
+		// TODO should probably make a key 'win'
+		const winGame = gameStatus === 'win';
+
+		gameSystemStore.update((state) => ({
+			...state,
+			cipherStateHistory: cipherStateHistoryStored
+				? parseJSON(cipherStateHistoryStored)
+				: state.cipherStateHistory,
+			win: winGame,
+			gameOver: winGame
+		}));
+
+		gameLogicStore.update((state) => ({
+			...state,
+			guesses: savedGuesses ? parseJSON(savedGuesses) : state.guesses,
+			moves: moves ? parseInt(moves) : state.moveAmount,
+			replenishAmt: replenishAmount ? parseJSON(replenishAmount) : state.replenishAmt,
+			swaps: correctGuesses ? parseJSON(correctGuesses) : state.swaps
+		}));
+
+		gameUIStore.update((state) => ({
+			...state,
+			modalOpen: winGame
+		}));
+
+		// done
 		if (cipherStateHistoryStored) {
 			cipherStateHistory = JSON.parse(cipherStateHistoryStored);
 		}
+		//done
 		if (savedGuesses && moves) {
 			guesses = JSON.parse(savedGuesses);
 			moveAmount = parseInt(moves);
 		}
-		if (puzzle !== word) {
-			resetStorage();
-			return;
-		}
+		// done
 		if (localStorage.getItem(StorageKeys.gameStatus) === 'win') {
 			win = true;
 			gameOver = true;
 			modalOpen = true;
 		}
+		// done
 		if (moves) {
 			moveAmount = parseInt(moves);
 		}
+		// TODO - idk how to handle this
 		if (storedCipher) {
 			cipherState = storedCipher.split('');
 		}
+		// done
 		if (replenishAmount) {
 			replenishAmt = JSON.parse(replenishAmount);
 		}
+		// done
 		if (correctGuesses) {
 			swaps = JSON.parse(correctGuesses);
 		}

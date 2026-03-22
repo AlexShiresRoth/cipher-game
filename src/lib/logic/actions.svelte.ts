@@ -2,17 +2,18 @@ import { WORD_LIST } from '$lib/wordlists';
 import { SvelteMap } from 'svelte/reactivity';
 import { handleErrorOnGuess } from './errors.svelte';
 
-/**
- * @clearSelection
- * @returns updated variables
- * @description clears whatever letters user has selected
- */
 type ClearSelectionResponse = {
 	selected: string[];
 	indexToSwap: number;
 	startIndex: number;
 	allowChooseIndex: boolean;
 };
+
+/**
+ * @clearSelection
+ * @returns updated variables
+ * @description clears whatever letters user has selected in UI
+ */
 export function clearSelection(): ClearSelectionResponse {
 	return { selected: [], indexToSwap: -1, startIndex: -1, allowChooseIndex: false };
 }
