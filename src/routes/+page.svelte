@@ -31,7 +31,7 @@
 	import { format } from 'date-fns';
 	import { onMount, tick } from 'svelte';
 	import { SvelteMap } from 'svelte/reactivity';
-	import { writable } from 'svelte/store';
+	import { derived, writable } from 'svelte/store';
 	import { fly } from 'svelte/transition';
 	import type { CipherPuzzle } from '../types';
 
@@ -44,6 +44,9 @@
 		startIndex: number;
 		allowChooseIndex: boolean;
 		replenishAmt: number;
+		shouldAllowReplenish: boolean;
+		selected: string[];
+		cipherState: string[];
 	};
 
 	type GameUIState = {
@@ -63,6 +66,7 @@
 		cipherStateHistory: string[];
 		updatesState: Map<string, boolean>;
 		loading: boolean;
+		preferences: PrefMap;
 	};
 
 	/*** Init Vars ***/
@@ -70,7 +74,6 @@
 	export let data: CipherPuzzle & { id: number } & { cipherPlayerData: PuzzleGuessesResponse };
 	export let word = data.word;
 	export let cipher = data.cipherWord;
-	export let cipherState = cipher.split('');
 	export let cipherPlayerData = data.cipherPlayerData;
 
 	const defaultGameLogic: GameLogicState = {
@@ -81,7 +84,10 @@
 		indexToSwap: -1,
 		startIndex: -1,
 		allowChooseIndex: false,
-		replenishAmt: 0
+		replenishAmt: 0,
+		shouldAllowReplenish: false,
+		selected: [],
+		cipherState: cipher.split('')
 	};
 
 	const defaultUIState: GameUIState = {
@@ -100,47 +106,60 @@
 		updatesState: defaultUpdatesState(updateNames),
 		internalError: false,
 		gameOver: false,
-		errors: []
+		errors: [],
+		preferences: new Map()
 	};
 
 	const gameLogicStore = writable<GameLogicState>(defaultGameLogic);
 	const gameUIStore = writable<GameUIState>(defaultUIState);
 	const gameSystemStore = writable<GameSystemState>(defaultGameSystemState);
 
-	$: gameLogic = $gameLogicStore;
-	$: gameUI = $gameUIStore;
-	$: gameSystem = $gameSystemStore;
+	$: game = $gameLogicStore;
+	$: ui = $gameUIStore;
+	$: system = $gameSystemStore;
 
-	let win = false;
-	let moveAmount = 0;
-	let modalOpen = false;
-	let showNavModal = false;
-	let guesses: string[] = [];
-	let usedLetters: string[] = [];
-	let swaps: boolean[] = [];
-	let indexToSwap: number;
-	let startIndex: number = -1;
-	let allowChooseIndex = false;
-	let showTutorial = false;
-	let replenishAmt = 0;
-	let cipherStateHistory: string[] = [];
+	// GAME LOGIC VARIABLES
+	$: allowChooseIndex = game.allowChooseIndex;
+	$: startIndex = game.startIndex;
+	$: swaps = game.swaps;
+	$: indexToSwap = game.indexToSwap;
+	$: replenishAmt = game.replenishAmt;
+	$: usedLetters = game.usedLetters;
+	$: guesses = game.guesses;
+	$: selected = game.selected;
+	$: shouldAllowReplenish = game.shouldAllowReplenish;
+	$: cipherState = game.cipherState;
+	$: moveAmount = game.moveAmount;
+
+	// GAME UI VARIABLES
+	$: showLetters = ui.showLetters;
+	$: showMySolution = ui.showMySolution;
+	$: showNavModal = ui.showNavModal;
+	$: showTutorial = ui.showTutorial;
+	$: modalOpen = ui.modalOpen;
+
+	// GAME SYSTEM VARIABLES
+	$: errors = system.errors;
+	$: internalError = system.internalError;
+	$: gameOver = system.gameOver;
+	$: updatesState = system.updatesState;
+	$: hydrated = system.hydrated;
+	$: cipherStateHistory = system.cipherStateHistory;
+	$: loading = system.loading;
+	$: win = system.win;
+	$: preferences = system.preferences;
 
 	// TODO - handle derived states separately
 	const formattedDate = format(date.toLocaleDateString(), 'yyyy-MM-dd');
-	$: correctPositions = cipherState.filter((l, i) => l === word[i]).length;
+
+	const correctPositionsStore = derived(
+		gameLogicStore,
+		($gameLogicStore) => $gameLogicStore.cipherState.filter((l, i) => l === word[i]).length
+	);
+
+	$: correctPositions = $correctPositionsStore;
 
 	$: alphaState = new Map<string, number>();
-	$: updatesState = defaultUpdatesState(updateNames);
-	$: preferences = new Map() as PrefMap;
-	$: shouldAllowReplenish = false;
-	$: selected = [] as string[];
-	$: hydrated = false;
-	$: loading = true;
-	$: errors = [] as string[];
-	$: gameOver = false;
-	$: showLetters = false;
-	$: showMySolution = false;
-	$: internalError = false;
 
 	function toggleModalOpen(val: boolean) {
 		// TODO - remove this variable once store is being read
@@ -170,23 +189,6 @@
 	 * @desc resets game to initial state
 	 */
 	function resetGame() {
-		// TODO - GET RID OF LOCAL VARIABLES
-		win = false;
-		gameOver = false;
-		modalOpen = false;
-		// I don't think we will need this anymore
-		const cleared = clearSelection();
-		selected = cleared.selected;
-		indexToSwap = cleared.indexToSwap;
-		startIndex = cleared.startIndex;
-		allowChooseIndex = cleared.allowChooseIndex;
-		guesses = [];
-		moveAmount = 0;
-		cipherStateHistory = [];
-		usedLetters = [];
-		replenishAmt = 0;
-		swaps = [];
-
 		// TODO - these should be moved
 		cipherState = data.cipherWord.split('');
 		alphaState = defaultAlphaState(alpha, cipherState, vowels);
@@ -206,6 +208,11 @@
 		return keys.map((key) => localStorage.getItem(key));
 	}
 
+	/**
+	 *
+	 * @param json
+	 * @desc helper function to parse json
+	 */
 	function parseJSON(json: string) {
 		return JSON.parse(json);
 	}
@@ -257,7 +264,10 @@
 			guesses: savedGuesses ? parseJSON(savedGuesses) : state.guesses,
 			moves: moves ? parseInt(moves) : state.moveAmount,
 			replenishAmt: replenishAmount ? parseJSON(replenishAmount) : state.replenishAmt,
-			swaps: correctGuesses ? parseJSON(correctGuesses) : state.swaps
+			swaps: correctGuesses ? parseJSON(correctGuesses) : state.swaps,
+			usedLetters: lettersUsed ? parseJSON(lettersUsed) : state.usedLetters,
+			shouldAllowReplenish: checkAlphaStateIsDiminshed(alphaState, data.cipherWord.split('')),
+			cipherState: storedCipher ? storedCipher.split('') : state.cipherState
 		}));
 
 		gameUIStore.update((state) => ({
@@ -266,44 +276,43 @@
 		}));
 
 		// done
-		if (cipherStateHistoryStored) {
-			cipherStateHistory = JSON.parse(cipherStateHistoryStored);
-		}
+		// if (cipherStateHistoryStored) {
+		// 	cipherStateHistory = JSON.parse(cipherStateHistoryStored);
+		// }
 		//done
-		if (savedGuesses && moves) {
-			guesses = JSON.parse(savedGuesses);
-			moveAmount = parseInt(moves);
-		}
+		// if (savedGuesses && moves) {
+		// 	guesses = JSON.parse(savedGuesses);
+		// 	moveAmount = parseInt(moves);
+		// }
 		// done
-		if (localStorage.getItem(StorageKeys.gameStatus) === 'win') {
-			win = true;
-			gameOver = true;
-			modalOpen = true;
-		}
+		// if (localStorage.getItem(StorageKeys.gameStatus) === 'win') {
+		// 	win = true;
+		// 	gameOver = true;
+		// 	modalOpen = true;
+		// }
+		// // done
+		// if (moves) {
+		// 	moveAmount = parseInt(moves);
+		// }
+		// // TODO - idk how to handle this
+		// if (storedCipher) {
+		// 	cipherState = storedCipher.split('');
+		// }
+		// // done
+		// if (replenishAmount) {
+		// 	replenishAmt = JSON.parse(replenishAmount);
+		// }
+		// // done
+		// if (correctGuesses) {
+		// 	swaps = JSON.parse(correctGuesses);
+		// }
 		// done
-		if (moves) {
-			moveAmount = parseInt(moves);
-		}
-		// TODO - idk how to handle this
-		if (storedCipher) {
-			cipherState = storedCipher.split('');
-		}
-		// done
-		if (replenishAmount) {
-			replenishAmt = JSON.parse(replenishAmount);
-		}
-		// done
-		if (correctGuesses) {
-			swaps = JSON.parse(correctGuesses);
-		}
 		if (lettersUsed) {
-			usedLetters = JSON.parse(lettersUsed);
 			alphaState = handleUpdateAlphaMap(
 				alpha,
-				usedLetters,
+				lettersUsed.split('') || [],
 				defaultAlphaState(alpha, cipherState, vowels)
 			);
-			shouldAllowReplenish = checkAlphaStateIsDiminshed(alphaState, data.cipherWord.split(''));
 		} else {
 			alphaState = defaultAlphaState(alpha, cipherState, vowels);
 		}
@@ -351,9 +360,18 @@
 	// check for when user has either won or lost game
 	async function checkForGameStatus() {
 		if (!internalError) return;
-		win = true;
-		gameOver = true;
-		modalOpen = true;
+		// win = true;
+		// gameOver = true;
+		// modalOpen = true;
+		gameSystemStore.update((state) => ({
+			...state,
+			win: true,
+			gameOver: true
+		}));
+		gameUIStore.update((state) => ({
+			...state,
+			modalOpen: true
+		}));
 		localStorage.setItem(StorageKeys.gameStatus, 'win');
 		localStorage.setItem(StorageKeys.moves, String(moveAmount));
 		localStorage.setItem(StorageKeys.cipher, word);
