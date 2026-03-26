@@ -1,4 +1,4 @@
-import { NODE_ENV } from '$env/static/private';
+import { NODE_ENV, STARTING_INDEX } from '$env/static/private';
 import { db } from '$lib/server/db';
 import { cipherGuesses, cipherPuzzle } from '$lib/server/db/schema';
 import { formatInTimeZone } from 'date-fns-tz';
@@ -6,6 +6,16 @@ import { eq } from 'drizzle-orm';
 import { v4 } from 'uuid';
 export const prerender = false;
 const PLAYER_COOKIE = 'playerId';
+
+import { differenceInCalendarDays, subDays } from 'date-fns';
+
+const ID = parseInt(STARTING_INDEX);
+
+const today = new Date();
+
+const estToday = new Date(formatInTimeZone(today, 'America/New_York', 'yyyy-MM-dd'));
+
+const START_DATE = subDays(estToday, ID);
 
 export const load = async ({ setHeaders, cookies }) => {
 	const playerCookie = cookies.get(PLAYER_COOKIE);
@@ -29,15 +39,17 @@ export const load = async ({ setHeaders, cookies }) => {
 		expires: '0'
 	});
 
-	const today = new Date();
+	// The index should match
+	const index = differenceInCalendarDays(estToday, START_DATE);
+
 	const tzTime = formatInTimeZone(today, 'America/New_York', 'yyyy-MM-dd');
 
-	const cipher = await db.select().from(cipherPuzzle).where(eq(cipherPuzzle.date, tzTime));
+	const cipher = await db.select().from(cipherPuzzle).where(eq(cipherPuzzle.id, index));
 
-	console.log('cipher', cipher, tzTime);
+	console.log('cipher', cipher, index);
 
-	if (cipher.length === 0) {
-		return null;
+	if (cipher.length === 0 || !cipher) {
+		return { id: -1, word: '', cipherWord: '', date: tzTime, minMoves: -1, solutionPath: [] };
 	}
 
 	const cipherPlayerData = await db
