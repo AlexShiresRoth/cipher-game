@@ -1,4 +1,4 @@
-import { NODE_ENV, STARTING_INDEX } from '$env/static/private';
+import { NODE_ENV, STARTING_DATE } from '$env/static/private';
 import { db } from '$lib/server/db';
 import { cipherGuesses, cipherPuzzle } from '$lib/server/db/schema';
 import { formatInTimeZone } from 'date-fns-tz';
@@ -7,15 +7,15 @@ import { v4 } from 'uuid';
 export const prerender = false;
 const PLAYER_COOKIE = 'playerId';
 
-import { differenceInCalendarDays, subDays } from 'date-fns';
-
-const ID = parseInt(STARTING_INDEX);
+import { differenceInCalendarDays, parseISO } from 'date-fns';
 
 const today = new Date();
 
-const estToday = new Date(formatInTimeZone(today, 'America/New_York', 'yyyy-MM-dd'));
+const estDateStr = formatInTimeZone(new Date(), 'America/New_York', 'yyyy-MM-dd');
 
-const START_DATE = subDays(estToday, ID);
+const estToday = parseISO(estDateStr);
+
+const START_DATE = new Date(STARTING_DATE);
 
 export const load = async ({ setHeaders, cookies }) => {
 	const playerCookie = cookies.get(PLAYER_COOKIE);
