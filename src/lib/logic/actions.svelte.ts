@@ -1,3 +1,4 @@
+import type { GuessParams, GuessReturnValues } from '$lib/types';
 import { WORD_LIST } from '$lib/wordlists';
 import { SvelteMap } from 'svelte/reactivity';
 import { handleErrorOnGuess } from './errors.svelte';
@@ -104,23 +105,9 @@ export function getMoveToIndex({ selected, startIndex, cipherState }: GetMoveToP
 
 /**
  *
- * @params GuessParams
+ * @param GuessParams
  * @returns
  */
-type GuessParams = {
-	guesses: string[];
-	selected: string[];
-	cipherState: string[];
-	startIndex: number;
-	errors: string[];
-	word: string;
-	correctPositions: number;
-	swaps: boolean[];
-	moveAmount: number;
-	usedLetters: string[];
-	getMoveToIndex: () => number;
-};
-
 export async function guess({
 	guesses,
 	selected,
@@ -133,7 +120,7 @@ export async function guess({
 	swaps,
 	moveAmount,
 	usedLetters
-}: GuessParams) {
+}: GuessParams): Promise<GuessReturnValues> {
 	// --- Basic derived values ---
 	const joined = selected.join('');
 	const moveIndex = getMoveToIndex();
