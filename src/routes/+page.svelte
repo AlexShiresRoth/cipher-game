@@ -15,24 +15,29 @@
 		clearSelection,
 		clearUsedLetters,
 		defaultAlphaState,
+		getItemsFromStorage,
 		getMoveToIndex,
 		getTierByMoves,
 		guess,
 		maxWordLength,
 		onSelect,
+		parseJSON,
 		PreferenceKeys,
+		removeItemsInStorage,
 		removeLetterFromSelection,
+		removeLocalStorageItemsWithExceptions,
+		setItemsInStorage,
 		shareResultsAction,
 		StorageKeys,
+		stringifyJSON,
 		toggleUpdatePopup,
 		vowels
 	} from '$lib/logic';
 	import { defaultUpdatesState, getUpdateMapValue, updateNames } from '$lib/logic/updates';
 	import clsx from 'clsx';
-	import { format } from 'date-fns';
 	import { onMount, tick } from 'svelte';
 	import { SvelteMap } from 'svelte/reactivity';
-	import { derived, writable } from 'svelte/store';
+	import { get, writable } from 'svelte/store';
 	import { fly } from 'svelte/transition';
 	import type { CipherPuzzle } from '../types';
 
@@ -48,6 +53,7 @@
 		shouldAllowReplenish: boolean;
 		selected: string[];
 		cipherState: string[];
+		alphaState: Map<string, number>;
 	};
 
 	type GameUIState = {
@@ -70,8 +76,10 @@
 		preferences: PrefMap;
 	};
 
+	// incosistent state update
+	// TODO - add popup notif for swapping 2 letters into correct position
+
 	/*** Init Vars ***/
-	const date = new Date();
 	export let data: CipherPuzzle & { id: number } & { cipherPlayerData: PuzzleGuessesResponse };
 	export let word = data.word;
 	export let cipher = data.cipherWord;
@@ -88,7 +96,8 @@
 		replenishAmt: 0,
 		shouldAllowReplenish: false,
 		selected: [],
-		cipherState: cipher.split('')
+		cipherState: cipher.split(''),
+		alphaState: defaultAlphaState(alpha, cipher.split(''), vowels)
 	};
 
 	const defaultUIState: GameUIState = {
@@ -101,7 +110,7 @@
 
 	const defaultGameSystemState: GameSystemState = {
 		win: false,
-		cipherStateHistory: [],
+		cipherStateHistory: [data.cipherWord],
 		hydrated: false,
 		loading: true,
 		updatesState: defaultUpdatesState(updateNames),
@@ -131,6 +140,7 @@
 	$: shouldAllowReplenish = game.shouldAllowReplenish;
 	$: cipherState = game.cipherState;
 	$: moveAmount = game.moveAmount;
+	$: alphaState = game.alphaState;
 
 	// GAME UI VARIABLES
 	$: showLetters = ui.showLetters;
@@ -150,17 +160,43 @@
 	$: win = system.win;
 	$: preferences = system.preferences;
 
-	// TODO - handle derived states separately
-	const formattedDate = format(date.toLocaleDateString(), 'yyyy-MM-dd');
+	$: correctPositions = $gameLogicStore.cipherState.filter((l, i) => l === word[i]).length;
 
-	const correctPositionsStore = derived(
-		gameLogicStore,
-		($gameLogicStore) => $gameLogicStore.cipherState.filter((l, i) => l === word[i]).length
-	);
+	/**
+	 *
+	 * @param updates
+	 * @description utility for game logic state updates
+	 */
+	function updateGameLogicStore(updates: Partial<GameLogicState>) {
+		return gameLogicStore.update((state) => ({
+			...state,
+			...updates
+		}));
+	}
 
-	$: correctPositions = $correctPositionsStore;
+	/**
+	 *
+	 * @param updates
+	 * @description utility for game system state updates
+	 */
+	function updateGameSystemStore(updates: Partial<GameSystemState>) {
+		return gameSystemStore.update((state) => ({
+			...state,
+			...updates
+		}));
+	}
 
-	$: alphaState = new Map<string, number>();
+	/**
+	 *
+	 * @param updates
+	 * @description utility for game UI state updates
+	 */
+	function updateGameUIStore(updates: Partial<GameUIState>) {
+		return gameUIStore.update((state) => ({
+			...state,
+			...updates
+		}));
+	}
 
 	/**
 	 *
@@ -168,72 +204,18 @@
 	 * @description toggle the WHAT
 	 */
 	function toggleModalOpen(val: boolean) {
-		gameUIStore.update((state) => ({
-			...state,
-			modalOpen: val
-		}));
-	}
-
-	/**
-	 *
-	 * @param exceptions
-	 * @description resets local storage to default game state but
-	 * keeps some params that should persist across games
-	 */
-	function removeLocalStorageItemsWithExceptions(exceptions: string[]) {
-		return Object.entries(StorageKeys).forEach(([key, value]) => {
-			if (!exceptions.includes(value)) {
-				localStorage.removeItem(key);
-			}
-		});
+		return updateGameUIStore({ modalOpen: val });
 	}
 
 	/**
 	 * @description resets game to initial state
 	 */
 	function resetGame() {
-		alphaState = defaultAlphaState(alpha, cipherState, vowels);
-
 		gameLogicStore.set(defaultGameLogic);
 		gameUIStore.set(defaultUIState);
 		gameSystemStore.set(defaultGameSystemState);
 
 		removeLocalStorageItemsWithExceptions([StorageKeys.viewed]);
-	}
-
-	/**
-	 * @param keys
-	 * @description get a list of things from local storage based on provided keys
-	 */
-	function getItemsFromStorage(keys: string[]) {
-		return keys.map((key) => localStorage.getItem(key));
-	}
-
-	/**
-	 *
-	 * @param items
-	 * @description setter utility for local storage
-	 */
-	function setItemsInStorage(items: { key: string; value: string }[]) {
-		return items.forEach((item) => localStorage.setItem(item.key, item.value));
-	}
-
-	/**
-	 *
-	 * @param json
-	 * @description helper function to parse json
-	 */
-	function parseJSON(json: string) {
-		return JSON.parse(json);
-	}
-
-	/**
-	 *
-	 * @param json
-	 * @description stringifies that json, boi
-	 */
-	function stringifyJSON(json: unknown) {
-		return JSON.stringify(json);
 	}
 
 	/**
@@ -270,11 +252,15 @@
 		// TODO should probably make a key 'win'
 		const winGame = gameStatus === 'win';
 
+		updateGameUIStore({
+			modalOpen: winGame
+		});
+
 		gameSystemStore.update((state) => ({
 			...state,
 			cipherStateHistory: cipherStateHistoryStored
 				? parseJSON(cipherStateHistoryStored)
-				: state.cipherStateHistory,
+				: cipherStateHistory,
 			win: winGame,
 			gameOver: winGame
 		}));
@@ -282,28 +268,20 @@
 		gameLogicStore.update((state) => ({
 			...state,
 			guesses: savedGuesses ? parseJSON(savedGuesses) : state.guesses,
-			moves: moves ? parseInt(moves) : state.moveAmount,
+			moveAmount: moves ? parseInt(moves) : state.moveAmount,
 			replenishAmt: replenishAmount ? parseJSON(replenishAmount) : state.replenishAmt,
 			swaps: correctGuesses ? parseJSON(correctGuesses) : state.swaps,
 			usedLetters: lettersUsed ? parseJSON(lettersUsed) : state.usedLetters,
-			shouldAllowReplenish: checkAlphaStateIsDiminshed(alphaState, data.cipherWord.split('')),
-			cipherState: storedCipher ? storedCipher.split('') : state.cipherState
+			shouldAllowReplenish: checkAlphaStateIsDiminshed(state.alphaState, data.cipherWord.split('')),
+			cipherState: storedCipher ? storedCipher.split('') : state.cipherState,
+			alphaState: lettersUsed
+				? handleUpdateAlphaMap(
+						alpha,
+						lettersUsed.split('') || [],
+						defaultAlphaState(alpha, state.cipherState, vowels)
+					)
+				: defaultAlphaState(alpha, state.cipherState, vowels)
 		}));
-
-		gameUIStore.update((state) => ({
-			...state,
-			modalOpen: winGame
-		}));
-
-		if (lettersUsed) {
-			alphaState = handleUpdateAlphaMap(
-				alpha,
-				lettersUsed.split('') || [],
-				defaultAlphaState(alpha, cipherState, vowels)
-			);
-		} else {
-			alphaState = defaultAlphaState(alpha, cipherState, vowels);
-		}
 	}
 
 	/**
@@ -328,15 +306,13 @@
 		} else {
 			const updatesMap = new Map(Array.from(updatesState.keys()).map((key) => [key, true]));
 
-			gameSystemStore.update((state) => ({
-				...state,
+			updateGameSystemStore({
 				updatesState: updatesMap
-			}));
+			});
 
-			gameUIStore.update((state) => ({
-				...state,
+			updateGameUIStore({
 				showTutorial: true
-			}));
+			});
 
 			setItemsInStorage([{ key: StorageKeys.viewed, value: 'true' }]);
 		}
@@ -366,22 +342,19 @@
 	 * @description handle game state for when player solves puzzle
 	 */
 	async function checkForGameStatus() {
-		gameSystemStore.update((state) => ({
-			...state,
+		updateGameSystemStore({
 			win: true,
 			gameOver: true
-		}));
+		});
 
-		gameUIStore.update((state) => ({
-			...state,
+		updateGameUIStore({
 			modalOpen: true
-		}));
+		});
 
 		setItemsInStorage([
 			{ key: StorageKeys.gameStatus, value: 'win' },
 			{ key: StorageKeys.moves, value: String(moveAmount) },
-			{ key: StorageKeys.cipher, value: word },
-			{ key: StorageKeys.date, value: formattedDate }
+			{ key: StorageKeys.cipher, value: word }
 		]);
 
 		// add the words players used to solve the cipher to the db, on win
@@ -395,7 +368,9 @@
 		setTimeout(() => {
 			const newErrors = [...errors];
 			newErrors.pop();
-			errors = newErrors.slice(0, 5);
+			updateGameSystemStore({
+				errors: newErrors.slice(0, 5)
+			});
 		}, 3000);
 	}
 
@@ -404,24 +379,6 @@
 	 */
 	function handleGetMoveToIndex() {
 		return getMoveToIndex({ selected, startIndex, cipherState });
-	}
-
-	/**
-	 * @description handle user selection & interaction
-	 */
-	function checkSelection() {
-		if (selected.length > 0) {
-			gameLogicStore.update((state) => ({
-				...state,
-				indexToSwap: handleGetMoveToIndex()
-			}));
-		}
-		if (selected.length === 0) {
-			gameLogicStore.update((state) => ({
-				...state,
-				...clearSelection()
-			}));
-		}
 	}
 
 	/**
@@ -447,10 +404,9 @@
 	 */
 	function handleStartingIndexUpdate(index: number) {
 		if (allowChooseIndex) {
-			gameLogicStore.update((state) => ({
-				...state,
+			updateGameLogicStore({
 				...chooseStartingIndex(index)
-			}));
+			});
 		}
 	}
 
@@ -483,41 +439,67 @@
 		return newAlphaState;
 	}
 
+	// TODO - reps still don't work perfectly
 	/**
 	 *
-	 * @param param0
+	 * @param param0 GuessReturnValues
 	 */
 	async function handleStateFromGuess({
 		invalidGuess,
 		indexToSwap,
-		cipherState
-	}: GuessReturnValues) {
+		cipherState,
+		correctPositions: positions,
+		allowChooseIndex,
+		guesses,
+		selected,
+		startIndex,
+		moveAmount,
+		errors,
+		swaps,
+		usedLetters,
+		cipherStateHistory
+	}: GuessReturnValues & { cipherStateHistory: string[] }) {
+		let updatedCipherStateHistory = cipherStateHistory;
+
 		if (!invalidGuess) {
-			gameSystemStore.update((state) => ({
-				...state,
-				cipherStateHistory:
-					cipherStateHistory.length === 0
-						? [data.cipherWord]
-						: [...state.cipherStateHistory, cipherState.join('')]
-			}));
+			updatedCipherStateHistory =
+				cipherStateHistory.length === 0
+					? [data.cipherWord]
+					: [...cipherStateHistory, cipherState.join('')];
 		}
 
-		gameLogicStore.update((state) => ({
+		correctPositions = positions;
+
+		gameLogicStore.update((state) => {
+			const updatedAlphaState = handleUpdateAlphaMap(
+				alpha,
+				usedLetters,
+				defaultAlphaState(alpha, state.cipherState, vowels)
+			);
+			return {
+				...state,
+				guesses,
+				startIndex,
+				indexToSwap,
+				swaps,
+				shouldAllowReplenish: checkAlphaStateIsDiminshed(
+					updatedAlphaState,
+					data.cipherWord.split('')
+				),
+				selected,
+				cipherState,
+				allowChooseIndex,
+				moveAmount,
+				usedLetters,
+				alphaState: updatedAlphaState
+			};
+		});
+
+		gameSystemStore.update((state) => ({
 			...state,
-			guesses,
-			startIndex,
-			indexToSwap,
-			swaps
+			errors,
+			cipherStateHistory: updatedCipherStateHistory
 		}));
-
-		// We need to update map of letters based on their usage
-		alphaState = handleUpdateAlphaMap(
-			alpha,
-			usedLetters,
-			defaultAlphaState(alpha, cipherState, vowels)
-		);
-
-		shouldAllowReplenish = checkAlphaStateIsDiminshed(alphaState, data.cipherWord.split(''));
 
 		setItemsInStorage([
 			{ key: StorageKeys.guesses, value: stringifyJSON(guesses) },
@@ -525,7 +507,7 @@
 			{ key: StorageKeys.cipher, value: cipherState.join('') },
 			{ key: StorageKeys.usedLetters, value: stringifyJSON(usedLetters) },
 			{ key: StorageKeys.swaps, value: stringifyJSON(swaps) },
-			{ key: StorageKeys.cipherStateHistory, value: stringifyJSON(cipherStateHistory) }
+			{ key: StorageKeys.cipherStateHistory, value: stringifyJSON(updatedCipherStateHistory) }
 		]);
 	}
 
@@ -547,17 +529,57 @@
 			correctPositions
 		});
 
-		return handleStateFromGuess(result);
+		return handleStateFromGuess({ ...result, cipherStateHistory });
 	}
 
+	/**
+	 *
+	 * @param l
+	 * @description handle player selection on keyboard
+	 */
 	function handleSelect(l: string) {
+		const { selected, cipherState, startIndex } = get(gameLogicStore);
 		if (gameOver) return;
 		if (selected.length >= maxWordLength) return;
 
-		gameLogicStore.update((state) => ({
-			...state,
-			...onSelect(l, selected, cipherState, startIndex)
-		}));
+		const updatedState = onSelect(l, selected, cipherState, startIndex);
+
+		updateGameLogicStore({
+			selected: updatedState.selected,
+			startIndex: updatedState.startIndex,
+			allowChooseIndex: updatedState.allowChooseIndex,
+			indexToSwap: getMoveToIndex({
+				selected: updatedState.selected,
+				startIndex: updatedState.startIndex,
+				cipherState
+			})
+		});
+	}
+
+	/**
+	 * @description removes letter from selected state when player deletes
+	 */
+	function handleRemoveLetterFromSelection() {
+		gameLogicStore.update((state) => {
+			const updatedSelection = removeLetterFromSelection(state.selected);
+
+			if (updatedSelection.length === 0) {
+				return {
+					...state,
+					...clearSelection()
+				};
+			}
+
+			return {
+				...state,
+				selected: updatedSelection,
+				indexToSwap: getMoveToIndex({
+					selected: updatedSelection,
+					startIndex: state.startIndex,
+					cipherState: state.cipherState
+				})
+			};
+		});
 	}
 
 	/**
@@ -581,32 +603,83 @@
 		});
 	}
 
+	/**
+	 * @description get the emoji of the player's current game state
+	 */
+	function getStatusEmoji() {
+		const alphaStateMap =
+			alphaState.size === 0 ? defaultAlphaState(alpha, cipherState, vowels) : alphaState;
+		return getTierByMoves(
+			moveAmount,
+			replenishAmt,
+			swaps,
+			alphaStateMap,
+			gameOver,
+			data.minMoves,
+			data.cipherWord.split('')
+		).emoji;
+	}
+
+	/**
+	 * @description handle the state control for updates notification
+	 */
+	function toggleUpdatePopupAction() {
+		return updateGameSystemStore({
+			updatesState: toggleUpdatePopup(
+				updatesState,
+				updateNames.playerGuesses,
+				!getUpdateMapValue(updateNames.playerGuesses, updatesState)
+			)
+		});
+	}
+
+	/**
+	 *
+	 * @param preferences
+	 * @description get player preferences from settings
+	 */
 	function checkIfPreferenceSettingExist(preferences: PrefMap) {
 		return preferences && Array.from(preferences.values()).some((val) => val.show);
 	}
 
-	function checkForInternalErrors(id: number) {
-		return id < 0;
+	/**
+	 * @description handles player action for clear keyboard button
+	 */
+	function handleClearSelection() {
+		return updateGameLogicStore({
+			...clearSelection()
+		});
+	}
+
+	/**
+	 * @description handle player action for replenishing keys that have been used in keyboard
+	 */
+	function handleReplenishKeyboard() {
+		gameLogicStore.update((state) => ({
+			...state,
+			...clearUsedLetters({ moveAmount, replenishAmt }),
+			alphaState: defaultAlphaState(alpha, cipherState, vowels)
+		}));
+
+		setItemsInStorage([
+			{ key: StorageKeys.moves, value: stringifyJSON(moveAmount) },
+			{ key: StorageKeys.replenishAmt, value: stringifyJSON(replenishAmt) }
+		]);
+
+		removeItemsInStorage([StorageKeys.usedLetters]);
 	}
 
 	onMount(() => {
-		// there seems to be some missing dates in DB, we need a fallback
-		// besides fixing the data
-		internalError = checkForInternalErrors(data.id);
-
-		if (internalError) return;
-
 		if (word) {
 			checkTodaysPuzzle();
 			addTodaysPuzzleToStorage(word);
 			shouldShowTutorial();
 
-			gameSystemStore.update((state) => ({
-				...state,
+			updateGameSystemStore({
 				hydrated: true,
 				loading: false,
-				preferences: checkStorageForPreferences(PreferenceKeys) || state.preferences
-			}));
+				preferences: checkStorageForPreferences(PreferenceKeys) || preferences
+			});
 		}
 	});
 
@@ -623,18 +696,11 @@
 
 		if (typeof window === 'undefined') return;
 
-		showLetters = false;
+		updateGameUIStore({ showLetters: false });
 
 		tick().then(() => {
-			setTimeout(() => (showLetters = true), 200);
+			setTimeout(() => updateGameUIStore({ showLetters: true }), 200);
 		});
-	})();
-
-	// reactive effects
-	$: (() => {
-		selected;
-
-		checkSelection();
 	})();
 </script>
 
@@ -674,28 +740,10 @@
 		{guesses}
 		solvableAmt={data.minMoves}
 		puzzleData={cipherPlayerData}
-		emoji={(() => {
-			const alphaStateMap =
-				alphaState.size === 0 ? defaultAlphaState(alpha, cipherState, vowels) : alphaState;
-			return getTierByMoves(
-				moveAmount,
-				replenishAmt,
-				swaps,
-				alphaStateMap,
-				gameOver,
-				data.minMoves,
-				data.cipherWord.split('')
-			).emoji;
-		})()}
+		emoji={getStatusEmoji()}
 		mistakeAmount={swaps.filter((b) => !b).length}
 		showPlayerGuessUpdate={getUpdateMapValue(updateNames.playerGuesses, updatesState)}
-		toggleUpdatePopup={() => {
-			updatesState = toggleUpdatePopup(
-				updatesState,
-				updateNames.playerGuesses,
-				!getUpdateMapValue(updateNames.playerGuesses, updatesState)
-			);
-		}}
+		toggleUpdatePopup={toggleUpdatePopupAction}
 	/>
 
 	{#if showTutorial}
@@ -753,17 +801,7 @@
 				{#if preferences.get(PreferenceKeys.showRank)?.show}
 					<div class="flex items-center gap-1">
 						<p>
-							Status <span
-								>{getTierByMoves(
-									moveAmount,
-									replenishAmt,
-									swaps,
-									alphaState,
-									gameOver,
-									data.minMoves,
-									data.cipherWord.split('')
-								).emoji}</span
-							>
+							Status <span>{getStatusEmoji()}</span>
 						</p>
 					</div>
 				{/if}
@@ -814,36 +852,15 @@
 				{alpha}
 				{alphaState}
 				guess={handleGuess}
-				removeLetterFromSelection={() => {
-					const { newSelection } = removeLetterFromSelection(selected);
-					selected = newSelection;
-				}}
+				removeLetterFromSelection={handleRemoveLetterFromSelection}
 			/>
 
 			<!-- Action buttons -->
 			{#if !gameOver}
 				<ActionButtons
-					clearSelection={() => {
-						const cleared = clearSelection();
-						selected = cleared.selected;
-						indexToSwap = cleared.indexToSwap;
-						startIndex = cleared.startIndex;
-						allowChooseIndex = cleared.allowChooseIndex;
-					}}
-					clearUsedLetters={() => {
-						const clearedLetters = clearUsedLetters({ moveAmount, replenishAmt });
-						usedLetters = clearedLetters.usedLetters;
-						replenishAmt = clearedLetters.replenishAmt;
-						shouldAllowReplenish = clearedLetters.shouldAllowReplenish;
-						alphaState = defaultAlphaState(alpha, cipherState, vowels);
-						localStorage.removeItem(StorageKeys.usedLetters);
-						localStorage.setItem(StorageKeys.moves, JSON.stringify(moveAmount));
-						localStorage.setItem(StorageKeys.replenishAmt, JSON.stringify(replenishAmt));
-					}}
-					removeLetterFromSelection={() => {
-						const { newSelection } = removeLetterFromSelection(selected);
-						selected = newSelection;
-					}}
+					clearSelection={handleClearSelection}
+					clearUsedLetters={handleReplenishKeyboard}
+					removeLetterFromSelection={handleRemoveLetterFromSelection}
 					guess={handleGuess}
 					{selected}
 					{shouldAllowReplenish}
