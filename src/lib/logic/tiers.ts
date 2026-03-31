@@ -104,7 +104,7 @@ export function getTierByMoves(
 	cipherWordArr: string[]
 ): Tier {
 	const factor = getTierFactoring(moveAmt, replenishAmt, swaps, minMoves);
-	console.log('factor', factor);
+
 	const usedOnlyCipherLetters =
 		factor === 0 && !checkAlphaStateIsDiminshed(alphaStateMap, cipherWordArr);
 

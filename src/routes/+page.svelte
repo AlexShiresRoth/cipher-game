@@ -129,7 +129,6 @@
 
 	$: correctPositions = $gameLogicStore.cipherState.filter((l, i) => l === word[i]).length;
 
-	// TODO - still, status emoji doesn't work
 	// TODO - notification when swapping 2 letters into correct position
 	// TODO - test!
 
@@ -257,8 +256,6 @@
 				data.cipherWord.split('')
 			);
 
-			console.log('tier', tier);
-
 			return {
 				...state,
 				guesses: savedGuesses ? parseJSON(savedGuesses) : state.guesses,
@@ -340,7 +337,7 @@
 		});
 
 		setItemsInStorage([
-			{ key: StorageKeys.gameStatus, value: 'win' },
+			{ key: StorageKeys.gameStatus, value: winGameKey },
 			{ key: StorageKeys.moves, value: String(moveAmount) },
 			{ key: StorageKeys.cipher, value: word }
 		]);
@@ -459,8 +456,8 @@
 				moveAmount,
 				replenishAmt,
 				swaps,
-				alphaState,
-				gameOver,
+				updatedAlphaState,
+				cipherState.join('') === data.word,
 				data.minMoves,
 				data.cipherWord.split('')
 			);

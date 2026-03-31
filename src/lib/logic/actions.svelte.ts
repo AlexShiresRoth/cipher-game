@@ -125,7 +125,6 @@ export async function guess({
 	const joined = selected.join('');
 	const moveIndex = getMoveToIndex();
 
-	console.log('joined', joined);
 	const conditions = {
 		guessed: guesses.includes(joined),
 		tooShort: selected.length < 3, // this should not really be called, extra precaution

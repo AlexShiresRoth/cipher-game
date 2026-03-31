@@ -10,8 +10,6 @@
 	export let word: string;
 	export let chooseStartingIndex;
 
-	// $: console.log('selected cipher', selected, startIndex, indexToSwap);
-
 	// check if duplicate letters should highlight
 	$: handleSelectedLetter = (key: string) => {
 		return allowChooseIndex && cipherState.filter(() => key === selected[0]).length > 1;
