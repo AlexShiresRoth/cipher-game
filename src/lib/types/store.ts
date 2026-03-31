@@ -1,0 +1,37 @@
+import type { PrefMap, Tier } from '$lib/logic';
+
+export type GameLogicState = {
+	moveAmount: number;
+	guesses: string[];
+	usedLetters: string[];
+	swaps: boolean[];
+	indexToSwap: number;
+	startIndex: number;
+	allowChooseIndex: boolean;
+	replenishAmt: number;
+	shouldAllowReplenish: boolean;
+	selected: string[];
+	cipherState: string[];
+	alphaState: Map<string, number>;
+	tier: Tier;
+};
+
+export type GameUIState = {
+	modalOpen: boolean;
+	showTutorial: boolean;
+	showMySolution: boolean;
+	showLetters: boolean;
+	showNavModal: boolean;
+};
+
+export type GameSystemState = {
+	win: boolean;
+	hydrated: boolean;
+	gameOver: boolean;
+	internalError: boolean;
+	errors: string[];
+	cipherStateHistory: string[];
+	updatesState: Map<string, boolean>;
+	loading: boolean;
+	preferences: PrefMap;
+};

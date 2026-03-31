@@ -34,6 +34,7 @@
 		vowels
 	} from '$lib/logic';
 	import { defaultUpdatesState, getUpdateMapValue, updateNames } from '$lib/logic/updates';
+	import type { GameLogicState, GameSystemState, GameUIState } from '$lib/types/store';
 	import clsx from 'clsx';
 	import { onMount, tick } from 'svelte';
 	import { SvelteMap } from 'svelte/reactivity';
@@ -41,50 +42,14 @@
 	import { fly } from 'svelte/transition';
 	import type { CipherPuzzle } from '../types';
 
-	type GameLogicState = {
-		moveAmount: number;
-		guesses: string[];
-		usedLetters: string[];
-		swaps: boolean[];
-		indexToSwap: number;
-		startIndex: number;
-		allowChooseIndex: boolean;
-		replenishAmt: number;
-		shouldAllowReplenish: boolean;
-		selected: string[];
-		cipherState: string[];
-		alphaState: Map<string, number>;
-	};
-
-	type GameUIState = {
-		modalOpen: boolean;
-		showTutorial: boolean;
-		showMySolution: boolean;
-		showLetters: boolean;
-		showNavModal: boolean;
-	};
-
-	type GameSystemState = {
-		win: boolean;
-		hydrated: boolean;
-		gameOver: boolean;
-		internalError: boolean;
-		errors: string[];
-		cipherStateHistory: string[];
-		updatesState: Map<string, boolean>;
-		loading: boolean;
-		preferences: PrefMap;
-	};
-
-	// incosistent state update
-	// TODO - add popup notif for swapping 2 letters into correct position
-
-	/*** Init Vars ***/
+	/*** Init Vars from page server ***/
 	export let data: CipherPuzzle & { id: number } & { cipherPlayerData: PuzzleGuessesResponse };
 	export let word = data.word;
 	export let cipher = data.cipherWord;
 	export let cipherPlayerData = data.cipherPlayerData;
 
+	const winGameKey = 'win';
+	const initAlphaState = defaultAlphaState(alpha, cipher.split(''), vowels);
 	const defaultGameLogic: GameLogicState = {
 		moveAmount: 0,
 		guesses: [],
@@ -97,7 +62,8 @@
 		shouldAllowReplenish: false,
 		selected: [],
 		cipherState: cipher.split(''),
-		alphaState: defaultAlphaState(alpha, cipher.split(''), vowels)
+		alphaState: initAlphaState,
+		tier: getTierByMoves(0, 0, [], initAlphaState, false, data.minMoves, data.cipherWord.split(''))
 	};
 
 	const defaultUIState: GameUIState = {
@@ -141,6 +107,7 @@
 	$: cipherState = game.cipherState;
 	$: moveAmount = game.moveAmount;
 	$: alphaState = game.alphaState;
+	$: tier = game.tier;
 
 	// GAME UI VARIABLES
 	$: showLetters = ui.showLetters;
@@ -161,6 +128,10 @@
 	$: preferences = system.preferences;
 
 	$: correctPositions = $gameLogicStore.cipherState.filter((l, i) => l === word[i]).length;
+
+	// TODO - still, status emoji doesn't work
+	// TODO - notification when swapping 2 letters into correct position
+	// TODO - test!
 
 	/**
 	 *
@@ -249,8 +220,7 @@
 			return;
 		}
 
-		// TODO should probably make a key 'win'
-		const winGame = gameStatus === 'win';
+		const winGame = gameStatus === winGameKey;
 
 		updateGameUIStore({
 			modalOpen: winGame
@@ -265,23 +235,46 @@
 			gameOver: winGame
 		}));
 
-		gameLogicStore.update((state) => ({
-			...state,
-			guesses: savedGuesses ? parseJSON(savedGuesses) : state.guesses,
-			moveAmount: moves ? parseInt(moves) : state.moveAmount,
-			replenishAmt: replenishAmount ? parseJSON(replenishAmount) : state.replenishAmt,
-			swaps: correctGuesses ? parseJSON(correctGuesses) : state.swaps,
-			usedLetters: lettersUsed ? parseJSON(lettersUsed) : state.usedLetters,
-			shouldAllowReplenish: checkAlphaStateIsDiminshed(state.alphaState, data.cipherWord.split('')),
-			cipherState: storedCipher ? storedCipher.split('') : state.cipherState,
-			alphaState: lettersUsed
+		gameLogicStore.update((state) => {
+			const updatedAlphaState = lettersUsed
 				? handleUpdateAlphaMap(
 						alpha,
 						lettersUsed.split('') || [],
 						defaultAlphaState(alpha, state.cipherState, vowels)
 					)
-				: defaultAlphaState(alpha, state.cipherState, vowels)
-		}));
+				: defaultAlphaState(alpha, state.cipherState, vowels);
+
+			const moveAmount = moves ? parseInt(moves) : state.moveAmount;
+			const repAmt = replenishAmount ? parseJSON(replenishAmount) : state.replenishAmt;
+			const swaps = correctGuesses ? parseJSON(correctGuesses) : state.swaps;
+			const tier = getTierByMoves(
+				moveAmount,
+				repAmt,
+				swaps,
+				updatedAlphaState,
+				winGame,
+				data.minMoves,
+				data.cipherWord.split('')
+			);
+
+			console.log('tier', tier);
+
+			return {
+				...state,
+				guesses: savedGuesses ? parseJSON(savedGuesses) : state.guesses,
+				moveAmount,
+				replenishAmt: repAmt,
+				swaps,
+				usedLetters: lettersUsed ? parseJSON(lettersUsed) : state.usedLetters,
+				shouldAllowReplenish: checkAlphaStateIsDiminshed(
+					updatedAlphaState,
+					data.cipherWord.split('')
+				),
+				cipherState: storedCipher ? storedCipher.split('') : state.cipherState,
+				alphaState: updatedAlphaState,
+				tier
+			};
+		});
 	}
 
 	/**
@@ -342,11 +335,6 @@
 	 * @description handle game state for when player solves puzzle
 	 */
 	async function checkForGameStatus() {
-		updateGameSystemStore({
-			win: true,
-			gameOver: true
-		});
-
 		updateGameUIStore({
 			modalOpen: true
 		});
@@ -439,7 +427,6 @@
 		return newAlphaState;
 	}
 
-	// TODO - reps still don't work perfectly
 	/**
 	 *
 	 * @param param0 GuessReturnValues
@@ -459,15 +446,6 @@
 		usedLetters,
 		cipherStateHistory
 	}: GuessReturnValues & { cipherStateHistory: string[] }) {
-		let updatedCipherStateHistory = cipherStateHistory;
-
-		if (!invalidGuess) {
-			updatedCipherStateHistory =
-				cipherStateHistory.length === 0
-					? [data.cipherWord]
-					: [...cipherStateHistory, cipherState.join('')];
-		}
-
 		correctPositions = positions;
 
 		gameLogicStore.update((state) => {
@@ -476,6 +454,26 @@
 				usedLetters,
 				defaultAlphaState(alpha, state.cipherState, vowels)
 			);
+
+			const tier = getTierByMoves(
+				moveAmount,
+				replenishAmt,
+				swaps,
+				alphaState,
+				gameOver,
+				data.minMoves,
+				data.cipherWord.split('')
+			);
+
+			// logic storage items
+			setItemsInStorage([
+				{ key: StorageKeys.guesses, value: stringifyJSON(guesses) },
+				{ key: StorageKeys.moves, value: stringifyJSON(moveAmount) },
+				{ key: StorageKeys.cipher, value: cipherState.join('') },
+				{ key: StorageKeys.usedLetters, value: stringifyJSON(usedLetters) },
+				{ key: StorageKeys.swaps, value: stringifyJSON(swaps) }
+			]);
+
 			return {
 				...state,
 				guesses,
@@ -491,24 +489,34 @@
 				allowChooseIndex,
 				moveAmount,
 				usedLetters,
-				alphaState: updatedAlphaState
+				alphaState: updatedAlphaState,
+				tier
 			};
 		});
 
-		gameSystemStore.update((state) => ({
-			...state,
-			errors,
-			cipherStateHistory: updatedCipherStateHistory
-		}));
+		gameSystemStore.update((state) => {
+			const updatedCipherStateHistory =
+				cipherStateHistory.length === 0
+					? [data.cipherWord]
+					: !invalidGuess
+						? [...cipherStateHistory, cipherState.join('')]
+						: state.cipherStateHistory;
 
-		setItemsInStorage([
-			{ key: StorageKeys.guesses, value: stringifyJSON(guesses) },
-			{ key: StorageKeys.moves, value: stringifyJSON(moveAmount) },
-			{ key: StorageKeys.cipher, value: cipherState.join('') },
-			{ key: StorageKeys.usedLetters, value: stringifyJSON(usedLetters) },
-			{ key: StorageKeys.swaps, value: stringifyJSON(swaps) },
-			{ key: StorageKeys.cipherStateHistory, value: stringifyJSON(updatedCipherStateHistory) }
-		]);
+			const isGameOver = cipherState.join('') === word; // we can set the game status to win here if cipher state matches
+
+			// system storage items
+			setItemsInStorage([
+				{ key: StorageKeys.cipherStateHistory, value: stringifyJSON(updatedCipherStateHistory) }
+			]);
+
+			return {
+				...state,
+				errors,
+				cipherStateHistory: updatedCipherStateHistory,
+				win: isGameOver,
+				gameOver: isGameOver
+			};
+		});
 	}
 
 	/**
@@ -590,34 +598,9 @@
 			swaps,
 			moveAmount,
 			replenishAmt,
-			emoji: getTierByMoves(
-				moveAmount,
-				replenishAmt,
-				swaps,
-				alphaState,
-				gameOver,
-				data.minMoves,
-				data.cipherWord.split('')
-			).emoji,
+			emoji: tier.emoji,
 			cipherId: data.id
 		});
-	}
-
-	/**
-	 * @description get the emoji of the player's current game state
-	 */
-	function getStatusEmoji() {
-		const alphaStateMap =
-			alphaState.size === 0 ? defaultAlphaState(alpha, cipherState, vowels) : alphaState;
-		return getTierByMoves(
-			moveAmount,
-			replenishAmt,
-			swaps,
-			alphaStateMap,
-			gameOver,
-			data.minMoves,
-			data.cipherWord.split('')
-		).emoji;
 	}
 
 	/**
@@ -655,18 +638,26 @@
 	 * @description handle player action for replenishing keys that have been used in keyboard
 	 */
 	function handleReplenishKeyboard() {
-		gameLogicStore.update((state) => ({
-			...state,
-			...clearUsedLetters({ moveAmount, replenishAmt }),
-			alphaState: defaultAlphaState(alpha, cipherState, vowels)
-		}));
+		gameLogicStore.update((state) => {
+			const { replenishAmt, shouldAllowReplenish, moveAmount } = clearUsedLetters({
+				moveAmount: state.moveAmount,
+				replenishAmt: state.replenishAmt
+			});
+			setItemsInStorage([
+				{ key: StorageKeys.moves, value: stringifyJSON(moveAmount) },
+				{ key: StorageKeys.replenishAmt, value: stringifyJSON(replenishAmt) }
+			]);
 
-		setItemsInStorage([
-			{ key: StorageKeys.moves, value: stringifyJSON(moveAmount) },
-			{ key: StorageKeys.replenishAmt, value: stringifyJSON(replenishAmt) }
-		]);
+			removeItemsInStorage([StorageKeys.usedLetters]);
 
-		removeItemsInStorage([StorageKeys.usedLetters]);
+			return {
+				...state,
+				replenishAmt,
+				shouldAllowReplenish,
+				moveAmount,
+				alphaState: defaultAlphaState(alpha, cipherState, vowels)
+			};
+		});
 	}
 
 	onMount(() => {
@@ -683,7 +674,8 @@
 		}
 	});
 
-	$: if (cipherState.join('') === word && !gameOver) {
+	// on win state update handle endgame things
+	$: if (win) {
 		checkForGameStatus();
 	}
 
@@ -740,7 +732,7 @@
 		{guesses}
 		solvableAmt={data.minMoves}
 		puzzleData={cipherPlayerData}
-		emoji={getStatusEmoji()}
+		emoji={tier.emoji}
 		mistakeAmount={swaps.filter((b) => !b).length}
 		showPlayerGuessUpdate={getUpdateMapValue(updateNames.playerGuesses, updatesState)}
 		toggleUpdatePopup={toggleUpdatePopupAction}
@@ -768,15 +760,7 @@
 			{word}
 			{shareResults}
 			{showLetters}
-			tier={getTierByMoves(
-				moveAmount,
-				replenishAmt,
-				swaps,
-				alphaState,
-				gameOver,
-				data.minMoves,
-				data.cipherWord.split('')
-			)}
+			{tier}
 			{toggleModalOpen}
 			solvableAmt={data.minMoves}
 			{replenishAmt}
@@ -801,7 +785,7 @@
 				{#if preferences.get(PreferenceKeys.showRank)?.show}
 					<div class="flex items-center gap-1">
 						<p>
-							Status <span>{getStatusEmoji()}</span>
+							Status <span>{tier.emoji}</span>
 						</p>
 					</div>
 				{/if}

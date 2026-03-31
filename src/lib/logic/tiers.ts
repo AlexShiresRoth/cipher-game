@@ -1,9 +1,11 @@
 import { defaultAlphaState } from './actions.svelte';
 import { alpha, vowels } from './constants';
 
-type Tier = Record<number, { mistakes: number; emoji: string; phrase: string }>;
+export type Tier = { mistakes: number; emoji: string; phrase: string };
 
-export const tiers: Tier = {
+export type Tiers = Record<number, Tier>;
+
+export const tiers: Tiers = {
 	0: {
 		mistakes: 0,
 		emoji: '💎',
@@ -46,7 +48,15 @@ export const tiers: Tier = {
 	}
 };
 
-function getTierFactoring(
+/**
+ *
+ * @param moveAmt
+ * @param replenishAmt
+ * @param swaps
+ * @param minMoves
+ * @returns number to use when getting game tier rank
+ */
+export function getTierFactoring(
 	moveAmt: number,
 	replenishAmt: number,
 	swaps: boolean[],
@@ -92,8 +102,9 @@ export function getTierByMoves(
 	isGameOver: boolean,
 	minMoves: number,
 	cipherWordArr: string[]
-) {
+): Tier {
 	const factor = getTierFactoring(moveAmt, replenishAmt, swaps, minMoves);
+	console.log('factor', factor);
 	const usedOnlyCipherLetters =
 		factor === 0 && !checkAlphaStateIsDiminshed(alphaStateMap, cipherWordArr);
 
