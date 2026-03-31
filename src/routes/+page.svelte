@@ -94,39 +94,6 @@
 	$: ui = $gameUIStore;
 	$: system = $gameSystemStore;
 
-	// GAME LOGIC VARIABLES
-	$: allowChooseIndex = game.allowChooseIndex;
-	$: startIndex = game.startIndex;
-	$: swaps = game.swaps;
-	$: indexToSwap = game.indexToSwap;
-	$: replenishAmt = game.replenishAmt;
-	$: usedLetters = game.usedLetters;
-	$: guesses = game.guesses;
-	$: selected = game.selected;
-	$: shouldAllowReplenish = game.shouldAllowReplenish;
-	$: cipherState = game.cipherState;
-	$: moveAmount = game.moveAmount;
-	$: alphaState = game.alphaState;
-	$: tier = game.tier;
-
-	// GAME UI VARIABLES
-	$: showLetters = ui.showLetters;
-	$: showMySolution = ui.showMySolution;
-	$: showNavModal = ui.showNavModal;
-	$: showTutorial = ui.showTutorial;
-	$: modalOpen = ui.modalOpen;
-
-	// GAME SYSTEM VARIABLES
-	$: errors = system.errors;
-	$: internalError = system.internalError;
-	$: gameOver = system.gameOver;
-	$: updatesState = system.updatesState;
-	$: hydrated = system.hydrated;
-	$: cipherStateHistory = system.cipherStateHistory;
-	$: loading = system.loading;
-	$: win = system.win;
-	$: preferences = system.preferences;
-
 	$: correctPositions = $gameLogicStore.cipherState.filter((l, i) => l === word[i]).length;
 
 	// TODO - notification when swapping 2 letters into correct position
@@ -229,7 +196,7 @@
 			...state,
 			cipherStateHistory: cipherStateHistoryStored
 				? parseJSON(cipherStateHistoryStored)
-				: cipherStateHistory,
+				: system.cipherStateHistory,
 			win: winGame,
 			gameOver: winGame
 		}));
@@ -294,7 +261,7 @@
 		if (hasViewedGame) {
 			return;
 		} else {
-			const updatesMap = new Map(Array.from(updatesState.keys()).map((key) => [key, true]));
+			const updatesMap = new Map(Array.from(system.updatesState.keys()).map((key) => [key, true]));
 
 			updateGameSystemStore({
 				updatesState: updatesMap
@@ -338,12 +305,12 @@
 
 		setItemsInStorage([
 			{ key: StorageKeys.gameStatus, value: winGameKey },
-			{ key: StorageKeys.moves, value: String(moveAmount) },
+			{ key: StorageKeys.moves, value: String(game.moveAmount) },
 			{ key: StorageKeys.cipher, value: word }
 		]);
 
 		// add the words players used to solve the cipher to the db, on win
-		cipherPlayerData = await submitPlayerUsedWords(guesses, data.id, data.date);
+		cipherPlayerData = await submitPlayerUsedWords(game.guesses, data.id, data.date);
 	}
 
 	/**
@@ -351,7 +318,7 @@
 	 */
 	function checkForErrors() {
 		setTimeout(() => {
-			const newErrors = [...errors];
+			const newErrors = [...system.errors];
 			newErrors.pop();
 			updateGameSystemStore({
 				errors: newErrors.slice(0, 5)
@@ -363,7 +330,11 @@
 	 * @description get
 	 */
 	function handleGetMoveToIndex() {
-		return getMoveToIndex({ selected, startIndex, cipherState });
+		return getMoveToIndex({
+			selected: game.selected,
+			startIndex: game.startIndex,
+			cipherState: game.cipherState
+		});
 	}
 
 	/**
@@ -373,7 +344,7 @@
 	 * the user can then click on the letter
 	 */
 	function chooseStartingIndex(index: number) {
-		if (cipherState[index] === selected[0]) {
+		if (game.cipherState[index] === game.selected[0]) {
 			return {
 				startIndex: index,
 				allowChooseIndex: false,
@@ -388,7 +359,7 @@
 	 * @description updaate game store with player choice of dupe letter index
 	 */
 	function handleStartingIndexUpdate(index: number) {
-		if (allowChooseIndex) {
+		if (game.allowChooseIndex) {
 			updateGameLogicStore({
 				...chooseStartingIndex(index)
 			});
@@ -454,7 +425,7 @@
 
 			const tier = getTierByMoves(
 				moveAmount,
-				replenishAmt,
+				game.replenishAmt,
 				swaps,
 				updatedAlphaState,
 				cipherState.join('') === data.word,
@@ -521,20 +492,20 @@
 	 */
 	async function handleGuess() {
 		const result = await guess({
-			errors,
-			swaps,
-			selected,
-			startIndex,
-			moveAmount,
-			usedLetters,
-			cipherState,
+			errors: system.errors,
+			swaps: game.swaps,
+			selected: game.selected,
+			startIndex: game.startIndex,
+			moveAmount: game.moveAmount,
+			usedLetters: game.usedLetters,
+			cipherState: game.cipherState,
 			getMoveToIndex: handleGetMoveToIndex,
-			guesses,
+			guesses: game.guesses,
 			word,
 			correctPositions
 		});
 
-		return handleStateFromGuess({ ...result, cipherStateHistory });
+		return handleStateFromGuess({ ...result, cipherStateHistory: system.cipherStateHistory });
 	}
 
 	/**
@@ -544,7 +515,7 @@
 	 */
 	function handleSelect(l: string) {
 		const { selected, cipherState, startIndex } = get(gameLogicStore);
-		if (gameOver) return;
+		if (system.gameOver) return;
 		if (selected.length >= maxWordLength) return;
 
 		const updatedState = onSelect(l, selected, cipherState, startIndex);
@@ -592,10 +563,10 @@
 	 */
 	async function shareResults() {
 		return await shareResultsAction({
-			swaps,
-			moveAmount,
-			replenishAmt,
-			emoji: tier.emoji,
+			swaps: game.swaps,
+			moveAmount: game.moveAmount,
+			replenishAmt: game.replenishAmt,
+			emoji: game.tier.emoji,
 			cipherId: data.id
 		});
 	}
@@ -606,9 +577,9 @@
 	function toggleUpdatePopupAction() {
 		return updateGameSystemStore({
 			updatesState: toggleUpdatePopup(
-				updatesState,
+				system.updatesState,
 				updateNames.playerGuesses,
-				!getUpdateMapValue(updateNames.playerGuesses, updatesState)
+				!getUpdateMapValue(updateNames.playerGuesses, system.updatesState)
 			)
 		});
 	}
@@ -652,8 +623,21 @@
 				replenishAmt,
 				shouldAllowReplenish,
 				moveAmount,
-				alphaState: defaultAlphaState(alpha, cipherState, vowels)
+				alphaState: defaultAlphaState(alpha, game.cipherState, vowels)
 			};
+		});
+	}
+
+	/**
+	 * @description toggles player's solution in UI
+	 */
+	function toggleMySolutionInUI() {
+		updateGameUIStore({
+			showMySolution: !ui.showMySolution
+		});
+		window.scrollTo({
+			behavior: 'smooth',
+			top: 0
 		});
 	}
 
@@ -666,22 +650,22 @@
 			updateGameSystemStore({
 				hydrated: true,
 				loading: false,
-				preferences: checkStorageForPreferences(PreferenceKeys) || preferences
+				preferences: checkStorageForPreferences(PreferenceKeys) || system.preferences
 			});
 		}
 	});
 
 	// on win state update handle endgame things
-	$: if (win) {
+	$: if (system.win) {
 		checkForGameStatus();
 	}
 
-	$: if (errors.length > 0) {
+	$: if (system.errors.length > 0) {
 		checkForErrors();
 	}
 
 	$: (() => {
-		modalOpen;
+		ui.modalOpen;
 
 		if (typeof window === 'undefined') return;
 
@@ -713,34 +697,34 @@
 	<link rel="canonical" href="https://play-cipher.com/" />
 </svelte:head>
 
-{#if internalError}
-	<div><p>Uh oh</p></div>
+{#if system.internalError}
+	<div class="flex min-h-screen w-full flex-col items-center justify-center"><p>Uh oh</p></div>
 {/if}
 
-<div class:hidden={!hydrated && loading} class="flex w-full flex-col items-center">
+<div class:hidden={!system.hydrated && system.loading} class="flex w-full flex-col items-center">
 	<Nav
 		{word}
 		solutionPath={data.solutionPath}
-		{gameOver}
-		{showNavModal}
+		gameOver={system.gameOver}
+		showNavModal={ui.showNavModal}
 		{toggleModalOpen}
-		{replenishAmt}
-		{moveAmount}
-		{guesses}
+		replenishAmt={game.replenishAmt}
+		moveAmount={game.moveAmount}
+		guesses={game.guesses}
 		solvableAmt={data.minMoves}
 		puzzleData={cipherPlayerData}
-		emoji={tier.emoji}
-		mistakeAmount={swaps.filter((b) => !b).length}
-		showPlayerGuessUpdate={getUpdateMapValue(updateNames.playerGuesses, updatesState)}
+		emoji={game.tier.emoji}
+		mistakeAmount={game.swaps.filter((b) => !b).length}
+		showPlayerGuessUpdate={getUpdateMapValue(updateNames.playerGuesses, system.updatesState)}
 		toggleUpdatePopup={toggleUpdatePopupAction}
 	/>
 
-	{#if showTutorial}
+	{#if ui.showTutorial}
 		<div
 			class="fixed top-0 z-20 flex max-h-full w-screen flex-col items-end gap-4 overflow-y-scroll bg-white/40 px-4 pt-10 dark:bg-black/40"
 		>
 			<button
-				on:click={() => (showTutorial = false)}
+				on:click={() => (ui.showTutorial = false)}
 				out:fly={{ y: -200 }}
 				class="fly-in-down bg-white p-4 text-black dark:bg-black dark:text-white">close</button
 			>
@@ -751,24 +735,24 @@
 	{/if}
 
 	<!-- GAME OVER STATE -->
-	{#if gameOver && modalOpen}
+	{#if system.gameOver && ui.modalOpen}
 		<!-- Game over share modal -->
 		<GameOverModal
 			{word}
 			{shareResults}
-			{showLetters}
-			{tier}
+			showLetters={ui.showLetters}
+			tier={game.tier}
 			{toggleModalOpen}
 			solvableAmt={data.minMoves}
-			{replenishAmt}
-			{moveAmount}
-			mistakeAmount={swaps.filter((b) => !b).length}
+			replenishAmt={game.replenishAmt}
+			moveAmount={game.moveAmount}
+			mistakeAmount={game.swaps.filter((b) => !b).length}
 		/>
 	{/if}
 
 	<!-- PLAY STATE UI-->
 	<div class="absolute top-10 flex flex-col gap-2">
-		{#each errors.slice(0, 5) as error, i (`${error}-${i}`)}
+		{#each system.errors.slice(0, 5) as error, i (`${error}-${i}`)}
 			<button transition:fly={{ y: -100 }} class="bg-black p-2 text-sm text-white shadow-lg"
 				>{error}</button
 			>
@@ -777,100 +761,97 @@
 
 	<div class="flex w-11/12 flex-col items-center md:w-2/3 lg:w-1/2">
 		<!-- PREFERENCES UI -->
-		{#if checkIfPreferenceSettingExist(preferences)}
+		{#if checkIfPreferenceSettingExist(system.preferences)}
 			<div class="my-4 flex w-full flex-wrap justify-between gap-4 text-sm">
-				{#if preferences.get(PreferenceKeys.showRank)?.show}
+				{#if system.preferences.get(PreferenceKeys.showRank)?.show}
 					<div class="flex items-center gap-1">
 						<p>
-							Status <span>{tier.emoji}</span>
+							Status <span>{game.tier.emoji}</span>
 						</p>
 					</div>
 				{/if}
-				{#if preferences.get(PreferenceKeys.showMistakes)?.show}
+				{#if system.preferences.get(PreferenceKeys.showMistakes)?.show}
 					<div class="flex items-center gap-1">
-						<p>Mistakes <span>{swaps.filter((b) => !b).length}</span></p>
+						<p>Mistakes <span>{game.swaps.filter((b) => !b).length}</span></p>
 					</div>
 				{/if}
-				{#if preferences.get(PreferenceKeys.showMoves)?.show}
-					<div class="flex items-center gap-1"><p>Moves <span>{moveAmount}</span></p></div>
+				{#if system.preferences.get(PreferenceKeys.showMoves)?.show}
+					<div class="flex items-center gap-1"><p>Moves <span>{game.moveAmount}</span></p></div>
 				{/if}
-				{#if preferences.get(PreferenceKeys.showReps)?.show}
-					<div class="flex items-center gap-1"><p>Reps <span>{replenishAmt}</span></p></div>
+				{#if system.preferences.get(PreferenceKeys.showReps)?.show}
+					<div class="flex items-center gap-1"><p>Reps <span>{game.replenishAmt}</span></p></div>
 				{/if}
-				{#if preferences.get(PreferenceKeys.showSolvable)?.show}
+				{#if system.preferences.get(PreferenceKeys.showSolvable)?.show}
 					<div class="flex items-center gap-1"><p>Solvable <span>{data.minMoves}</span></p></div>
 				{/if}
 			</div>
 		{/if}
 
-		{#if showMySolution && gameOver}
+		{#if ui.showMySolution && system.gameOver}
 			<div class="flex w-full flex-col">
 				<div class="w-full pt-4">
 					<h2 class="text-3xl uppercase">My Solution</h2>
 				</div>
-				<SolutionPath {word} solutionPath={cipherStateHistory} {guesses} />
+				<SolutionPath {word} solutionPath={system.cipherStateHistory} guesses={game.guesses} />
 			</div>
 		{/if}
 
-		{#if !showMySolution}
+		{#if !ui.showMySolution}
 			<!-- Current user selection row -->
-			<Selection {selected} shouldHaveMargin={!checkIfPreferenceSettingExist(preferences)} />
+			<Selection
+				selected={game.selected}
+				shouldHaveMargin={!checkIfPreferenceSettingExist(system.preferences)}
+			/>
 			<!-- Cipher blocks row -->
 			<Cipher
 				{word}
-				{cipherState}
-				{allowChooseIndex}
-				{selected}
-				{startIndex}
-				{indexToSwap}
+				cipherState={game.cipherState}
+				allowChooseIndex={game.allowChooseIndex}
+				selected={game.selected}
+				startIndex={game.startIndex}
+				indexToSwap={game.indexToSwap}
 				chooseStartingIndex={handleStartingIndexUpdate}
 			/>
 
 			<!-- Letter selection box -->
 			<Keyboard
-				{selected}
+				selected={game.selected}
 				{handleSelect}
 				{alpha}
-				{alphaState}
+				alphaState={game.alphaState}
 				guess={handleGuess}
 				removeLetterFromSelection={handleRemoveLetterFromSelection}
 			/>
 
 			<!-- Action buttons -->
-			{#if !gameOver}
+			{#if !system.gameOver}
 				<ActionButtons
 					clearSelection={handleClearSelection}
 					clearUsedLetters={handleReplenishKeyboard}
 					removeLetterFromSelection={handleRemoveLetterFromSelection}
 					guess={handleGuess}
-					{selected}
-					{shouldAllowReplenish}
+					selected={game.selected}
+					shouldAllowReplenish={game.shouldAllowReplenish}
 				/>
 			{/if}
 		{/if}
 
 		<!-- TOGGLE PLAYER SOLUTION AND ENDGAME STATE -->
-		{#if gameOver}
+		{#if system.gameOver}
 			<div class="flex items-center gap-2 py-8">
 				<button
-					on:click={() => {
-						showMySolution = !showMySolution;
-						window.scrollTo({
-							behavior: 'smooth',
-							top: 0
-						});
-					}}
+					on:click={toggleMySolutionInUI}
 					class={clsx('rounded px-4 py-2 uppercase dark:text-black', {
-						'bg-black text-white dark:bg-emerald-500': showMySolution,
-						'bg-black text-white dark:bg-indigo-500': !showMySolution
-					})}>{showMySolution ? 'View Game' : 'View solution'}</button
+						'bg-black text-white dark:bg-emerald-500': ui.showMySolution,
+						'bg-black text-white dark:bg-indigo-500': !ui.showMySolution
+					})}>{ui.showMySolution ? 'View Game' : 'View solution'}</button
 				>
 			</div>
 		{/if}
 	</div>
 </div>
 
-<div class:hidden={hydrated && !loading}>
+<div class:hidden={system.hydrated && !system.loading}>
 	<div class="flex h-screen items-center justify-center gap-2">
 		<img src="/logo.svg" alt="logo" height="300" width="300" />
 	</div>
