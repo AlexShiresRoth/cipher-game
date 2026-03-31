@@ -641,6 +641,15 @@
 		});
 	}
 
+	/**
+	 * @description hides the tutorial for the player
+	 */
+	function hideTutorialInUI() {
+		updateGameUIStore({
+			showTutorial: false
+		});
+	}
+
 	onMount(() => {
 		if (word) {
 			checkTodaysPuzzle();
@@ -724,7 +733,7 @@
 			class="fixed top-0 z-20 flex max-h-full w-screen flex-col items-end gap-4 overflow-y-scroll bg-white/40 px-4 pt-10 dark:bg-black/40"
 		>
 			<button
-				on:click={() => (ui.showTutorial = false)}
+				on:click={hideTutorialInUI}
 				out:fly={{ y: -200 }}
 				class="fly-in-down bg-white p-4 text-black dark:bg-black dark:text-white">close</button
 			>
