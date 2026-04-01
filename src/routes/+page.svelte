@@ -96,6 +96,8 @@
 
 	$: correctPositions = $gameLogicStore.cipherState.filter((l, i) => l === word[i]).length;
 
+	// TODO - adding player guessed words to db is sort of broken
+	// TODO - when selecting an index of dupe letters, starting at second doesnt work properly
 	// TODO - notification when swapping 2 letters into correct position
 	// TODO - test!
 
@@ -281,6 +283,7 @@
 	 * @param cipherId
 	 * @param date
 	 * @description adding words players used to solve the puzzle to storage for that day's puzzle
+	 * This only adds words once per player id
 	 */
 	async function submitPlayerUsedWords(
 		playerGuesses: string[],
@@ -293,24 +296,6 @@
 		});
 
 		return await res.json();
-	}
-
-	/**
-	 * @description handle game state for when player solves puzzle
-	 */
-	async function checkForGameStatus() {
-		updateGameUIStore({
-			modalOpen: true
-		});
-
-		setItemsInStorage([
-			{ key: StorageKeys.gameStatus, value: winGameKey },
-			{ key: StorageKeys.moves, value: String(game.moveAmount) },
-			{ key: StorageKeys.cipher, value: word }
-		]);
-
-		// add the words players used to solve the cipher to the db, on win
-		cipherPlayerData = await submitPlayerUsedWords(game.guesses, data.id, data.date);
 	}
 
 	/**
@@ -327,12 +312,12 @@
 	}
 
 	/**
-	 * @description get
+	 * @description get index of what the letter will be swapped at
 	 */
-	function handleGetMoveToIndex() {
+	function handleGetMoveToIndex(index?: number) {
 		return getMoveToIndex({
 			selected: game.selected,
-			startIndex: game.startIndex,
+			startIndex: index == null ? game.startIndex : index,
 			cipherState: game.cipherState
 		});
 	}
@@ -348,7 +333,7 @@
 			return {
 				startIndex: index,
 				allowChooseIndex: false,
-				indexToSwap: handleGetMoveToIndex()
+				indexToSwap: handleGetMoveToIndex(index)
 			};
 		}
 	}
@@ -360,9 +345,10 @@
 	 */
 	function handleStartingIndexUpdate(index: number) {
 		if (game.allowChooseIndex) {
-			updateGameLogicStore({
-				...chooseStartingIndex(index)
-			});
+			gameLogicStore.update((state) => ({
+				...state,
+				...chooseStartingIndex(index) // need to provide a synced index because the game.startIndex could be behind player action
+			}));
 		}
 	}
 
@@ -414,6 +400,9 @@
 		usedLetters,
 		cipherStateHistory
 	}: GuessReturnValues & { cipherStateHistory: string[] }) {
+		const isGameOver = cipherState.join('') === data.word;
+
+		// IDK if we should be doing this here
 		correctPositions = positions;
 
 		gameLogicStore.update((state) => {
@@ -428,7 +417,7 @@
 				game.replenishAmt,
 				swaps,
 				updatedAlphaState,
-				cipherState.join('') === data.word,
+				isGameOver,
 				data.minMoves,
 				data.cipherWord.split('')
 			);
@@ -439,7 +428,8 @@
 				{ key: StorageKeys.moves, value: stringifyJSON(moveAmount) },
 				{ key: StorageKeys.cipher, value: cipherState.join('') },
 				{ key: StorageKeys.usedLetters, value: stringifyJSON(usedLetters) },
-				{ key: StorageKeys.swaps, value: stringifyJSON(swaps) }
+				{ key: StorageKeys.swaps, value: stringifyJSON(swaps) },
+				{ key: StorageKeys.gameStatus, value: isGameOver ? winGameKey : 'playing' } // doesn't really matter what the word is as long as it's not 'win' until it's over
 			]);
 
 			return {
@@ -470,8 +460,6 @@
 						? [...cipherStateHistory, cipherState.join('')]
 						: state.cipherStateHistory;
 
-			const isGameOver = cipherState.join('') === word; // we can set the game status to win here if cipher state matches
-
 			// system storage items
 			setItemsInStorage([
 				{ key: StorageKeys.cipherStateHistory, value: stringifyJSON(updatedCipherStateHistory) }
@@ -485,6 +473,15 @@
 				gameOver: isGameOver
 			};
 		});
+
+		if (isGameOver) {
+			// show the win modal
+			updateGameUIStore({
+				modalOpen: true
+			});
+			// add the words players used to solve the cipher to the db, on win
+			cipherPlayerData = await submitPlayerUsedWords(guesses, data.id, data.date);
+		}
 	}
 
 	/**
@@ -663,11 +660,6 @@
 			});
 		}
 	});
-
-	// on win state update handle endgame things
-	$: if (system.win) {
-		checkForGameStatus();
-	}
 
 	$: if (system.errors.length > 0) {
 		checkForErrors();

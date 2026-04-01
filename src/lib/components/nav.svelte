@@ -26,6 +26,11 @@
 	$: showStats = false;
 	$: showSolution = false;
 	$: showCommonGuesses = false;
+	$: showMenu = !!showNavModal;
+
+	function toggleMenu() {
+		showMenu = !showMenu;
+	}
 
 	$: (() => {
 		(showStats, showSolution, showCommonGuesses);
@@ -114,14 +119,14 @@
 			{/if}
 			<button
 				on:click={() => {
-					showNavModal = !showNavModal;
+					toggleMenu();
 					showStats = false;
 					showSolution = false;
 				}}
 				class="bg-black px-4 py-2 text-white uppercase transition-colors hover:cursor-pointer hover:bg-black/80"
 				>{'menu'}</button
 			>
-			{#if showNavModal}
+			{#if showMenu}
 				<div
 					class="absolute top-full right-0 -z-10 flex w-full max-w-36 flex-col items-start bg-black text-sm text-white uppercase"
 				>
