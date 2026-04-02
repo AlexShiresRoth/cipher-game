@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { type PrefMap, type PuzzleGuessesResponse } from '$lib';
+	import { type GuessReturnValues, type PrefMap, type PuzzleGuessesResponse } from '$lib';
 	import ActionButtons from '$lib/components/action-buttons.svelte';
 	import Cipher from '$lib/components/cipher.svelte';
 	import GameOverModal from '$lib/components/game-over-modal.svelte';
@@ -15,168 +15,276 @@
 		clearSelection,
 		clearUsedLetters,
 		defaultAlphaState,
+		getItemsFromStorage,
 		getMoveToIndex,
 		getTierByMoves,
 		guess,
 		maxWordLength,
 		onSelect,
+		parseJSON,
 		PreferenceKeys,
+		removeItemsInStorage,
 		removeLetterFromSelection,
+		removeLocalStorageItemsWithExceptions,
+		setItemsInStorage,
+		shareResultsAction,
 		StorageKeys,
+		stringifyJSON,
 		toggleUpdatePopup,
 		vowels
 	} from '$lib/logic';
 	import { defaultUpdatesState, getUpdateMapValue, updateNames } from '$lib/logic/updates';
+	import type { GameLogicState, GameSystemState, GameUIState } from '$lib/types/store';
 	import clsx from 'clsx';
-	import { format } from 'date-fns';
 	import { onMount, tick } from 'svelte';
 	import { SvelteMap } from 'svelte/reactivity';
+	import { get, writable } from 'svelte/store';
 	import { fly } from 'svelte/transition';
 	import type { CipherPuzzle } from '../types';
 
-	const date = new Date();
-
-	export let data: CipherPuzzle & { id: string } & { cipherPlayerData: PuzzleGuessesResponse };
+	/*** Init Vars from page server ***/
+	export let data: CipherPuzzle & { id: number } & { cipherPlayerData: PuzzleGuessesResponse };
 	export let word = data.word;
 	export let cipher = data.cipherWord;
-	export let cipherState = cipher.split('');
 	export let cipherPlayerData = data.cipherPlayerData;
 
-	let win = false;
-	let moveAmount = 0;
-	let modalOpen = false;
-	let showNavModal = false;
-	let guesses: string[] = [];
-	let usedLetters: string[] = [];
-	let swaps: boolean[] = [];
-	let indexToSwap: number;
-	let startIndex: number = -1;
-	let allowChooseIndex = false;
-	let showTutorial = false;
-	let replenishAmt = 0;
-	let cipherStateHistory: string[] = [];
-	let correctPositions = cipherState.filter((l, i) => l === word[i]).length;
-	let formattedDate = format(date.toLocaleDateString(), 'yyyy-MM-dd');
+	const winGameKey = 'win';
+	const initAlphaState = defaultAlphaState(alpha, cipher.split(''), vowels);
+	const defaultGameLogic: GameLogicState = {
+		moveAmount: 0,
+		guesses: [],
+		usedLetters: [],
+		swaps: [],
+		indexToSwap: -1,
+		startIndex: -1,
+		allowChooseIndex: false,
+		replenishAmt: 0,
+		shouldAllowReplenish: false,
+		selected: [],
+		cipherState: cipher.split(''),
+		alphaState: initAlphaState,
+		tier: getTierByMoves(0, 0, [], initAlphaState, false, data.minMoves, data.cipherWord.split(''))
+	};
 
-	$: alphaState = new Map<string, number>();
-	$: updatesState = defaultUpdatesState(updateNames);
-	$: preferences = new Map() as PrefMap;
-	$: shouldAllowReplenish = false;
-	$: selected = [] as string[];
-	$: hydrated = false;
-	$: loading = true;
-	$: errors = [] as string[];
-	$: gameOver = false;
-	$: showLetters = false;
-	$: showMySolution = false;
+	const defaultUIState: GameUIState = {
+		showLetters: false,
+		showMySolution: false,
+		showNavModal: false,
+		showTutorial: false,
+		modalOpen: false
+	};
 
-	function toggleModalOpen(val: boolean) {
-		modalOpen = val;
+	const defaultGameSystemState: GameSystemState = {
+		win: false,
+		cipherStateHistory: [data.cipherWord],
+		hydrated: false,
+		loading: true,
+		updatesState: defaultUpdatesState(updateNames),
+		internalError: false,
+		gameOver: false,
+		errors: [],
+		preferences: new Map()
+	};
+
+	const gameLogicStore = writable<GameLogicState>(defaultGameLogic);
+	const gameUIStore = writable<GameUIState>(defaultUIState);
+	const gameSystemStore = writable<GameSystemState>(defaultGameSystemState);
+
+	$: game = $gameLogicStore;
+	$: ui = $gameUIStore;
+	$: system = $gameSystemStore;
+
+	$: correctPositions = $gameLogicStore.cipherState.filter((l, i) => l === word[i]).length;
+
+	// TODO - adding player guessed words to db is sort of broken
+	// TODO - when selecting an index of dupe letters, starting at second doesnt work properly
+	// TODO - notification when swapping 2 letters into correct position
+	// TODO - test!
+
+	/**
+	 *
+	 * @param updates
+	 * @description utility for game logic state updates
+	 */
+	function updateGameLogicStore(updates: Partial<GameLogicState>) {
+		return gameLogicStore.update((state) => ({
+			...state,
+			...updates
+		}));
 	}
 
-	// remove all stored data
-	function resetStorage() {
-		win = false;
-		gameOver = false;
-		modalOpen = false;
-		const cleared = clearSelection();
-		selected = cleared.selected;
-		indexToSwap = cleared.indexToSwap;
-		startIndex = cleared.startIndex;
-		allowChooseIndex = cleared.allowChooseIndex;
-		guesses = [];
-		moveAmount = 0;
-		cipherState = data.cipherWord.split('');
-		cipherStateHistory = [];
-		usedLetters = [];
-		replenishAmt = 0;
-		swaps = [];
-		alphaState = defaultAlphaState(alpha, cipherState, vowels);
-		Object.entries(StorageKeys).forEach(([key, value]) => {
-			if (value !== StorageKeys.viewed) {
-				localStorage.removeItem(key);
-			}
+	/**
+	 *
+	 * @param updates
+	 * @description utility for game system state updates
+	 */
+	function updateGameSystemStore(updates: Partial<GameSystemState>) {
+		return gameSystemStore.update((state) => ({
+			...state,
+			...updates
+		}));
+	}
+
+	/**
+	 *
+	 * @param updates
+	 * @description utility for game UI state updates
+	 */
+	function updateGameUIStore(updates: Partial<GameUIState>) {
+		return gameUIStore.update((state) => ({
+			...state,
+			...updates
+		}));
+	}
+
+	/**
+	 *
+	 * @param val
+	 * @description toggle the WHAT
+	 */
+	function toggleModalOpen(val: boolean) {
+		return updateGameUIStore({ modalOpen: val });
+	}
+
+	/**
+	 * @description resets game to initial state
+	 */
+	function resetGame() {
+		gameLogicStore.set(defaultGameLogic);
+		gameUIStore.set(defaultUIState);
+		gameSystemStore.set(defaultGameSystemState);
+
+		removeLocalStorageItemsWithExceptions([StorageKeys.viewed]);
+	}
+
+	/**
+	 * @description getting game data from local storage to persist game state
+	 */
+	function checkTodaysPuzzle() {
+		const [
+			savedGuesses,
+			moves,
+			puzzle,
+			storedCipher,
+			lettersUsed,
+			correctGuesses,
+			replenishAmount,
+			cipherStateHistoryStored,
+			gameStatus
+		] = getItemsFromStorage([
+			StorageKeys.guesses,
+			StorageKeys.moves,
+			StorageKeys.puzzle,
+			StorageKeys.cipher,
+			StorageKeys.usedLetters,
+			StorageKeys.swaps,
+			StorageKeys.replenishAmt,
+			StorageKeys.cipherStateHistory,
+			StorageKeys.gameStatus
+		]);
+
+		if (puzzle !== word) {
+			resetGame();
+			return;
+		}
+
+		const winGame = gameStatus === winGameKey;
+
+		updateGameUIStore({
+			modalOpen: winGame
+		});
+
+		gameSystemStore.update((state) => ({
+			...state,
+			cipherStateHistory: cipherStateHistoryStored
+				? parseJSON(cipherStateHistoryStored)
+				: system.cipherStateHistory,
+			win: winGame,
+			gameOver: winGame
+		}));
+
+		gameLogicStore.update((state) => {
+			const updatedAlphaState = lettersUsed
+				? handleUpdateAlphaMap(
+						alpha,
+						lettersUsed.split('') || [],
+						defaultAlphaState(alpha, state.cipherState, vowels)
+					)
+				: defaultAlphaState(alpha, state.cipherState, vowels);
+
+			const moveAmount = moves ? parseInt(moves) : state.moveAmount;
+			const repAmt = replenishAmount ? parseJSON(replenishAmount) : state.replenishAmt;
+			const swaps = correctGuesses ? parseJSON(correctGuesses) : state.swaps;
+			const tier = getTierByMoves(
+				moveAmount,
+				repAmt,
+				swaps,
+				updatedAlphaState,
+				winGame,
+				data.minMoves,
+				data.cipherWord.split('')
+			);
+
+			return {
+				...state,
+				guesses: savedGuesses ? parseJSON(savedGuesses) : state.guesses,
+				moveAmount,
+				replenishAmt: repAmt,
+				swaps,
+				usedLetters: lettersUsed ? parseJSON(lettersUsed) : state.usedLetters,
+				shouldAllowReplenish: checkAlphaStateIsDiminshed(
+					updatedAlphaState,
+					data.cipherWord.split('')
+				),
+				cipherState: storedCipher ? storedCipher.split('') : state.cipherState,
+				alphaState: updatedAlphaState,
+				tier
+			};
 		});
 	}
 
-	// handle if user has already completed todays game
-	function checkTodaysPuzzle() {
-		const savedGuesses = localStorage.getItem(StorageKeys.guesses);
-		const moves = localStorage.getItem(StorageKeys.moves);
-		const puzzle = localStorage.getItem(StorageKeys.puzzle);
-		const storedCipher = localStorage.getItem(StorageKeys.cipher);
-		const lettersUsed = localStorage.getItem(StorageKeys.usedLetters);
-		const correctGuesses = localStorage.getItem(StorageKeys.swaps);
-		const replenishAmount = localStorage.getItem(StorageKeys.replenishAmt);
-		const cipherStateHistoryStored = localStorage.getItem(StorageKeys.cipherStateHistory);
-
-		if (cipherStateHistoryStored) {
-			cipherStateHistory = JSON.parse(cipherStateHistoryStored);
-		}
-		if (savedGuesses && moves) {
-			guesses = JSON.parse(savedGuesses);
-			moveAmount = parseInt(moves);
-		}
-		if (puzzle !== word) {
-			resetStorage();
-			return;
-		}
-		if (localStorage.getItem(StorageKeys.gameStatus) === 'win') {
-			win = true;
-			gameOver = true;
-			modalOpen = true;
-		}
-		if (moves) {
-			moveAmount = parseInt(moves);
-		}
-		if (storedCipher) {
-			cipherState = storedCipher.split('');
-		}
-
-		if (replenishAmount) {
-			replenishAmt = JSON.parse(replenishAmount);
-		}
-		if (correctGuesses) {
-			swaps = JSON.parse(correctGuesses);
-		}
-		if (lettersUsed) {
-			usedLetters = JSON.parse(lettersUsed);
-			alphaState = handleUpdateAlphaMap(
-				alpha,
-				usedLetters,
-				defaultAlphaState(alpha, cipherState, vowels)
-			);
-			shouldAllowReplenish = checkAlphaStateIsDiminshed(alphaState, data.cipherWord.split(''));
-		} else {
-			alphaState = defaultAlphaState(alpha, cipherState, vowels);
-		}
-	}
-
+	/**
+	 *
+	 * @param newWord
+	 * @description set puzzle word to storage
+	 */
 	function addTodaysPuzzleToStorage(newWord: string) {
-		const storedPuzzle = localStorage.getItem(StorageKeys.puzzle);
+		const [storedPuzzle] = getItemsFromStorage([StorageKeys.puzzle]);
 		if (storedPuzzle !== newWord) {
-			localStorage.setItem(StorageKeys.puzzle, newWord);
+			setItemsInStorage([{ key: StorageKeys.puzzle, value: newWord }]);
 		}
 	}
 
+	/**
+	 * @description handle toggling the tutorial modal
+	 */
 	function shouldShowTutorial() {
-		const hasViewedGame = localStorage.getItem(StorageKeys.viewed);
+		const [hasViewedGame] = getItemsFromStorage([StorageKeys.viewed]);
 		if (hasViewedGame) {
 			return;
 		} else {
-			showTutorial = true;
-			// show all updates on load
-			const updatesMap = new Map(updatesState);
+			const updatesMap = new Map(Array.from(system.updatesState.keys()).map((key) => [key, true]));
 
-			updatesMap.forEach((_, key) => {
-				updatesMap.set(key, true);
+			updateGameSystemStore({
+				updatesState: updatesMap
 			});
 
-			updatesState = updatesMap;
-			localStorage.setItem(StorageKeys.viewed, 'true');
+			updateGameUIStore({
+				showTutorial: true
+			});
+
+			setItemsInStorage([{ key: StorageKeys.viewed, value: 'true' }]);
 		}
 	}
 
+	/**
+	 *
+	 * @param playerGuesses
+	 * @param cipherId
+	 * @param date
+	 * @description adding words players used to solve the puzzle to storage for that day's puzzle
+	 * This only adds words once per player id
+	 */
 	async function submitPlayerUsedWords(
 		playerGuesses: string[],
 		cipherId: string,
@@ -190,58 +298,68 @@
 		return await res.json();
 	}
 
-	// check for when user has either won or lost game
-	async function checkForGameStatus() {
-		win = true;
-		gameOver = true;
-		modalOpen = true;
-		localStorage.setItem(StorageKeys.gameStatus, 'win');
-		localStorage.setItem(StorageKeys.moves, String(moveAmount));
-		localStorage.setItem(StorageKeys.cipher, word);
-		localStorage.setItem(StorageKeys.date, formattedDate);
-		// add the words players used to solve the cipher to the db, on win
-		cipherPlayerData = await submitPlayerUsedWords(guesses, data.id, data.date);
-	}
-
-	// render any errors & remove after set time
+	/**
+	 * @description  render any errors & remove after set time
+	 */
 	function checkForErrors() {
 		setTimeout(() => {
-			const newErrors = [...errors];
+			const newErrors = [...system.errors];
 			newErrors.pop();
-			errors = newErrors.slice(0, 5);
+			updateGameSystemStore({
+				errors: newErrors.slice(0, 5)
+			});
 		}, 3000);
 	}
 
-	// handle user selection & interaction
-	function checkSelection() {
-		if (selected.length > 0) {
-			const moveIndex = handleGetMoveToIndex();
-			indexToSwap = moveIndex;
-		}
-		if (selected.length === 0) {
-			const cleared = clearSelection();
-			selected = cleared.selected;
-			indexToSwap = cleared.indexToSwap;
-			startIndex = cleared.startIndex;
-			allowChooseIndex = cleared.allowChooseIndex;
-		}
+	/**
+	 * @description get index of what the letter will be swapped at
+	 */
+	function handleGetMoveToIndex(index?: number) {
+		return getMoveToIndex({
+			selected: game.selected,
+			startIndex: index == null ? game.startIndex : index,
+			cipherState: game.cipherState
+		});
 	}
 
-	// this only happens if there are duplicate letters
-	// the user can then click on the letter
+	/**
+	 *
+	 * @param index
+	 * @description  this only happens if there are duplicate letters
+	 * the user can then click on the letter
+	 */
 	function chooseStartingIndex(index: number) {
-		if (cipherState[index] === selected[0]) {
-			startIndex = index;
-			allowChooseIndex = false;
-			const moveIndex = handleGetMoveToIndex();
-			indexToSwap = moveIndex;
+		if (game.cipherState[index] === game.selected[0]) {
+			return {
+				startIndex: index,
+				allowChooseIndex: false,
+				indexToSwap: handleGetMoveToIndex(index)
+			};
 		}
 	}
 
-	function handleGetMoveToIndex() {
-		return getMoveToIndex({ selected, startIndex, cipherState });
+	/**
+	 *
+	 * @param index
+	 * @description updaate game store with player choice of dupe letter index
+	 */
+	function handleStartingIndexUpdate(index: number) {
+		if (game.allowChooseIndex) {
+			gameLogicStore.update((state) => ({
+				...state,
+				...chooseStartingIndex(index) // need to provide a synced index because the game.startIndex could be behind player action
+			}));
+		}
 	}
 
+	/**
+	 *
+	 * @param alpha
+	 * @param usedLetters
+	 * @param defaultState
+	 * @description based on game rules certain letters has limits,
+	 * we keep state in a map to determine each letter's usage amount in a
+	 */
 	function handleUpdateAlphaMap(
 		alpha: string[],
 		usedLetters: string[],
@@ -263,103 +381,270 @@
 		return newAlphaState;
 	}
 
+	/**
+	 *
+	 * @param param0 GuessReturnValues
+	 */
+	async function handleStateFromGuess({
+		invalidGuess,
+		indexToSwap,
+		cipherState,
+		correctPositions: positions,
+		allowChooseIndex,
+		guesses,
+		selected,
+		startIndex,
+		moveAmount,
+		errors,
+		swaps,
+		usedLetters,
+		cipherStateHistory
+	}: GuessReturnValues & { cipherStateHistory: string[] }) {
+		const isGameOver = cipherState.join('') === data.word;
+
+		// IDK if we should be doing this here
+		correctPositions = positions;
+
+		gameLogicStore.update((state) => {
+			const updatedAlphaState = handleUpdateAlphaMap(
+				alpha,
+				usedLetters,
+				defaultAlphaState(alpha, state.cipherState, vowels)
+			);
+
+			const tier = getTierByMoves(
+				moveAmount,
+				game.replenishAmt,
+				swaps,
+				updatedAlphaState,
+				isGameOver,
+				data.minMoves,
+				data.cipherWord.split('')
+			);
+
+			// logic storage items
+			setItemsInStorage([
+				{ key: StorageKeys.guesses, value: stringifyJSON(guesses) },
+				{ key: StorageKeys.moves, value: stringifyJSON(moveAmount) },
+				{ key: StorageKeys.cipher, value: cipherState.join('') },
+				{ key: StorageKeys.usedLetters, value: stringifyJSON(usedLetters) },
+				{ key: StorageKeys.swaps, value: stringifyJSON(swaps) },
+				{ key: StorageKeys.gameStatus, value: isGameOver ? winGameKey : 'playing' } // doesn't really matter what the word is as long as it's not 'win' until it's over
+			]);
+
+			return {
+				...state,
+				guesses,
+				startIndex,
+				indexToSwap,
+				swaps,
+				shouldAllowReplenish: checkAlphaStateIsDiminshed(
+					updatedAlphaState,
+					data.cipherWord.split('')
+				),
+				selected,
+				cipherState,
+				allowChooseIndex,
+				moveAmount,
+				usedLetters,
+				alphaState: updatedAlphaState,
+				tier
+			};
+		});
+
+		gameSystemStore.update((state) => {
+			const updatedCipherStateHistory =
+				cipherStateHistory.length === 0
+					? [data.cipherWord]
+					: !invalidGuess
+						? [...cipherStateHistory, cipherState.join('')]
+						: state.cipherStateHistory;
+
+			// system storage items
+			setItemsInStorage([
+				{ key: StorageKeys.cipherStateHistory, value: stringifyJSON(updatedCipherStateHistory) }
+			]);
+
+			return {
+				...state,
+				errors,
+				cipherStateHistory: updatedCipherStateHistory,
+				win: isGameOver,
+				gameOver: isGameOver
+			};
+		});
+
+		if (isGameOver) {
+			// show the win modal
+			updateGameUIStore({
+				modalOpen: true
+			});
+			// add the words players used to solve the cipher to the db, on win
+			cipherPlayerData = await submitPlayerUsedWords(guesses, data.id, data.date);
+		}
+	}
+
+	/**
+	 * @description Main game loop handle player guess
+	 */
 	async function handleGuess() {
 		const result = await guess({
-			errors,
-			swaps,
-			selected,
-			startIndex,
-			moveAmount,
-			usedLetters,
-			cipherState,
+			errors: system.errors,
+			swaps: game.swaps,
+			selected: game.selected,
+			startIndex: game.startIndex,
+			moveAmount: game.moveAmount,
+			usedLetters: game.usedLetters,
+			cipherState: game.cipherState,
 			getMoveToIndex: handleGetMoveToIndex,
-			guesses,
+			guesses: game.guesses,
 			word,
 			correctPositions
 		});
-		errors = result.errors;
-		swaps = result.swaps;
-		selected = result.selected;
-		startIndex = result.startIndex;
-		indexToSwap = result.indexToSwap;
-		guesses = result.guesses;
-		correctPositions = result.correctPositions;
-		cipherState = result.cipherState;
-		moveAmount = result.moveAmount;
-		usedLetters = result.usedLetters;
-		allowChooseIndex = result.allowChooseIndex;
 
-		if (!result.invalidGuess) {
-			if (cipherStateHistory.length === 0) {
-				cipherStateHistory = [data.cipherWord];
-			}
-			cipherStateHistory = [...cipherStateHistory, result.cipherState.join('')];
-		}
-
-		// We need to update map of letters based on their usage
-		alphaState = handleUpdateAlphaMap(
-			alpha,
-			usedLetters,
-			defaultAlphaState(alpha, cipherState, vowels)
-		);
-
-		shouldAllowReplenish = checkAlphaStateIsDiminshed(alphaState, data.cipherWord.split(''));
-
-		localStorage.setItem(StorageKeys.guesses, JSON.stringify(guesses));
-		localStorage.setItem(StorageKeys.moves, JSON.stringify(moveAmount));
-		localStorage.setItem(StorageKeys.cipher, cipherState.join(''));
-		localStorage.setItem(StorageKeys.usedLetters, JSON.stringify(usedLetters));
-		localStorage.setItem(StorageKeys.swaps, JSON.stringify(swaps));
-		localStorage.setItem(StorageKeys.cipherStateHistory, JSON.stringify(cipherStateHistory));
+		return handleStateFromGuess({ ...result, cipherStateHistory: system.cipherStateHistory });
 	}
 
-	// social results game sharing
-	async function shareResults() {
-		function getRows() {
-			let rows: boolean[][] = [];
-			for (let i = 0; i < swaps.length; i += 4) {
-				rows.push(swaps.slice(i, i + 4));
-			}
-			return rows;
-		}
+	/**
+	 *
+	 * @param l
+	 * @description handle player selection on keyboard
+	 */
+	function handleSelect(l: string) {
+		const { selected, cipherState, startIndex } = get(gameLogicStore);
+		if (system.gameOver) return;
+		if (selected.length >= maxWordLength) return;
 
-		const rows = getRows();
-		const rowsText = rows
-			.map((row) => {
-				return row.map((b) => (b ? '🧩' : '❌')).join('');
+		const updatedState = onSelect(l, selected, cipherState, startIndex);
+
+		updateGameLogicStore({
+			selected: updatedState.selected,
+			startIndex: updatedState.startIndex,
+			allowChooseIndex: updatedState.allowChooseIndex,
+			indexToSwap: getMoveToIndex({
+				selected: updatedState.selected,
+				startIndex: updatedState.startIndex,
+				cipherState
 			})
-			.join('\n');
-		const shareText =
-			`Cipher #${data.id} ${getTierByMoves(moveAmount, replenishAmt, swaps, alphaState, gameOver, data.minMoves, data.cipherWord.split('')).emoji}
-${moveAmount} moves
-${rowsText}
-${replenishAmt} reps used`.trim();
-
-		const shareData = {
-			text: shareText,
-			title: `Cipher #${data.id}`,
-			url: 'https://play-cipher.com'
-		};
-
-		const canNativeShare =
-			typeof navigator !== 'undefined' &&
-			'navigator' in window &&
-			typeof navigator.share === 'function';
-
-		try {
-			if (canNativeShare) {
-				await navigator.share(shareData);
-			} else {
-				await navigator.clipboard.writeText(shareData.text);
-				alert('copied to clipboard!');
-			}
-		} catch (error) {
-			console.info('Player aborted share');
-		}
+		});
 	}
 
+	/**
+	 * @description removes letter from selected state when player deletes
+	 */
+	function handleRemoveLetterFromSelection() {
+		gameLogicStore.update((state) => {
+			const updatedSelection = removeLetterFromSelection(state.selected);
+
+			if (updatedSelection.length === 0) {
+				return {
+					...state,
+					...clearSelection()
+				};
+			}
+
+			return {
+				...state,
+				selected: updatedSelection,
+				indexToSwap: getMoveToIndex({
+					selected: updatedSelection,
+					startIndex: state.startIndex,
+					cipherState: state.cipherState
+				})
+			};
+		});
+	}
+
+	/**
+	 * @description share utility for when player completes game
+	 */
+	async function shareResults() {
+		return await shareResultsAction({
+			swaps: game.swaps,
+			moveAmount: game.moveAmount,
+			replenishAmt: game.replenishAmt,
+			emoji: game.tier.emoji,
+			cipherId: data.id
+		});
+	}
+
+	/**
+	 * @description handle the state control for updates notification
+	 */
+	function toggleUpdatePopupAction() {
+		return updateGameSystemStore({
+			updatesState: toggleUpdatePopup(
+				system.updatesState,
+				updateNames.playerGuesses,
+				!getUpdateMapValue(updateNames.playerGuesses, system.updatesState)
+			)
+		});
+	}
+
+	/**
+	 *
+	 * @param preferences
+	 * @description get player preferences from settings
+	 */
 	function checkIfPreferenceSettingExist(preferences: PrefMap) {
 		return preferences && Array.from(preferences.values()).some((val) => val.show);
+	}
+
+	/**
+	 * @description handles player action for clear keyboard button
+	 */
+	function handleClearSelection() {
+		return updateGameLogicStore({
+			...clearSelection()
+		});
+	}
+
+	/**
+	 * @description handle player action for replenishing keys that have been used in keyboard
+	 */
+	function handleReplenishKeyboard() {
+		gameLogicStore.update((state) => {
+			const { replenishAmt, shouldAllowReplenish, moveAmount } = clearUsedLetters({
+				moveAmount: state.moveAmount,
+				replenishAmt: state.replenishAmt
+			});
+			setItemsInStorage([
+				{ key: StorageKeys.moves, value: stringifyJSON(moveAmount) },
+				{ key: StorageKeys.replenishAmt, value: stringifyJSON(replenishAmt) }
+			]);
+
+			removeItemsInStorage([StorageKeys.usedLetters]);
+
+			return {
+				...state,
+				replenishAmt,
+				shouldAllowReplenish,
+				moveAmount,
+				alphaState: defaultAlphaState(alpha, game.cipherState, vowels)
+			};
+		});
+	}
+
+	/**
+	 * @description toggles player's solution in UI
+	 */
+	function toggleMySolutionInUI() {
+		updateGameUIStore({
+			showMySolution: !ui.showMySolution
+		});
+		window.scrollTo({
+			behavior: 'smooth',
+			top: 0
+		});
+	}
+
+	/**
+	 * @description hides the tutorial for the player
+	 */
+	function hideTutorialInUI() {
+		updateGameUIStore({
+			showTutorial: false
+		});
 	}
 
 	onMount(() => {
@@ -367,47 +652,42 @@ ${replenishAmt} reps used`.trim();
 			checkTodaysPuzzle();
 			addTodaysPuzzleToStorage(word);
 			shouldShowTutorial();
-			preferences = checkStorageForPreferences(PreferenceKeys);
-			hydrated = true;
-			loading = false;
+
+			updateGameSystemStore({
+				hydrated: true,
+				loading: false,
+				preferences: checkStorageForPreferences(PreferenceKeys) || system.preferences
+			});
 		}
 	});
 
-	$: if (cipherState.join('') === word && !gameOver) {
-		checkForGameStatus();
-	}
-
-	$: if (errors.length > 0) {
+	$: if (system.errors.length > 0) {
 		checkForErrors();
 	}
 
 	$: (() => {
-		modalOpen;
+		ui.modalOpen;
 
 		if (typeof window === 'undefined') return;
 
-		showLetters = false;
+		updateGameUIStore({ showLetters: false });
 
 		tick().then(() => {
-			setTimeout(() => (showLetters = true), 200);
+			setTimeout(() => updateGameUIStore({ showLetters: true }), 200);
 		});
-	})();
-
-	// reactive effects
-	$: (() => {
-		selected;
-
-		checkSelection();
 	})();
 </script>
 
 <svelte:head>
-	<title>Play CIPHER {`#`}{data.id} - Daily Word-Shuffle Puzzle</title>
+	<title>Play CIPHER {`#`}{data.id || 'Uh oh :('} - Daily Word-Shuffle Puzzle</title>
 	<meta
 		name="description"
 		content="Play Cipher, the daily interactive word-shuffle puzzle game. Decipher the shuffled word using clever moves, swapping mechanics, and logic-based strategy."
 	/>
-	<meta property="og:title" content={`CIPHER #${data.id} – Daily Word-Shuffle Puzzle`} />
+	<meta
+		property="og:title"
+		content={`CIPHER #${data.id || 'Uh oh :('} – Daily Word-Shuffle Puzzle`}
+	/>
 	<meta
 		property="og:description"
 		content="Decipher shuffled words and challenge yourself with the daily brain-teaser."
@@ -418,48 +698,34 @@ ${replenishAmt} reps used`.trim();
 	<link rel="canonical" href="https://play-cipher.com/" />
 </svelte:head>
 
-<div class:hidden={!hydrated && loading} class="flex w-full flex-col items-center">
+{#if system.internalError}
+	<div class="flex min-h-screen w-full flex-col items-center justify-center"><p>Uh oh</p></div>
+{/if}
+
+<div class:hidden={!system.hydrated && system.loading} class="flex w-full flex-col items-center">
 	<Nav
 		{word}
 		solutionPath={data.solutionPath}
-		{gameOver}
-		{showNavModal}
+		gameOver={system.gameOver}
+		showNavModal={ui.showNavModal}
 		{toggleModalOpen}
-		{replenishAmt}
-		{moveAmount}
-		{guesses}
+		replenishAmt={game.replenishAmt}
+		moveAmount={game.moveAmount}
+		guesses={game.guesses}
 		solvableAmt={data.minMoves}
 		puzzleData={cipherPlayerData}
-		emoji={(() => {
-			const alphaStateMap =
-				alphaState.size === 0 ? defaultAlphaState(alpha, cipherState, vowels) : alphaState;
-			return getTierByMoves(
-				moveAmount,
-				replenishAmt,
-				swaps,
-				alphaStateMap,
-				gameOver,
-				data.minMoves,
-				data.cipherWord.split('')
-			).emoji;
-		})()}
-		mistakeAmount={swaps.filter((b) => !b).length}
-		showPlayerGuessUpdate={getUpdateMapValue(updateNames.playerGuesses, updatesState)}
-		toggleUpdatePopup={() => {
-			updatesState = toggleUpdatePopup(
-				updatesState,
-				updateNames.playerGuesses,
-				!getUpdateMapValue(updateNames.playerGuesses, updatesState)
-			);
-		}}
+		emoji={game.tier.emoji}
+		mistakeAmount={game.swaps.filter((b) => !b).length}
+		showPlayerGuessUpdate={getUpdateMapValue(updateNames.playerGuesses, system.updatesState)}
+		toggleUpdatePopup={toggleUpdatePopupAction}
 	/>
 
-	{#if showTutorial}
+	{#if ui.showTutorial}
 		<div
 			class="fixed top-0 z-20 flex max-h-full w-screen flex-col items-end gap-4 overflow-y-scroll bg-white/40 px-4 pt-10 dark:bg-black/40"
 		>
 			<button
-				on:click={() => (showTutorial = false)}
+				on:click={hideTutorialInUI}
 				out:fly={{ y: -200 }}
 				class="fly-in-down bg-white p-4 text-black dark:bg-black dark:text-white">close</button
 			>
@@ -470,32 +736,24 @@ ${replenishAmt} reps used`.trim();
 	{/if}
 
 	<!-- GAME OVER STATE -->
-	{#if gameOver && modalOpen}
+	{#if system.gameOver && ui.modalOpen}
 		<!-- Game over share modal -->
 		<GameOverModal
 			{word}
 			{shareResults}
-			{showLetters}
-			tier={getTierByMoves(
-				moveAmount,
-				replenishAmt,
-				swaps,
-				alphaState,
-				gameOver,
-				data.minMoves,
-				data.cipherWord.split('')
-			)}
+			showLetters={ui.showLetters}
+			tier={game.tier}
 			{toggleModalOpen}
 			solvableAmt={data.minMoves}
-			{replenishAmt}
-			{moveAmount}
-			mistakeAmount={swaps.filter((b) => !b).length}
+			replenishAmt={game.replenishAmt}
+			moveAmount={game.moveAmount}
+			mistakeAmount={game.swaps.filter((b) => !b).length}
 		/>
 	{/if}
 
 	<!-- PLAY STATE UI-->
 	<div class="absolute top-10 flex flex-col gap-2">
-		{#each errors.slice(0, 5) as error, i (`${error}-${i}`)}
+		{#each system.errors.slice(0, 5) as error, i (`${error}-${i}`)}
 			<button transition:fly={{ y: -100 }} class="bg-black p-2 text-sm text-white shadow-lg"
 				>{error}</button
 			>
@@ -504,144 +762,97 @@ ${replenishAmt} reps used`.trim();
 
 	<div class="flex w-11/12 flex-col items-center md:w-2/3 lg:w-1/2">
 		<!-- PREFERENCES UI -->
-		{#if checkIfPreferenceSettingExist(preferences)}
+		{#if checkIfPreferenceSettingExist(system.preferences)}
 			<div class="my-4 flex w-full flex-wrap justify-between gap-4 text-sm">
-				{#if preferences.get(PreferenceKeys.showRank)?.show}
+				{#if system.preferences.get(PreferenceKeys.showRank)?.show}
 					<div class="flex items-center gap-1">
 						<p>
-							Status <span
-								>{getTierByMoves(
-									moveAmount,
-									replenishAmt,
-									swaps,
-									alphaState,
-									gameOver,
-									data.minMoves,
-									data.cipherWord.split('')
-								).emoji}</span
-							>
+							Status <span>{game.tier.emoji}</span>
 						</p>
 					</div>
 				{/if}
-				{#if preferences.get(PreferenceKeys.showMistakes)?.show}
+				{#if system.preferences.get(PreferenceKeys.showMistakes)?.show}
 					<div class="flex items-center gap-1">
-						<p>Mistakes <span>{swaps.filter((b) => !b).length}</span></p>
+						<p>Mistakes <span>{game.swaps.filter((b) => !b).length}</span></p>
 					</div>
 				{/if}
-				{#if preferences.get(PreferenceKeys.showMoves)?.show}
-					<div class="flex items-center gap-1"><p>Moves <span>{moveAmount}</span></p></div>
+				{#if system.preferences.get(PreferenceKeys.showMoves)?.show}
+					<div class="flex items-center gap-1"><p>Moves <span>{game.moveAmount}</span></p></div>
 				{/if}
-				{#if preferences.get(PreferenceKeys.showReps)?.show}
-					<div class="flex items-center gap-1"><p>Reps <span>{replenishAmt}</span></p></div>
+				{#if system.preferences.get(PreferenceKeys.showReps)?.show}
+					<div class="flex items-center gap-1"><p>Reps <span>{game.replenishAmt}</span></p></div>
 				{/if}
-				{#if preferences.get(PreferenceKeys.showSolvable)?.show}
+				{#if system.preferences.get(PreferenceKeys.showSolvable)?.show}
 					<div class="flex items-center gap-1"><p>Solvable <span>{data.minMoves}</span></p></div>
 				{/if}
 			</div>
 		{/if}
 
-		{#if showMySolution && gameOver}
+		{#if ui.showMySolution && system.gameOver}
 			<div class="flex w-full flex-col">
 				<div class="w-full pt-4">
 					<h2 class="text-3xl uppercase">My Solution</h2>
 				</div>
-				<SolutionPath {word} solutionPath={cipherStateHistory} {guesses} />
+				<SolutionPath {word} solutionPath={system.cipherStateHistory} guesses={game.guesses} />
 			</div>
 		{/if}
 
-		{#if !showMySolution}
+		{#if !ui.showMySolution}
 			<!-- Current user selection row -->
-			<Selection {selected} shouldHaveMargin={!checkIfPreferenceSettingExist(preferences)} />
+			<Selection
+				selected={game.selected}
+				shouldHaveMargin={!checkIfPreferenceSettingExist(system.preferences)}
+			/>
 			<!-- Cipher blocks row -->
 			<Cipher
 				{word}
-				{cipherState}
-				{allowChooseIndex}
-				{selected}
-				{startIndex}
-				{indexToSwap}
-				chooseStartingIndex={(index: number) => {
-					if (allowChooseIndex) {
-						chooseStartingIndex(index);
-					}
-				}}
+				cipherState={game.cipherState}
+				allowChooseIndex={game.allowChooseIndex}
+				selected={game.selected}
+				startIndex={game.startIndex}
+				indexToSwap={game.indexToSwap}
+				chooseStartingIndex={handleStartingIndexUpdate}
 			/>
 
 			<!-- Letter selection box -->
 			<Keyboard
-				{selected}
-				handleSelect={(l: string) => {
-					if (gameOver) return;
-					if (selected.length >= maxWordLength) return;
-
-					const data = onSelect(l, selected, cipherState, startIndex);
-
-					selected = data.selected;
-					startIndex = data.startIndex;
-					allowChooseIndex = data.allowChooseIndex;
-				}}
+				selected={game.selected}
+				{handleSelect}
 				{alpha}
-				{alphaState}
+				alphaState={game.alphaState}
 				guess={handleGuess}
-				removeLetterFromSelection={() => {
-					const { newSelection } = removeLetterFromSelection(selected);
-					selected = newSelection;
-				}}
+				removeLetterFromSelection={handleRemoveLetterFromSelection}
 			/>
 
 			<!-- Action buttons -->
-			{#if !gameOver}
+			{#if !system.gameOver}
 				<ActionButtons
-					clearSelection={() => {
-						const cleared = clearSelection();
-						selected = cleared.selected;
-						indexToSwap = cleared.indexToSwap;
-						startIndex = cleared.startIndex;
-						allowChooseIndex = cleared.allowChooseIndex;
-					}}
-					clearUsedLetters={() => {
-						const clearedLetters = clearUsedLetters({ moveAmount, replenishAmt });
-						usedLetters = clearedLetters.usedLetters;
-						replenishAmt = clearedLetters.replenishAmt;
-						shouldAllowReplenish = clearedLetters.shouldAllowReplenish;
-						alphaState = defaultAlphaState(alpha, cipherState, vowels);
-						localStorage.removeItem(StorageKeys.usedLetters);
-						localStorage.setItem(StorageKeys.moves, JSON.stringify(moveAmount));
-						localStorage.setItem(StorageKeys.replenishAmt, JSON.stringify(replenishAmt));
-					}}
-					removeLetterFromSelection={() => {
-						const { newSelection } = removeLetterFromSelection(selected);
-						selected = newSelection;
-					}}
+					clearSelection={handleClearSelection}
+					clearUsedLetters={handleReplenishKeyboard}
+					removeLetterFromSelection={handleRemoveLetterFromSelection}
 					guess={handleGuess}
-					{selected}
-					{shouldAllowReplenish}
+					selected={game.selected}
+					shouldAllowReplenish={game.shouldAllowReplenish}
 				/>
 			{/if}
 		{/if}
 
 		<!-- TOGGLE PLAYER SOLUTION AND ENDGAME STATE -->
-		{#if gameOver}
+		{#if system.gameOver}
 			<div class="flex items-center gap-2 py-8">
 				<button
-					on:click={() => {
-						showMySolution = !showMySolution;
-						window.scrollTo({
-							behavior: 'smooth',
-							top: 0
-						});
-					}}
+					on:click={toggleMySolutionInUI}
 					class={clsx('rounded px-4 py-2 uppercase dark:text-black', {
-						'bg-black text-white dark:bg-emerald-500': showMySolution,
-						'bg-black text-white dark:bg-indigo-500': !showMySolution
-					})}>{showMySolution ? 'View Game' : 'View solution'}</button
+						'bg-black text-white dark:bg-emerald-500': ui.showMySolution,
+						'bg-black text-white dark:bg-indigo-500': !ui.showMySolution
+					})}>{ui.showMySolution ? 'View Game' : 'View solution'}</button
 				>
 			</div>
 		{/if}
 	</div>
 </div>
 
-<div class:hidden={hydrated && !loading}>
+<div class:hidden={system.hydrated && !system.loading}>
 	<div class="flex h-screen items-center justify-center gap-2">
 		<img src="/logo.svg" alt="logo" height="300" width="300" />
 	</div>

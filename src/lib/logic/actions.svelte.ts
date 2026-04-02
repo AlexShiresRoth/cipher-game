@@ -1,18 +1,20 @@
+import type { GuessParams, GuessReturnValues } from '$lib/types';
 import { WORD_LIST } from '$lib/wordlists';
 import { SvelteMap } from 'svelte/reactivity';
 import { handleErrorOnGuess } from './errors.svelte';
 
-/**
- * @clearSelection
- * @returns updated variables
- * @description clears whatever letters user has selected
- */
 type ClearSelectionResponse = {
 	selected: string[];
 	indexToSwap: number;
 	startIndex: number;
 	allowChooseIndex: boolean;
 };
+
+/**
+ * @clearSelection
+ * @returns updated variables
+ * @description clears whatever letters user has selected in UI
+ */
 export function clearSelection(): ClearSelectionResponse {
 	return { selected: [], indexToSwap: -1, startIndex: -1, allowChooseIndex: false };
 }
@@ -63,7 +65,7 @@ export function removeLetterFromSelection(selected: string[]) {
 	selected.pop();
 	const newSelection = [...selected];
 
-	return { newSelection };
+	return newSelection;
 }
 
 /**
@@ -103,23 +105,9 @@ export function getMoveToIndex({ selected, startIndex, cipherState }: GetMoveToP
 
 /**
  *
- * @params GuessParams
+ * @param GuessParams
  * @returns
  */
-type GuessParams = {
-	guesses: string[];
-	selected: string[];
-	cipherState: string[];
-	startIndex: number;
-	errors: string[];
-	word: string;
-	correctPositions: number;
-	swaps: boolean[];
-	moveAmount: number;
-	usedLetters: string[];
-	getMoveToIndex: () => number;
-};
-
 export async function guess({
 	guesses,
 	selected,
@@ -132,7 +120,7 @@ export async function guess({
 	swaps,
 	moveAmount,
 	usedLetters
-}: GuessParams) {
+}: GuessParams): Promise<GuessReturnValues> {
 	// --- Basic derived values ---
 	const joined = selected.join('');
 	const moveIndex = getMoveToIndex();
