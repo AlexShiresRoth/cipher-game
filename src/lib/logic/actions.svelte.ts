@@ -74,7 +74,7 @@ export function removeLetterFromSelection(selected: string[]) {
  * @description - checks dictionary api for valid words
  */
 export function isValidWord(word: string) {
-	return { valid: WORD_LIST[word.length].words.findIndex((w) => w === word) >= 0 };
+	return { valid: WORD_LIST[word.length]?.words?.findIndex((w) => w === word) >= 0 || false };
 }
 
 /**
