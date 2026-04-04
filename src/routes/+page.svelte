@@ -83,7 +83,8 @@
 		internalError: false,
 		gameOver: false,
 		errors: [],
-		preferences: new Map()
+		preferences: new Map(),
+		complimentIndex: -1
 	};
 
 	const gameLogicStore = writable<GameLogicState>(defaultGameLogic);
@@ -96,10 +97,24 @@
 
 	$: correctPositions = $gameLogicStore.cipherState.filter((l, i) => l === word[i]).length;
 
-	// TODO - adding player guessed words to db is sort of broken
-	// TODO - when selecting an index of dupe letters, starting at second doesnt work properly
-	// TODO - notification when swapping 2 letters into correct position
-	// TODO - test!
+	const compliments = [
+		'Sick!',
+		'Nice!',
+		'👏',
+		'Excellent.',
+		'Oh Dang!',
+		'Smart.',
+		'Fantastic.',
+		'Love to see it.',
+		'Okay!',
+		'Great.',
+		'🧙',
+		'🧙‍♀️',
+		// this is a joke, pls remove later
+		'Nice, Tim?',
+		'Nice, Madeline?',
+		'Nice, Anna?'
+	];
 
 	/**
 	 *
@@ -402,9 +417,6 @@
 	}: GuessReturnValues & { cipherStateHistory: string[] }) {
 		const isGameOver = cipherState.join('') === data.word;
 
-		// IDK if we should be doing this here
-		correctPositions = positions;
-
 		gameLogicStore.update((state) => {
 			const updatedAlphaState = handleUpdateAlphaMap(
 				alpha,
@@ -465,20 +477,28 @@
 				{ key: StorageKeys.cipherStateHistory, value: stringifyJSON(updatedCipherStateHistory) }
 			]);
 
+			const shouldCompliment = positions - correctPositions > 1;
+
+			const complimentIndex = Math.floor(Math.random() * compliments.length);
+
 			return {
 				...state,
 				errors,
 				cipherStateHistory: updatedCipherStateHistory,
 				win: isGameOver,
-				gameOver: isGameOver
+				gameOver: isGameOver,
+				complimentIndex: shouldCompliment ? complimentIndex : -1
 			};
 		});
+
+		correctPositions = positions;
 
 		if (isGameOver) {
 			// show the win modal
 			updateGameUIStore({
 				modalOpen: true
 			});
+
 			// add the words players used to solve the cipher to the db, on win
 			cipherPlayerData = await submitPlayerUsedWords(guesses, data.id, data.date);
 		}
@@ -665,6 +685,14 @@
 		checkForErrors();
 	}
 
+	$: if (system.complimentIndex >= 0) {
+		setTimeout(() => {
+			updateGameSystemStore({
+				complimentIndex: -1
+			});
+		}, 2000);
+	}
+
 	$: (() => {
 		ui.modalOpen;
 
@@ -758,6 +786,16 @@
 				>{error}</button
 			>
 		{/each}
+	</div>
+
+	<div class="absolute top-14 flex w-full flex-col items-center gap-2">
+		{#if system.complimentIndex >= 0}
+			<button
+				transition:fly={{ y: -100 }}
+				class="min-w-1/4 border-2 border-black bg-emerald-500 px-2 py-1 text-sm text-black uppercase shadow-lg"
+				>{compliments[system.complimentIndex] || '😃'}</button
+			>
+		{/if}
 	</div>
 
 	<div class="flex w-11/12 flex-col items-center md:w-2/3 lg:w-1/2">

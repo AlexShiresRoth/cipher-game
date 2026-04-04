@@ -34,4 +34,5 @@ export type GameSystemState = {
 	updatesState: Map<string, boolean>;
 	loading: boolean;
 	preferences: PrefMap;
+	complimentIndex: number;
 };
