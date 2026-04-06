@@ -113,7 +113,9 @@
 		// this is a joke, pls remove later
 		'Nice, Tim?',
 		'Nice, Madeline?',
-		'Nice, Anna?'
+		'Nice, Anna?',
+		'Nice, Kathryn?',
+		'Nice, Alex?'
 	];
 
 	/**
@@ -792,7 +794,7 @@
 		{#if system.complimentIndex >= 0}
 			<button
 				transition:fly={{ y: -100 }}
-				class="min-w-1/4 border-2 border-black bg-emerald-500 px-2 py-1 text-sm text-black uppercase shadow-lg"
+				class="w-1/4 bg-black px-2 py-1 text-sm text-white uppercase shadow-lg"
 				>{compliments[system.complimentIndex] || '😃'}</button
 			>
 		{/if}
