@@ -54,9 +54,7 @@
 		</div>
 		<div
 			class="relative flex w-full items-center justify-end gap-2"
-			on:mouseleave={() => {
-				showNavModal = false;
-			}}
+			on:mouseleave={toggleMenu}
 			role="button"
 			tabindex="0"
 		>

@@ -8,6 +8,8 @@
 	export let alpha: string[];
 	export let removeLetterFromSelection: () => void;
 	export let guess;
+	export let shouldShowInitialTutorial: boolean = true;
+	export let tutorialLetterStart: string;
 
 	$: getAlphaStateNumber = (l: string) => {
 		return alphaState.get(l) as number;
@@ -52,7 +54,11 @@
 						'flex min-w-12 flex-col items-center justify-between gap-2 rounded p-2 text-2xl uppercase transition-colors hover:cursor-pointer md:w-16 md:p-2 md:text-4xl',
 						{
 							'bg-amber-300': checkAlphaKeyColorIncluded(l),
-							'bg-gray-100 dark:bg-gray-100/80': !checkAlphaKeyColorIncluded(l)
+							'bg-gray-100 dark:bg-gray-100/80': !checkAlphaKeyColorIncluded(l),
+							'animate-pulse bg-emerald-500':
+								shouldShowInitialTutorial &&
+								l === tutorialLetterStart &&
+								!checkAlphaKeyColorIncluded(l)
 						}
 					)}
 				>

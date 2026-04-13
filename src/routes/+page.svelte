@@ -1,9 +1,13 @@
 <script lang="ts">
-	import { type GuessReturnValues, type PrefMap, type PuzzleGuessesResponse } from '$lib';
+	import {
+		compliments,
+		type GuessReturnValues,
+		type PrefMap,
+		type PuzzleGuessesResponse
+	} from '$lib';
 	import ActionButtons from '$lib/components/action-buttons.svelte';
 	import Cipher from '$lib/components/cipher.svelte';
 	import GameOverModal from '$lib/components/game-over-modal.svelte';
-	import HowTo from '$lib/components/how-to.svelte';
 	import Keyboard from '$lib/components/keyboard.svelte';
 	import Nav from '$lib/components/nav.svelte';
 	import Selection from '$lib/components/selection.svelte';
@@ -96,27 +100,6 @@
 	$: system = $gameSystemStore;
 
 	$: correctPositions = $gameLogicStore.cipherState.filter((l, i) => l === word[i]).length;
-
-	const compliments = [
-		'Sick!',
-		'Nice!',
-		'👏',
-		'Excellent.',
-		'Oh Dang!',
-		'Smart.',
-		'Fantastic.',
-		'Love to see it.',
-		'Okay!',
-		'Great.',
-		'🧙',
-		'🧙‍♀️',
-		// this is a joke, pls remove later
-		'Nice, Tim?',
-		'Nice, Madeline?',
-		'Nice, Anna?',
-		'Nice, Kathryn?',
-		'Nice, Alex?'
-	];
 
 	/**
 	 *
@@ -750,21 +733,6 @@
 		toggleUpdatePopup={toggleUpdatePopupAction}
 	/>
 
-	{#if ui.showTutorial}
-		<div
-			class="fixed top-0 z-20 flex max-h-full w-screen flex-col items-end gap-4 overflow-y-scroll bg-white/40 px-4 pt-10 dark:bg-black/40"
-		>
-			<button
-				on:click={hideTutorialInUI}
-				out:fly={{ y: -200 }}
-				class="fly-in-down bg-white p-4 text-black dark:bg-black dark:text-white">close</button
-			>
-			<div class="fly-in-up bg-white dark:bg-black" out:fly={{ y: 200 }}>
-				<HowTo />
-			</div>
-		</div>
-	{/if}
-
 	<!-- GAME OVER STATE -->
 	{#if system.gameOver && ui.modalOpen}
 		<!-- Game over share modal -->
@@ -862,6 +830,8 @@
 				alphaState={game.alphaState}
 				guess={handleGuess}
 				removeLetterFromSelection={handleRemoveLetterFromSelection}
+				shouldShowInitialTutorial={ui.showTutorial}
+				tutorialLetterStart={data.word[0]}
 			/>
 
 			<!-- Action buttons -->
