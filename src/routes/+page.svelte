@@ -38,8 +38,14 @@
 		vowels
 	} from '$lib/logic';
 	import { defaultUpdatesState, getUpdateMapValue, updateNames } from '$lib/logic/updates';
-	import type { GameLogicState, GameSystemState, GameUIState } from '$lib/types/store';
+	import type {
+		GameLogicState,
+		GameSystemState,
+		GameUIState,
+		TutorialState
+	} from '$lib/types/store';
 	import clsx from 'clsx';
+	import { formatDate } from 'date-fns';
 	import { onMount, tick } from 'svelte';
 	import { SvelteMap } from 'svelte/reactivity';
 	import { get, writable } from 'svelte/store';
@@ -55,6 +61,7 @@
 	const winGameKey = 'win';
 	const initAlphaState = defaultAlphaState(alpha, cipher.split(''), vowels);
 	const defaultGameLogic: GameLogicState = {
+		isGameStarted: false,
 		moveAmount: 0,
 		guesses: [],
 		usedLetters: [],
@@ -91,13 +98,22 @@
 		complimentIndex: -1
 	};
 
+	const defaultTutorialState: TutorialState = {
+		isTutorialMode: true,
+		tutorialLetterStart: data.word[0], // TODO - need to actually do this logic
+		tutorialLetterEnd: data.word[data.word.length - 1],
+		currentStep: 0
+	};
+
 	const gameLogicStore = writable<GameLogicState>(defaultGameLogic);
 	const gameUIStore = writable<GameUIState>(defaultUIState);
 	const gameSystemStore = writable<GameSystemState>(defaultGameSystemState);
+	const tutorialStore = writable<TutorialState>(defaultTutorialState);
 
 	$: game = $gameLogicStore;
 	$: ui = $gameUIStore;
 	$: system = $gameSystemStore;
+	$: tutorial = $tutorialStore;
 
 	$: correctPositions = $gameLogicStore.cipherState.filter((l, i) => l === word[i]).length;
 
@@ -652,6 +668,34 @@
 		});
 	}
 
+	/**
+	 * @description starts the game and hides the tutorial modal
+	 */
+	function startGame() {
+		updateGameLogicStore({
+			isGameStarted: true
+		});
+		updateGameUIStore({
+			showTutorial: false
+		});
+	}
+
+	/**
+	 * @description starts the tutorial and hides the tutorial modal
+	 */
+	function startTutorial() {
+		tutorialStore.update((state) => ({
+			...state,
+			isTutorialMode: true
+		}));
+		updateGameUIStore({
+			showTutorial: false
+		});
+		updateGameLogicStore({
+			isGameStarted: true
+		});
+	}
+
 	onMount(() => {
 		if (word) {
 			checkTodaysPuzzle();
@@ -713,6 +757,34 @@
 
 {#if system.internalError}
 	<div class="flex min-h-screen w-full flex-col items-center justify-center"><p>Uh oh</p></div>
+{/if}
+
+<!-- TODO - continue this and break it into it's own component -->
+{#if ui.showTutorial && !game.isGameStarted}
+	<div class="flex min-h-screen w-full flex-col items-center justify-center gap-12">
+		<div class="flex flex-col items-center justify-center">
+			<img src="/logo.svg" alt="logo" height="100" width="100" />
+			<h1 class="text-5xl font-bold uppercase">Cipher</h1>
+			<p class="text-center opacity-80">Decipher the shuffled word.</p>
+			<div class="mt-8 flex items-center gap-2">
+				<button
+					on:click={startGame}
+					class="rounded bg-black p-2 text-white transition-colors md:text-lg dark:bg-indigo-500 dark:text-black"
+					>Play Game</button
+				>
+				<button
+					on:click={startTutorial}
+					class="rounded bg-black p-2 text-white transition-colors md:text-lg dark:bg-emerald-500 dark:text-black"
+					>Tutorial Mode</button
+				>
+			</div>
+		</div>
+
+		<div>
+			<p>{formatDate(new Date(), 'MMM d, yyyy')}</p>
+			<p>Cipher #{data.id}</p>
+		</div>
+	</div>
 {/if}
 
 <div class:hidden={!system.hydrated && system.loading} class="flex w-full flex-col items-center">

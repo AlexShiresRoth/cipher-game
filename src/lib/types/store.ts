@@ -1,6 +1,7 @@
 import type { PrefMap, Tier } from '$lib/logic';
 
 export type GameLogicState = {
+	isGameStarted: boolean;
 	moveAmount: number;
 	guesses: string[];
 	usedLetters: string[];
@@ -35,4 +36,11 @@ export type GameSystemState = {
 	loading: boolean;
 	preferences: PrefMap;
 	complimentIndex: number;
+};
+
+export type TutorialState = {
+	isTutorialMode: boolean;
+	tutorialLetterStart: string;
+	tutorialLetterEnd: string;
+	currentStep: number;
 };
