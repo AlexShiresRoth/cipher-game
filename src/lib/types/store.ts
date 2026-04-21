@@ -38,9 +38,15 @@ export type GameSystemState = {
 	complimentIndex: number;
 };
 
+export type SwappedLetterPaths = { [key: string]: number };
+
 export type TutorialState = {
 	isTutorialMode: boolean;
-	tutorialLetterStart: string;
-	tutorialLetterEnd: string;
 	currentStep: number;
+	steps?: Array<{
+		start: SwappedLetterPaths;
+		end: SwappedLetterPaths;
+		wordLength: number;
+		currentStepNode: string;
+	}>;
 };

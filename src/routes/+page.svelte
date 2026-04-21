@@ -1,25 +1,15 @@
 <script lang="ts">
 	import {
-		compliments,
-		type GuessReturnValues,
-		type PrefMap,
-		type PuzzleGuessesResponse
-	} from '$lib';
-	import ActionButtons from '$lib/components/action-buttons.svelte';
-	import Cipher from '$lib/components/cipher.svelte';
-	import GameOverModal from '$lib/components/game-over-modal.svelte';
-	import Keyboard from '$lib/components/keyboard.svelte';
-	import Nav from '$lib/components/nav.svelte';
-	import Selection from '$lib/components/selection.svelte';
-	import SolutionPath from '$lib/components/solution-path.svelte';
-	import {
 		alpha,
 		checkAlphaStateIsDiminshed,
 		checkStorageForPreferences,
 		clearSelection,
 		clearUsedLetters,
+		compliments,
 		defaultAlphaState,
+		findSwappedLetters,
 		getItemsFromStorage,
+		getLetterIndex,
 		getMoveToIndex,
 		getTierByMoves,
 		guess,
@@ -35,8 +25,19 @@
 		StorageKeys,
 		stringifyJSON,
 		toggleUpdatePopup,
-		vowels
-	} from '$lib/logic';
+		vowels,
+		type GuessReturnValues,
+		type PrefMap,
+		type PuzzleGuessesResponse
+	} from '$lib';
+	import ActionButtons from '$lib/components/action-buttons.svelte';
+	import Cipher from '$lib/components/cipher.svelte';
+	import GameOverModal from '$lib/components/game-over-modal.svelte';
+	import Keyboard from '$lib/components/keyboard.svelte';
+	import Nav from '$lib/components/nav.svelte';
+	import Selection from '$lib/components/selection.svelte';
+	import SolutionPath from '$lib/components/solution-path.svelte';
+	import StartModal from '$lib/components/start-modal.svelte';
 	import { defaultUpdatesState, getUpdateMapValue, updateNames } from '$lib/logic/updates';
 	import type {
 		GameLogicState,
@@ -45,7 +46,6 @@
 		TutorialState
 	} from '$lib/types/store';
 	import clsx from 'clsx';
-	import { formatDate } from 'date-fns';
 	import { onMount, tick } from 'svelte';
 	import { SvelteMap } from 'svelte/reactivity';
 	import { get, writable } from 'svelte/store';
@@ -54,9 +54,10 @@
 
 	/*** Init Vars from page server ***/
 	export let data: CipherPuzzle & { id: number } & { cipherPlayerData: PuzzleGuessesResponse };
-	export let word = data.word;
-	export let cipher = data.cipherWord;
-	export let cipherPlayerData = data.cipherPlayerData;
+
+	let word = data.word;
+	let cipher = data.cipherWord;
+	let cipherPlayerData = data.cipherPlayerData;
 
 	const winGameKey = 'win';
 	const initAlphaState = defaultAlphaState(alpha, cipher.split(''), vowels);
@@ -99,9 +100,7 @@
 	};
 
 	const defaultTutorialState: TutorialState = {
-		isTutorialMode: true,
-		tutorialLetterStart: data.word[0], // TODO - need to actually do this logic
-		tutorialLetterEnd: data.word[data.word.length - 1],
+		isTutorialMode: false,
 		currentStep: 0
 	};
 
@@ -186,7 +185,9 @@
 			correctGuesses,
 			replenishAmount,
 			cipherStateHistoryStored,
-			gameStatus
+			gameStatus,
+			tutorialMode,
+			tutorialStep
 		] = getItemsFromStorage([
 			StorageKeys.guesses,
 			StorageKeys.moves,
@@ -196,7 +197,9 @@
 			StorageKeys.swaps,
 			StorageKeys.replenishAmt,
 			StorageKeys.cipherStateHistory,
-			StorageKeys.gameStatus
+			StorageKeys.gameStatus,
+			StorageKeys.tutorialMode,
+			StorageKeys.tutorialStep
 		]);
 
 		if (puzzle !== word) {
@@ -209,6 +212,14 @@
 		updateGameUIStore({
 			modalOpen: winGame
 		});
+
+		if (tutorialMode) {
+			tutorialStore.update((state) => ({
+				...state,
+				isTutorialMode: tutorialMode === 'true',
+				currentStep: tutorialStep ? parseInt(tutorialStep) : state.currentStep
+			}));
+		}
 
 		gameSystemStore.update((state) => ({
 			...state,
@@ -492,7 +503,28 @@
 			};
 		});
 
-		correctPositions = positions;
+		// update tutorial step to sync with game state
+		if (tutorial.isTutorialMode && !invalidGuess) {
+			tutorialStore.update((state) => {
+				// exit tutorial if player is not following the tutorial
+				const isFollowingTutorial =
+					data.solutionPath[state.currentStep + 1] === cipherState.join('');
+
+				const isTutorialMode = isGameOver || !isFollowingTutorial ? false : state.isTutorialMode;
+
+				if (!isTutorialMode) {
+					removeItemsInStorage([StorageKeys.tutorialMode, StorageKeys.tutorialStep]);
+				}
+
+				return {
+					...state,
+					currentStep: state.currentStep + 1,
+					isTutorialMode
+				};
+			});
+
+			setItemsInStorage([{ key: StorageKeys.tutorialStep, value: `${tutorial.currentStep + 1}` }]);
+		}
 
 		if (isGameOver) {
 			// show the win modal
@@ -625,10 +657,11 @@
 	 */
 	function handleReplenishKeyboard() {
 		gameLogicStore.update((state) => {
-			const { replenishAmt, shouldAllowReplenish, moveAmount } = clearUsedLetters({
+			const { replenishAmt, shouldAllowReplenish, moveAmount, usedLetters } = clearUsedLetters({
 				moveAmount: state.moveAmount,
 				replenishAmt: state.replenishAmt
 			});
+
 			setItemsInStorage([
 				{ key: StorageKeys.moves, value: stringifyJSON(moveAmount) },
 				{ key: StorageKeys.replenishAmt, value: stringifyJSON(replenishAmt) }
@@ -641,6 +674,7 @@
 				replenishAmt,
 				shouldAllowReplenish,
 				moveAmount,
+				usedLetters,
 				alphaState: defaultAlphaState(alpha, game.cipherState, vowels)
 			};
 		});
@@ -656,15 +690,6 @@
 		window.scrollTo({
 			behavior: 'smooth',
 			top: 0
-		});
-	}
-
-	/**
-	 * @description hides the tutorial for the player
-	 */
-	function hideTutorialInUI() {
-		updateGameUIStore({
-			showTutorial: false
 		});
 	}
 
@@ -694,6 +719,57 @@
 		updateGameLogicStore({
 			isGameStarted: true
 		});
+		setItemsInStorage([{ key: StorageKeys.tutorialMode, value: 'true' }]);
+		setItemsInStorage([{ key: StorageKeys.tutorialStep, value: `${tutorial.currentStep}` }]);
+	}
+
+	/**
+	 * @description take the solution path and create steps for the tutorial
+	 */
+	function loadTutorialState() {
+		const steps: TutorialState['steps'] = findSwappedLetters(data.solutionPath).map((path, i) => {
+			const wordLength =
+				data.word.length - Math.abs(Object.values(path[0])[0] - Object.values(path[1])[0]);
+
+			const isSwapPossible = getLetterIndex(path[0]) - getLetterIndex(path[1]) > 3;
+
+			const path0Letter = Object.keys(path[0])[0];
+			const path1Letter = Object.keys(path[1])[0];
+			const path0Index = Object.values(path[0])[0];
+			const path1Index = Object.values(path[1])[0];
+			const firstLetter = isSwapPossible ? path0Letter.toUpperCase() : path1Letter.toUpperCase();
+			const secondLetter = isSwapPossible ? path1Letter.toUpperCase() : path0Letter.toUpperCase();
+
+			return {
+				start: isSwapPossible ? path[0] : path[1],
+				end: isSwapPossible ? path[1] : path[0],
+				wordLength,
+				currentStepNode: `
+				${
+					i === 0
+						? `<p class="text-sm font-light dark:text-white/70">Welcome to the Cipher tutorial. We'll go step by step and learn how to decipher the puzzle. 
+				We will show one way to solve the puzzle, not necessarily the best way.</p>`
+						: ''
+				}
+
+				<p class="text-sm font-light dark:text-white/70">${i === 0 ? 'To start,' : 'Next,'} let's 
+				swap <span class="text-amber-500 uppercase">${firstLetter}</span> (${isSwapPossible ? path0Index + 1 : path1Index + 1})
+				with <span class="text-amber-500 uppercase">${secondLetter}</span> (${isSwapPossible ? path1Index + 1 : path0Index + 1})
+				by using a ${wordLength} letter <span class="text-amber-500 uppercase">${firstLetter}</span> word to move. 
+				</p>
+
+				<p class="text-sm font-light dark:text-white/70">You can use any word you want for swapping, starting with <span class="text-amber-500 uppercase">${firstLetter}</span>.</p>
+				
+				${i === 0 ? '<p class="text-sm font-light dark:text-white/70">If you choose to use different letters, it will exit the tutorial.</p>' : ''}
+				
+				${i === 1 ? '<p class="text-sm font-light dark:text-white/70">Once letters move into place, they will appear green.</p>' : ''}`
+			};
+		});
+
+		tutorialStore.update((state) => ({
+			...state,
+			steps
+		}));
 	}
 
 	onMount(() => {
@@ -701,7 +777,7 @@
 			checkTodaysPuzzle();
 			addTodaysPuzzleToStorage(word);
 			shouldShowTutorial();
-
+			loadTutorialState();
 			updateGameSystemStore({
 				hydrated: true,
 				loading: false,
@@ -736,7 +812,7 @@
 </script>
 
 <svelte:head>
-	<title>Play CIPHER {`#`}{data.id || 'Uh oh :('} - Daily Word-Shuffle Puzzle</title>
+	<title>Play CIPHER #{data.id || 'Uh oh :('} - Daily Word-Shuffle Puzzle</title>
 	<meta
 		name="description"
 		content="Play Cipher, the daily interactive word-shuffle puzzle game. Decipher the shuffled word using clever moves, swapping mechanics, and logic-based strategy."
@@ -759,32 +835,8 @@
 	<div class="flex min-h-screen w-full flex-col items-center justify-center"><p>Uh oh</p></div>
 {/if}
 
-<!-- TODO - continue this and break it into it's own component -->
 {#if ui.showTutorial && !game.isGameStarted}
-	<div class="flex min-h-screen w-full flex-col items-center justify-center gap-12">
-		<div class="flex flex-col items-center justify-center">
-			<img src="/logo.svg" alt="logo" height="100" width="100" />
-			<h1 class="text-5xl font-bold uppercase">Cipher</h1>
-			<p class="text-center opacity-80">Decipher the shuffled word.</p>
-			<div class="mt-8 flex items-center gap-2">
-				<button
-					on:click={startGame}
-					class="rounded bg-black p-2 text-white transition-colors md:text-lg dark:bg-indigo-500 dark:text-black"
-					>Play Game</button
-				>
-				<button
-					on:click={startTutorial}
-					class="rounded bg-black p-2 text-white transition-colors md:text-lg dark:bg-emerald-500 dark:text-black"
-					>Tutorial Mode</button
-				>
-			</div>
-		</div>
-
-		<div>
-			<p>{formatDate(new Date(), 'MMM d, yyyy')}</p>
-			<p>Cipher #{data.id}</p>
-		</div>
-	</div>
+	<StartModal {data} {startGame} {startTutorial} />
 {/if}
 
 <div class:hidden={!system.hydrated && system.loading} class="flex w-full flex-col items-center">
@@ -886,6 +938,7 @@
 			<!-- Cipher blocks row -->
 			<Cipher
 				{word}
+				tutorialState={tutorial}
 				cipherState={game.cipherState}
 				allowChooseIndex={game.allowChooseIndex}
 				selected={game.selected}
@@ -902,8 +955,7 @@
 				alphaState={game.alphaState}
 				guess={handleGuess}
 				removeLetterFromSelection={handleRemoveLetterFromSelection}
-				shouldShowInitialTutorial={ui.showTutorial}
-				tutorialLetterStart={data.word[0]}
+				tutorialState={tutorial}
 			/>
 
 			<!-- Action buttons -->

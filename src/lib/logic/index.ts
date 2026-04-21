@@ -5,4 +5,5 @@ export * from './helpers';
 export * from './preferences';
 export * from './shuffle';
 export * from './social-utils';
+export * from './solution-path';
 export * from './tiers';

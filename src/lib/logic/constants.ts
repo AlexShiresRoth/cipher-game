@@ -12,7 +12,9 @@ export const StorageKeys = {
 	puzzle: 'puzzle',
 	viewed: 'viewedV5',
 	date: 'date',
-	cipherStateHistory: 'cipherStateHistory'
+	cipherStateHistory: 'cipherStateHistory',
+	tutorialMode: 'tutorialMode',
+	tutorialStep: 'tutorialStep'
 };
 
 export const maxWordLength = 12;

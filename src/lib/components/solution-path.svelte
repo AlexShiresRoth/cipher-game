@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { findSwappedLetters } from '$lib';
 	import { onMount } from 'svelte';
 	import LetterSwapLine from './letter-swap-line.svelte';
 	import SolutionStep from './solution-step.svelte';
@@ -9,28 +10,7 @@
 
 	let swappedLettersPerPath: SwappedLetterPaths[][] = [];
 
-	$: elements = [] as HTMLElement[][];
-
-	function findSwappedLetters(paths: string[]) {
-		const swappedLettersPerPath: SwappedLetterPaths[][] = [];
-
-		paths.forEach((path, n) => {
-			if (n + 1 < paths.length) {
-				const swapped = path
-					.split('')
-					.map((p, i) => {
-						if (p !== paths[n + 1][i]) {
-							return { [p]: i };
-						}
-					})
-					.filter(Boolean);
-
-				swappedLettersPerPath.push(swapped as SwappedLetterPaths[]);
-			}
-		});
-
-		return swappedLettersPerPath;
-	}
+	let elements = [] as HTMLElement[][];
 
 	function isPathStepPart(index: number, part: string, swappedLetters: SwappedLetterPaths[]) {
 		if (!swappedLetters) return false;
@@ -76,7 +56,7 @@
 
 <div class="flex w-full gap-2 pt-2">
 	<div class="flex w-full flex-col items-center gap-2">
-		{#each solutionPath as path, pathStep}
+		{#each solutionPath as path, pathStep (pathStep)}
 			<div
 				class="flex w-full flex-col gap-2 border-2 p-4 pb-8 dark:border-white/20 dark:bg-gray-200/10"
 			>
@@ -116,7 +96,7 @@
 					<p>Done 🎉</p>
 				{/if}
 				<div class="flex w-full gap-2">
-					{#each path.split('') as part, i}
+					{#each path.split('') as part, i (i)}
 						<SolutionStep
 							{part}
 							{pathStep}

@@ -9,6 +9,8 @@ export const compliments = [
 	'Love to see it.',
 	'Okay!',
 	'Great.',
+	'Beautifull',
+	'Knew you could do it.',
 	'🧙',
 	'🧙‍♀️',
 	// this is a joke, pls remove later
@@ -16,5 +18,14 @@ export const compliments = [
 	'Nice, Madeline?',
 	'Nice, Anna?',
 	'Nice, Kathryn?',
-	'Nice, Alex?'
+	'Nice, Alex?',
+	'Nice, David?',
+	'Nice, Emily?',
+	'Nice, Ethan?',
+	'Nice, Grace?',
+	'Nice, Henry?',
+	'Nice, Isabella?',
+	'Nice, Jackson?',
+	'Nice, Lily?',
+	'Nice, Fred?'
 ];

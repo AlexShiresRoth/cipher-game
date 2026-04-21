@@ -5,7 +5,6 @@
 	import PlayerGuesses from './player-guesses.svelte';
 	import SolutionPath from './solution-path.svelte';
 	import Stats from './stats.svelte';
-	import UpdatePopup from './update-popup.svelte';
 
 	export let showNavModal = false;
 	export let gameOver = false;
@@ -76,18 +75,10 @@
 							class={clsx('transition-colors hover:cursor-pointer', {
 								'text-indigo-500': showCommonGuesses,
 								'text-gray-400/50 dark:text-gray-100/50':
-									!gameOver && !showCommonGuesses && !showPlayerGuessUpdate,
-								'text-amber-500': showPlayerGuessUpdate
+									!gameOver && !showCommonGuesses && !showPlayerGuessUpdate
+								// 'text-amber-500': showPlayerGuessUpdate
 							})}><Puzzle size={16} /></button
 						>
-						{#if showPlayerGuessUpdate}
-							<UpdatePopup alignCarat="top-middle" {toggleUpdatePopup} alignClasses="top-[150%]"
-								><p class="text-xs dark:text-white">
-									<strong class="text-amber-500">UPDATE</strong>: {` `} You can now view the words other
-									players used to solve today’s Cipher.
-								</p></UpdatePopup
-							>
-						{/if}
 					</div>
 
 					<button
