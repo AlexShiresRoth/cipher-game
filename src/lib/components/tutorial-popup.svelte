@@ -50,7 +50,6 @@
 			class:p-4={showPopup}
 			class:opacity-100={showPopup}
 			class:translate-x-0={showPopup}
-			on:click={togglePopup}
 		>
 			<h2 class="text-lg font-bold text-amber-500">Tutorial</h2>
 			<h3>Step {tutorialState.currentStep + 1}</h3>

@@ -31,7 +31,7 @@
 				</thead>
 
 				<tbody>
-					{#each Object.entries(puzzleData.wordsGuessed) as [word, amt]}
+					{#each Object.entries(puzzleData.wordsGuessed).sort((a, b) => b[1] - a[1]) as [word, amt] (word)}
 						<tr>
 							<td
 								class={clsx('border border-black px-3 py-2 text-left uppercase dark:border-white', {

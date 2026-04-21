@@ -14,8 +14,8 @@
 	export let tutorialState: TutorialState | undefined;
 
 	$: currentStep = tutorialState?.steps?.[tutorialState.currentStep];
-	$: start = Object.values(currentStep?.start || {})[0] || -1;
-	$: end = Object.values(currentStep?.end || {})[0] || -1;
+	$: start = Object.values(currentStep?.start || {})[0] ?? -1;
+	$: end = Object.values(currentStep?.end || {})[0] ?? -1;
 	$: selectedLetter = allowChooseIndex && cipherState.filter(() => key === selected[0]).length > 1;
 	$: highlightAtCorrectPosition = word.split('')[i] === cipherState[i];
 	$: highlightAtStartIndex = startIndex === i;
@@ -42,10 +42,23 @@
 		}
 	)}
 >
-	{#if tutorialState?.isTutorialMode && (start === i || end === i)}
-		<span class="absolute -top-5 z-10 flex flex-col items-center justify-center text-xs text-white"
-			>{i}</span
-		>
+	{#if tutorialState?.isTutorialMode && start === i}
+		{#key tutorialState.currentStep}
+			<span
+				in:fly={{ y: -50, delay: 500 }}
+				class="absolute -top-5 z-10 flex flex-col items-center justify-center text-xs text-white uppercase"
+				>start</span
+			>
+		{/key}
+	{/if}
+	{#if tutorialState?.isTutorialMode && end === i}
+		{#key tutorialState.currentStep}
+			<span
+				in:fly={{ y: -50 }}
+				class="absolute -top-5 z-10 flex flex-col items-center justify-center text-xs text-white uppercase"
+				>end</span
+			>
+		{/key}
 	{/if}
 	<p class="text-2xl font-bold uppercase md:text-5xl">{key}</p>
 	{#if selectedLetter}

@@ -17,15 +17,13 @@
 	export let replenishAmt: number;
 	export let solutionPath: string[];
 	export let word: string;
-	export let showPlayerGuessUpdate: boolean;
-	export let toggleUpdatePopup;
 	export let puzzleData;
 	export let guesses: string[] = [];
 
-	$: showStats = false;
-	$: showSolution = false;
-	$: showCommonGuesses = false;
-	$: showMenu = !!showNavModal;
+	let showStats = false;
+	let showSolution = false;
+	let showCommonGuesses = false;
+	let showMenu = !!showNavModal;
 
 	function toggleMenu() {
 		showMenu = !showMenu;
@@ -33,6 +31,27 @@
 
 	function hideMenu() {
 		showMenu = false;
+	}
+
+	function togglePlayerGuessesModal() {
+		showSolution = false;
+		showNavModal = false;
+		showStats = false;
+		showCommonGuesses = !showCommonGuesses;
+	}
+
+	function toggleSolutionModal() {
+		showSolution = !showSolution;
+		showStats = false;
+		showNavModal = false;
+		showCommonGuesses = false;
+	}
+
+	function toggleStatsModal() {
+		showStats = !showStats;
+		showNavModal = false;
+		showSolution = false;
+		showCommonGuesses = false;
 	}
 
 	$: (() => {
@@ -66,17 +85,10 @@
 					<div class="relative flex flex-col items-center">
 						<button
 							disabled={!gameOver}
-							on:click={() => {
-								showSolution = false;
-								showNavModal = false;
-								showStats = false;
-								showCommonGuesses = !showCommonGuesses;
-							}}
+							on:click={togglePlayerGuessesModal}
 							class={clsx('transition-colors hover:cursor-pointer', {
 								'text-indigo-500': showCommonGuesses,
-								'text-gray-400/50 dark:text-gray-100/50':
-									!gameOver && !showCommonGuesses && !showPlayerGuessUpdate
-								// 'text-amber-500': showPlayerGuessUpdate
+								'text-gray-400/50 dark:text-gray-100/50': !gameOver && !showCommonGuesses
 							})}><Puzzle size={16} /></button
 						>
 					</div>
@@ -87,22 +99,12 @@
 							'text-emerald-500': showSolution,
 							'text-gray-400/50 dark:text-gray-100/50': !gameOver && !showSolution
 						})}
-						on:click={() => (
-							(showSolution = !showSolution),
-							(showStats = false),
-							(showNavModal = false),
-							(showCommonGuesses = false)
-						)}
+						on:click={toggleSolutionModal}
 					>
 						<Route size={16} />
 					</button>
 					<button
-						on:click={() => (
-							(showStats = !showStats),
-							(showNavModal = false),
-							(showSolution = false),
-							(showCommonGuesses = false)
-						)}
+						on:click={toggleStatsModal}
 						class={clsx('relative hover:cursor-pointer', {
 							'text-amber-300': showStats
 						})}
@@ -118,7 +120,7 @@
 					showSolution = false;
 				}}
 				class="bg-black px-4 py-2 text-white uppercase transition-colors hover:cursor-pointer hover:bg-black/80"
-				>{'menu'}</button
+				>menu</button
 			>
 			{#if showMenu}
 				<div

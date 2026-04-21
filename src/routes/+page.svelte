@@ -9,7 +9,6 @@
 		defaultAlphaState,
 		findSwappedLetters,
 		getItemsFromStorage,
-		getLetterIndex,
 		getMoveToIndex,
 		getTierByMoves,
 		guess,
@@ -32,6 +31,7 @@
 	} from '$lib';
 	import ActionButtons from '$lib/components/action-buttons.svelte';
 	import Cipher from '$lib/components/cipher.svelte';
+	import FlyInButton from '$lib/components/fly-in-button.svelte';
 	import GameOverModal from '$lib/components/game-over-modal.svelte';
 	import Keyboard from '$lib/components/keyboard.svelte';
 	import Nav from '$lib/components/nav.svelte';
@@ -49,7 +49,6 @@
 	import { onMount, tick } from 'svelte';
 	import { SvelteMap } from 'svelte/reactivity';
 	import { get, writable } from 'svelte/store';
-	import { fly } from 'svelte/transition';
 	import type { CipherPuzzle } from '../types';
 
 	/*** Init Vars from page server ***/
@@ -727,22 +726,57 @@
 	 * @description take the solution path and create steps for the tutorial
 	 */
 	function loadTutorialState() {
+		const n = data.word.length;
+
+		/** Smallest guess length ≥ 3 so a word starting at `start` swaps with index `end` (wraps). */
+		function minGuessLengthFromTo(start: number, end: number): number {
+			let d = (end - start + n) % n;
+			if (d === 0) d = n;
+			if (d >= 3) return d;
+			return d + n * Math.ceil((3 - d) / n);
+		}
+
 		const steps: TutorialState['steps'] = findSwappedLetters(data.solutionPath).map((path, i) => {
-			const wordLength =
-				data.word.length - Math.abs(Object.values(path[0])[0] - Object.values(path[1])[0]);
-
-			const isSwapPossible = getLetterIndex(path[0]) - getLetterIndex(path[1]) > 3;
-
-			const path0Letter = Object.keys(path[0])[0];
-			const path1Letter = Object.keys(path[1])[0];
 			const path0Index = Object.values(path[0])[0];
 			const path1Index = Object.values(path[1])[0];
-			const firstLetter = isSwapPossible ? path0Letter.toUpperCase() : path1Letter.toUpperCase();
-			const secondLetter = isSwapPossible ? path1Letter.toUpperCase() : path0Letter.toUpperCase();
+
+			const d01 = (path1Index - path0Index + n) % n;
+			const d10 = (path0Index - path1Index + n) % n;
+
+			let start: (typeof path)[0];
+			let end: (typeof path)[1];
+			let wordLength: number;
+
+			if (d01 >= 3) {
+				start = path[0];
+				end = path[1];
+				wordLength = d01;
+			} else if (d10 >= 3) {
+				start = path[1];
+				end = path[0];
+				wordLength = d10;
+			} else {
+				const L0 = minGuessLengthFromTo(path0Index, path1Index);
+				const L1 = minGuessLengthFromTo(path1Index, path0Index);
+				if (L0 <= L1) {
+					start = path[0];
+					end = path[1];
+					wordLength = L0;
+				} else {
+					start = path[1];
+					end = path[0];
+					wordLength = L1;
+				}
+			}
+
+			const firstLetter = Object.keys(start)[0].toUpperCase();
+			const secondLetter = Object.keys(end)[0].toUpperCase();
+			const startPos = Object.values(start)[0] + 1;
+			const endPos = Object.values(end)[0] + 1;
 
 			return {
-				start: isSwapPossible ? path[0] : path[1],
-				end: isSwapPossible ? path[1] : path[0],
+				start,
+				end,
 				wordLength,
 				currentStepNode: `
 				${
@@ -753,8 +787,8 @@
 				}
 
 				<p class="text-sm font-light dark:text-white/70">${i === 0 ? 'To start,' : 'Next,'} let's 
-				swap <span class="text-amber-500 uppercase">${firstLetter}</span> (${isSwapPossible ? path0Index + 1 : path1Index + 1})
-				with <span class="text-amber-500 uppercase">${secondLetter}</span> (${isSwapPossible ? path1Index + 1 : path0Index + 1})
+				swap <span class="text-amber-500 uppercase">${firstLetter}</span> (${startPos})
+				with <span class="text-amber-500 uppercase">${secondLetter}</span> (${endPos})
 				by using a ${wordLength} letter <span class="text-amber-500 uppercase">${firstLetter}</span> word to move. 
 				</p>
 
@@ -853,8 +887,6 @@
 		puzzleData={cipherPlayerData}
 		emoji={game.tier.emoji}
 		mistakeAmount={game.swaps.filter((b) => !b).length}
-		showPlayerGuessUpdate={getUpdateMapValue(updateNames.playerGuesses, system.updatesState)}
-		toggleUpdatePopup={toggleUpdatePopupAction}
 	/>
 
 	<!-- GAME OVER STATE -->
@@ -874,21 +906,15 @@
 	{/if}
 
 	<!-- PLAY STATE UI-->
-	<div class="absolute top-10 flex flex-col gap-2">
+	<div class="absolute top-12 flex flex-col gap-2">
 		{#each system.errors.slice(0, 5) as error, i (`${error}-${i}`)}
-			<button transition:fly={{ y: -100 }} class="bg-black p-2 text-sm text-white shadow-lg"
-				>{error}</button
-			>
+			<FlyInButton content={error} />
 		{/each}
 	</div>
 
 	<div class="absolute top-14 flex w-full flex-col items-center gap-2">
 		{#if system.complimentIndex >= 0}
-			<button
-				transition:fly={{ y: -100 }}
-				class="w-1/4 bg-black px-2 py-1 text-sm text-white uppercase shadow-lg"
-				>{compliments[system.complimentIndex] || '😃'}</button
-			>
+			<FlyInButton content={compliments[system.complimentIndex] || '😃'} />
 		{/if}
 	</div>
 
