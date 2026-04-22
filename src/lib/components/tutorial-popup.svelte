@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { TutorialState } from '$lib/types/store';
 	import { ChevronRight } from '@lucide/svelte';
+	import clsx from 'clsx';
 	import { fly } from 'svelte/transition';
 	import TutorialStep from './tutorial-step.svelte';
 
@@ -14,8 +15,15 @@
 </script>
 
 <div
-	class="fixed top-20 left-0 z-10 flex overflow-hidden rounded-r-lg border-2 border-l-0 border-amber-500/25 bg-black/90 shadow-md backdrop-blur-sm transition-[width,box-shadow] duration-340 ease-[cubic-bezier(0.22,1,0.36,1)] dark:border-white/20 dark:bg-black"
-	class:w-[min(80vw,90vw)]={showPopup}
+	class={clsx(
+		'fixed top-20 left-0 z-10 flex overflow-hidden rounded-r-lg',
+		'border-2 border-l-0 border-amber-500/25 bg-black/90 shadow-md',
+		'backdrop-blur-sm transition-[width,box-shadow] duration-340 ease-[cubic-bezier(0.22,1,0.36,1)] ',
+		'dark:border-white/20 dark:bg-black',
+		{
+			'w-[min(80vw,90vw)] md:max-w-md': showPopup
+		}
+	)}
 	class:shadow-lg={showPopup}
 	in:fly={{ x: -200, delay: 200 }}
 	out:fly={{ x: -100 }}

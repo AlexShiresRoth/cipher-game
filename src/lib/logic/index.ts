@@ -7,3 +7,4 @@ export * from './shuffle';
 export * from './social-utils';
 export * from './solution-path';
 export * from './tiers';
+export * from './tutorial-steps';

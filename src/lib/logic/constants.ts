@@ -10,7 +10,7 @@ export const StorageKeys = {
 	swaps: 'swaps',
 	gameStatus: 'gameStatus',
 	puzzle: 'puzzle',
-	viewed: 'viewedV5',
+	viewed: 'viewedV6',
 	date: 'date',
 	cipherStateHistory: 'cipherStateHistory',
 	tutorialMode: 'tutorialMode',

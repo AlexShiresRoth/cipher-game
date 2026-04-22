@@ -12,13 +12,20 @@
 
 	let loading = true;
 	let showNavModal = false;
+	let prefs = new Map() as PrefMap;
 
-	$: preferences = new Map() as PrefMap;
+	$: preferences = prefs;
+
+	function resetGameAndPreferences() {
+		localStorage.clear();
+
+		prefs = checkStorageForPreferences(PreferenceKeys);
+	}
 
 	onMount(() => {
 		loading = false;
 
-		preferences = checkStorageForPreferences(PreferenceKeys);
+		prefs = checkStorageForPreferences(PreferenceKeys);
 	});
 </script>
 
@@ -29,14 +36,14 @@
 		toggleModalOpen={() => {}}
 		solvableAmt={0}
 		moveAmount={0}
-		emoji={''}
+		emoji=""
 		mistakeAmount={0}
 		replenishAmt={0}
 		showHome
 		solutionPath={['']}
-		toggleUpdatePopup={() => {}}
 		word=""
-		showSolutionUpdate={false}
+		puzzleData={null}
+		guesses={[]}
 	/>
 
 	<div class="flex w-full flex-col items-center py-8">
@@ -48,7 +55,7 @@
 			<p>Change the way stats show up in your game interface</p>
 		</div>
 		<div class="flex w-full flex-col">
-			{#each Array.from(preferences.entries()) as [key, value], i}
+			{#each Array.from(preferences.entries()) as [key, value] (value)}
 				<div class="border-b border-b-black/20 p-4 dark:border-b-gray-100/30">
 					<div class="flex items-center justify-between gap-1">
 						<h3>{value.title}</h3>
@@ -58,7 +65,7 @@
 								onclick={() => {
 									const updatedPrefs = addPrefToStorage(key, preferences);
 
-									preferences = updatedPrefs;
+									prefs = updatedPrefs;
 									localStorage.setItem(
 										PreferenceStorageKeys.preferences,
 										btoa(JSON.stringify([...updatedPrefs]))
@@ -83,6 +90,21 @@
 					<p class="text-sm text-black/80 dark:text-white/80">{value.description}</p>
 				</div>
 			{/each}
+			<div
+				class="flex flex-col gap-2 border-b border-b-black/20 bg-red-500/20 p-4 dark:border-b-gray-100/30"
+			>
+				<p class="text-sm text-black/80 dark:text-white/80">
+					This will reset your game and preferences to the default settings. This will also clear
+					your game history and reset your progress.
+				</p>
+				<div>
+					<button
+						onclick={resetGameAndPreferences}
+						class="rounded bg-red-500 p-2 text-black transition-colors hover:cursor-pointer hover:bg-red-500/50"
+						>Reset Game & Preferences</button
+					>
+				</div>
+			</div>
 		</div>
 	</div>
 </div>

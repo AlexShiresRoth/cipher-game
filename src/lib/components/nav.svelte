@@ -27,6 +27,9 @@
 
 	function toggleMenu() {
 		showMenu = !showMenu;
+		showStats = false;
+		showSolution = false;
+		showCommonGuesses = false;
 	}
 
 	function hideMenu() {
@@ -114,11 +117,7 @@
 				</div>
 			{/if}
 			<button
-				on:click={() => {
-					toggleMenu();
-					showStats = false;
-					showSolution = false;
-				}}
+				on:click={toggleMenu}
 				class="bg-black px-4 py-2 text-white uppercase transition-colors hover:cursor-pointer hover:bg-black/80"
 				>menu</button
 			>
