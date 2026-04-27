@@ -6,18 +6,22 @@
 	import TutorialStep from './tutorial-step.svelte';
 
 	export let tutorialState: TutorialState;
+	export let exitTutorial: () => void;
 
 	let showPopup = tutorialState.isTutorialMode;
+
+	$: step = tutorialState.steps?.[tutorialState.currentStep];
 
 	function togglePopup() {
 		showPopup = !showPopup;
 	}
+	// TODO - create an exit tutorial button
 </script>
 
 <div
 	class={clsx(
 		'fixed top-20 left-0 z-10 flex overflow-hidden rounded-r-lg',
-		'border-2 border-l-0 border-amber-500/25 bg-black/90 shadow-md',
+		'border-2 border-l-0 border-amber-500/25 shadow-md dark:bg-black/90',
 		'backdrop-blur-sm transition-[width,box-shadow] duration-340 ease-[cubic-bezier(0.22,1,0.36,1)] ',
 		'dark:border-white/20 dark:bg-black',
 		{
@@ -31,7 +35,7 @@
 	<button
 		type="button"
 		class="flex shrink-0 items-center justify-center text-amber-500 transition-[background-color,color] duration-200 hover:bg-white/5"
-		on:click={togglePopup}
+		onclick={togglePopup}
 		aria-expanded={showPopup}
 		aria-label={showPopup ? 'Hide tutorial' : 'Show tutorial'}
 	>
@@ -44,8 +48,7 @@
 	</button>
 
 	{#if showPopup}
-		<button
-			type="button"
+		<div
 			class="flex min-w-14 flex-col justify-center gap-2 overflow-hidden border-0 bg-transparent text-left transition-[opacity,transform,padding] duration-340 ease-[cubic-bezier(0.22,1,0.36,1)]"
 			class:pointer-events-none={!showPopup}
 			class:w-0={!showPopup}
@@ -62,10 +65,15 @@
 			<h2 class="text-lg font-bold text-amber-500">Tutorial</h2>
 			<h3>Step {tutorialState.currentStep + 1}</h3>
 
-			<svelte:component
-				this={TutorialStep}
-				node={tutorialState.steps?.[tutorialState.currentStep].currentStepNode || ''}
-			/>
-		</button>
+			<svelte:component this={TutorialStep} node={step?.currentStepNode || ''} />
+
+			<div class="mt-2">
+				<button
+					onclick={exitTutorial}
+					class="rounded border-2 border-black/70 p-2 text-xs font-semibold text-black/70 dark:border-white/20 dark:text-white/70"
+					>Quit Tutorial</button
+				>
+			</div>
+		</div>
 	{/if}
 </div>

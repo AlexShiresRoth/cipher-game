@@ -10,7 +10,7 @@
 	<div>
 		<button
 			class={clsx(
-				'flex items-center gap-1 rounded  border  bg-black px-4 py-2 text-sm text-white italic hover:cursor-pointer dark:border-white/10 dark:bg-gray-100/10',
+				'flex items-center gap-1 rounded  border bg-black px-4 py-2 text-sm text-white italic hover:cursor-pointer dark:border-white/10 dark:bg-gray-100/10',
 				{
 					'text-amber-500': showExp
 				}

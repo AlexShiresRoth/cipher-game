@@ -23,7 +23,6 @@
 		shareResultsAction,
 		StorageKeys,
 		stringifyJSON,
-		toggleUpdatePopup,
 		vowels,
 		type GuessReturnValues,
 		type PrefMap,
@@ -38,7 +37,8 @@
 	import Selection from '$lib/components/selection.svelte';
 	import SolutionPath from '$lib/components/solution-path.svelte';
 	import StartModal from '$lib/components/start-modal.svelte';
-	import { defaultUpdatesState, getUpdateMapValue, updateNames } from '$lib/logic/updates';
+	import TutorialPopup from '$lib/components/tutorial-popup.svelte';
+	import { defaultUpdatesState, updateNames } from '$lib/logic/updates';
 	import type {
 		GameLogicState,
 		GameSystemState,
@@ -298,8 +298,6 @@
 			updateGameUIStore({
 				showTutorial: true
 			});
-
-			setItemsInStorage([{ key: StorageKeys.viewed, value: 'true' }]);
 		}
 	}
 
@@ -625,19 +623,6 @@
 	}
 
 	/**
-	 * @description handle the state control for updates notification
-	 */
-	function toggleUpdatePopupAction() {
-		return updateGameSystemStore({
-			updatesState: toggleUpdatePopup(
-				system.updatesState,
-				updateNames.playerGuesses,
-				!getUpdateMapValue(updateNames.playerGuesses, system.updatesState)
-			)
-		});
-	}
-
-	/**
 	 *
 	 * @param preferences
 	 * @description get player preferences from settings
@@ -706,6 +691,8 @@
 		updateGameUIStore({
 			showTutorial: false
 		});
+
+		setItemsInStorage([{ key: StorageKeys.viewed, value: 'true' }]);
 	}
 
 	/**
@@ -722,8 +709,12 @@
 		updateGameLogicStore({
 			isGameStarted: true
 		});
-		setItemsInStorage([{ key: StorageKeys.tutorialMode, value: 'true' }]);
-		setItemsInStorage([{ key: StorageKeys.tutorialStep, value: `${tutorial.currentStep}` }]);
+
+		setItemsInStorage([
+			{ key: StorageKeys.tutorialMode, value: 'true' },
+			{ key: StorageKeys.viewed, value: 'true' },
+			{ key: StorageKeys.tutorialStep, value: `${tutorial.currentStep}` }
+		]);
 	}
 
 	/**
@@ -737,6 +728,13 @@
 		tutorialStore.update((state) => ({
 			...state,
 			steps
+		}));
+	}
+
+	function exitTutorial() {
+		tutorialStore.update((state) => ({
+			...state,
+			isTutorialMode: false
 		}));
 	}
 
@@ -767,6 +765,8 @@
 	}
 
 	$: (() => {
+		// this is an intentional dependency to trigger the update of the showLetters state
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		ui.modalOpen;
 
 		if (typeof window === 'undefined') return;
@@ -822,6 +822,11 @@
 		emoji={game.tier.emoji}
 		mistakeAmount={game.swaps.filter((b) => !b).length}
 	/>
+
+	<!-- Tutorial popup for tutorial mode -->
+	{#if tutorial.isTutorialMode}
+		<TutorialPopup tutorialState={tutorial} {exitTutorial} />
+	{/if}
 
 	<!-- GAME OVER STATE -->
 	{#if system.gameOver && ui.modalOpen}

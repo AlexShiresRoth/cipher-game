@@ -51,38 +51,19 @@ export function createTutorialSteps(solutionPath: string[], n: number): Tutorial
 
 		const firstLetter = Object.keys(start)[0].toUpperCase();
 		const secondLetter = Object.keys(end)[0].toUpperCase();
-		const startPos = Object.values(start)[0] + 1;
-		const endPos = Object.values(end)[0] + 1;
 
 		return {
 			start,
 			end,
 			wordLength,
 			currentStepNode: `
-				${
-					i === 0
-						? `<p class="text-sm font-light dark:text-white/70">Welcome to the Cipher tutorial. We'll go step by step and learn how to decipher the puzzle. 
-				We will show one way to solve the puzzle, not necessarily the best way.</p>`
-						: ''
-				}
+				${i === 0 ? `<p class="text-sm">Swap letters, with real words, to decipher the scrambled word.</p>` : ''}
 
-				<p class="text-sm font-light dark:text-white/70">${i === 0 ? 'To start,' : 'Next,'} let's 
-				swap <span class="text-amber-500 uppercase">${firstLetter}</span> (${startPos})
-				with <span class="text-amber-500 uppercase">${secondLetter}</span> (${endPos})
-				by using a ${wordLength} letter <span class="text-amber-500 uppercase">${firstLetter}</span> word to move. 
+				<p class="text-sm">
+					Swap <span class="text-amber-500 uppercase">${firstLetter}</span>
+					with <span class="text-amber-500 uppercase">${secondLetter}</span>.
 				</p>
-
-				<p class="text-sm font-light dark:text-white/70">You can use any word you want for swapping, starting with <span class="text-amber-500 uppercase">${firstLetter}</span>.</p>
-				
-				${i === 0 ? '<p class="text-sm font-light dark:text-white/70">If you choose to use different letters, it will exit the tutorial.</p>' : ''}
-				
-				${
-					i === 1
-						? `<p class="text-sm font-light dark:text-white/70">Once letters move into place, they will appear green.</p>
-						   <p class="text-sm font-light dark:text-white/70">You may notice some letters may become unavailable to use, while some have infinite use. Check the key button for more information.</p>
 				`
-						: ''
-				}`
 		};
 	});
 }

@@ -1,6 +1,6 @@
 <script>
 	import ActionButtons from '$lib/components/action-buttons.svelte';
-	import Explanation from './explanation.svelte';
+	import Explanation from '../../lib/components/explanation.svelte';
 
 	const guess = 'factual';
 	const selected = guess.split('');
@@ -12,7 +12,6 @@
 	removeLetterFromSelection={() => {}}
 	guess={() => {}}
 	{selected}
-	usedLetters={[]}
 />
 
 <p>

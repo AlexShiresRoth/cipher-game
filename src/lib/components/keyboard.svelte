@@ -2,7 +2,6 @@
 	import type { TutorialState } from '$lib/types/store';
 	import { onMount } from 'svelte';
 	import KeyboardLetter from './keyboard-letter.svelte';
-	import TutorialPopup from './tutorial-popup.svelte';
 
 	export let selected: string[];
 	export let handleSelect: (l: string) => void;
@@ -33,9 +32,6 @@
 </script>
 
 <div class="relative flex w-full justify-center">
-	{#if tutorialState && tutorialState.isTutorialMode}
-		<TutorialPopup {tutorialState} />
-	{/if}
 	<div class="flex flex-wrap items-center justify-center gap-2 dark:text-black">
 		{#each alpha as letter, i (letter + i)}
 			<KeyboardLetter {alphaState} {letter} {selected} {tutorialState} {handleSelect} />
