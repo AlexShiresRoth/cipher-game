@@ -99,7 +99,7 @@ describe('Action Buttons', () => {
 			expect(clearUsedLettersMock).toHaveBeenCalled();
 			expect(clearUsedLettersMock.mock.results[0].value).toEqual({
 				usedLetters: [],
-				moveAmount: 2,
+				moveAmount: 1, // move amount should not change from rep, but rep will be incremented and added to final scoring
 				replenishAmt: 1,
 				shouldAllowReplenish: false
 			});
