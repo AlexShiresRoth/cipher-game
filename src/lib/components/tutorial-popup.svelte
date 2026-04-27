@@ -1,0 +1,104 @@
+<script lang="ts">
+	import type { TutorialState } from '$lib/types/store';
+	import { WORD_LIST } from '$lib/wordlists';
+	import { ChevronRight, RotateCcw } from '@lucide/svelte';
+	import clsx from 'clsx';
+	import { fly } from 'svelte/transition';
+	import TutorialStep from './tutorial-step.svelte';
+
+	export let tutorialState: TutorialState;
+	export let exitTutorial: () => void;
+
+	let showPopup = tutorialState.isTutorialMode;
+
+	$: step = tutorialState.steps?.[tutorialState.currentStep];
+	$: startLetter = Object.keys(step?.start || {})[0];
+
+	function togglePopup() {
+		showPopup = !showPopup;
+	}
+
+	/**
+	 * @description get a random word by length and starting letter to use as a hint
+	 * @param length
+	 * @param letter
+	 */
+	function getWordByLength(length: number, letter: string) {
+		const wordsStartingWithLetter = WORD_LIST[length].words.filter((word) =>
+			word.startsWith(letter)
+		);
+		return wordsStartingWithLetter[Math.floor(Math.random() * wordsStartingWithLetter.length)];
+	}
+</script>
+
+<div
+	class={clsx(
+		'fixed top-20 left-0 z-10 flex overflow-hidden rounded-r-lg',
+		'border-2 border-l-0 border-amber-500/25 shadow-md dark:bg-black/80',
+		'backdrop-blur-sm transition-[width,box-shadow] duration-340 ease-[cubic-bezier(0.22,1,0.36,1)] ',
+		'dark:border-white/25',
+		{
+			'w-[min(80vw,90vw)] md:max-w-md': showPopup
+		}
+	)}
+	class:shadow-lg={showPopup}
+	in:fly={{ x: -200, delay: 200 }}
+	out:fly={{ x: -100 }}
+>
+	<button
+		type="button"
+		class="flex shrink-0 items-center justify-center text-amber-500 transition-[background-color,color] duration-200 hover:bg-white/5"
+		onclick={togglePopup}
+		aria-expanded={showPopup}
+		aria-label={showPopup ? 'Hide tutorial' : 'Show tutorial'}
+	>
+		<span
+			class="inline-block transition-transform duration-340 ease-[cubic-bezier(0.22,1,0.36,1)]"
+			class:rotate-180={showPopup}
+		>
+			<ChevronRight size={24} />
+		</span>
+	</button>
+
+	{#if showPopup}
+		<div
+			class="flex min-w-14 flex-col justify-center gap-2 overflow-hidden border-0 bg-transparent text-left transition-[opacity,transform,padding] duration-340 ease-[cubic-bezier(0.22,1,0.36,1)]"
+			class:pointer-events-none={!showPopup}
+			class:w-0={!showPopup}
+			class:flex-none={!showPopup}
+			class:px-0={!showPopup}
+			class:py-0={!showPopup}
+			class:opacity-0={!showPopup}
+			class:-translate-x-2={!showPopup}
+			class:flex-1={showPopup}
+			class:p-4={showPopup}
+			class:opacity-100={showPopup}
+			class:translate-x-0={showPopup}
+		>
+			<h2 class="text-lg font-bold text-amber-500">Tutorial</h2>
+			<h3>Step {tutorialState.currentStep + 1}</h3>
+
+			<svelte:component this={TutorialStep} node={step?.currentStepNode || ''} />
+			<p class="text-xs text-gray-500 italic">
+				Hint: use a {step?.wordLength}-letter word like
+				<span class="text-amber-500 uppercase"
+					>{getWordByLength(step?.wordLength || 0, startLetter)}</span
+				>
+			</p>
+			{#if tutorialState.currentStep > 0}
+				<p class="text-xs text-gray-500 italic">
+					(If some letters are not available, you can replenish the keyboard with the<span>
+						<RotateCcw size={14} class="mx-1 inline-block text-amber-500" />
+					</span>button).
+				</p>
+			{/if}
+			<div class="mt-2">
+				<button
+					onclick={exitTutorial}
+					class="rounded-md border-2 bg-black p-2 text-xs font-semibold text-white dark:border-white/20 dark:text-white/70"
+					>Quit Tutorial</button
+				>
+			</div>
+		</div>
+	{/if}
+</div>

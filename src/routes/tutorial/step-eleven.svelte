@@ -4,7 +4,7 @@
 	import Cipher from '$lib/components/cipher.svelte';
 	import Keyboard from '$lib/components/keyboard.svelte';
 	import ResultsAndScoring from '$lib/components/results-and-scoring.svelte';
-	import Explanation from './explanation.svelte';
+	import Explanation from '../../lib/components/explanation.svelte';
 
 	const word = 'firework';
 	const cipherState = word.split('');

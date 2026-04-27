@@ -1,7 +1,7 @@
 <script lang="ts">
 	import clsx from 'clsx';
 	import { fade } from 'svelte/transition';
-	type Align = 'bottom-left' | 'top-middle';
+	type Align = 'bottom-left' | 'top-middle' | 'bottom-middle';
 
 	let { children, toggleUpdatePopup, alignClasses, alignCarat = 'bottom-left' as Align } = $props();
 
@@ -21,7 +21,9 @@
 			'bottom-full': !alignClasses,
 			'after:top-full after:left-4 after:-translate-x-1/2': align === 'bottom-left',
 			'after:top-0 after:left-1/2 after:-translate-x-1/2 after:-translate-y-full after:rotate-180':
-				align === 'top-middle'
+				align === 'top-middle',
+			'after:top-3/4 after:left-1/2 after:-translate-x-1/2 after:translate-y-full':
+				align === 'bottom-middle'
 		}
 	)}
 	onclick={toggleUpdatePopup}

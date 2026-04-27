@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { alpha, defaultAlphaState, vowels } from '$lib';
 	import Keyboard from '$lib/components/keyboard.svelte';
-	import Explanation from './explanation.svelte';
+	import Explanation from '../../lib/components/explanation.svelte';
 
 	const cipher = 'efirokwr';
 	const guess = 'factual';

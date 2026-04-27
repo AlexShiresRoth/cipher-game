@@ -1,19 +1,12 @@
 <script lang="ts">
-	import { type GuessReturnValues, type PrefMap, type PuzzleGuessesResponse } from '$lib';
-	import ActionButtons from '$lib/components/action-buttons.svelte';
-	import Cipher from '$lib/components/cipher.svelte';
-	import GameOverModal from '$lib/components/game-over-modal.svelte';
-	import HowTo from '$lib/components/how-to.svelte';
-	import Keyboard from '$lib/components/keyboard.svelte';
-	import Nav from '$lib/components/nav.svelte';
-	import Selection from '$lib/components/selection.svelte';
-	import SolutionPath from '$lib/components/solution-path.svelte';
 	import {
 		alpha,
 		checkAlphaStateIsDiminshed,
 		checkStorageForPreferences,
 		clearSelection,
 		clearUsedLetters,
+		compliments,
+		createTutorialSteps,
 		defaultAlphaState,
 		getItemsFromStorage,
 		getMoveToIndex,
@@ -30,27 +23,45 @@
 		shareResultsAction,
 		StorageKeys,
 		stringifyJSON,
-		toggleUpdatePopup,
-		vowels
-	} from '$lib/logic';
-	import { defaultUpdatesState, getUpdateMapValue, updateNames } from '$lib/logic/updates';
-	import type { GameLogicState, GameSystemState, GameUIState } from '$lib/types/store';
+		vowels,
+		type GuessReturnValues,
+		type PrefMap,
+		type PuzzleGuessesResponse
+	} from '$lib';
+	import ActionButtons from '$lib/components/action-buttons.svelte';
+	import Cipher from '$lib/components/cipher.svelte';
+	import FlyInButton from '$lib/components/fly-in-button.svelte';
+	import GameOverModal from '$lib/components/game-over-modal.svelte';
+	import Keyboard from '$lib/components/keyboard.svelte';
+	import Nav from '$lib/components/nav.svelte';
+	import Selection from '$lib/components/selection.svelte';
+	import SolutionPath from '$lib/components/solution-path.svelte';
+	import StartModal from '$lib/components/start-modal.svelte';
+	import TutorialPopup from '$lib/components/tutorial-popup.svelte';
+	import { defaultUpdatesState, updateNames } from '$lib/logic/updates';
+	import type {
+		GameLogicState,
+		GameSystemState,
+		GameUIState,
+		TutorialState
+	} from '$lib/types/store';
 	import clsx from 'clsx';
 	import { onMount, tick } from 'svelte';
 	import { SvelteMap } from 'svelte/reactivity';
 	import { get, writable } from 'svelte/store';
-	import { fly } from 'svelte/transition';
 	import type { CipherPuzzle } from '../types';
 
 	/*** Init Vars from page server ***/
 	export let data: CipherPuzzle & { id: number } & { cipherPlayerData: PuzzleGuessesResponse };
-	export let word = data.word;
-	export let cipher = data.cipherWord;
-	export let cipherPlayerData = data.cipherPlayerData;
+
+	let word = data.word;
+	let cipher = data.cipherWord;
+	let cipherPlayerData = data.cipherPlayerData;
 
 	const winGameKey = 'win';
 	const initAlphaState = defaultAlphaState(alpha, cipher.split(''), vowels);
 	const defaultGameLogic: GameLogicState = {
+		isGameStarted: false,
 		moveAmount: 0,
 		guesses: [],
 		usedLetters: [],
@@ -87,36 +98,22 @@
 		complimentIndex: -1
 	};
 
+	const defaultTutorialState: TutorialState = {
+		isTutorialMode: false,
+		currentStep: 0
+	};
+
 	const gameLogicStore = writable<GameLogicState>(defaultGameLogic);
 	const gameUIStore = writable<GameUIState>(defaultUIState);
 	const gameSystemStore = writable<GameSystemState>(defaultGameSystemState);
+	const tutorialStore = writable<TutorialState>(defaultTutorialState);
 
 	$: game = $gameLogicStore;
 	$: ui = $gameUIStore;
 	$: system = $gameSystemStore;
+	$: tutorial = $tutorialStore;
 
 	$: correctPositions = $gameLogicStore.cipherState.filter((l, i) => l === word[i]).length;
-
-	const compliments = [
-		'Sick!',
-		'Nice!',
-		'👏',
-		'Excellent.',
-		'Oh Dang!',
-		'Smart.',
-		'Fantastic.',
-		'Love to see it.',
-		'Okay!',
-		'Great.',
-		'🧙',
-		'🧙‍♀️',
-		// this is a joke, pls remove later
-		'Nice, Tim?',
-		'Nice, Madeline?',
-		'Nice, Anna?',
-		'Nice, Kathryn?',
-		'Nice, Alex?'
-	];
 
 	/**
 	 *
@@ -187,7 +184,9 @@
 			correctGuesses,
 			replenishAmount,
 			cipherStateHistoryStored,
-			gameStatus
+			gameStatus,
+			tutorialMode,
+			tutorialStep
 		] = getItemsFromStorage([
 			StorageKeys.guesses,
 			StorageKeys.moves,
@@ -197,7 +196,9 @@
 			StorageKeys.swaps,
 			StorageKeys.replenishAmt,
 			StorageKeys.cipherStateHistory,
-			StorageKeys.gameStatus
+			StorageKeys.gameStatus,
+			StorageKeys.tutorialMode,
+			StorageKeys.tutorialStep
 		]);
 
 		if (puzzle !== word) {
@@ -210,6 +211,14 @@
 		updateGameUIStore({
 			modalOpen: winGame
 		});
+
+		if (tutorialMode) {
+			tutorialStore.update((state) => ({
+				...state,
+				isTutorialMode: tutorialMode === 'true',
+				currentStep: tutorialStep ? parseInt(tutorialStep) : state.currentStep
+			}));
+		}
 
 		gameSystemStore.update((state) => ({
 			...state,
@@ -289,8 +298,6 @@
 			updateGameUIStore({
 				showTutorial: true
 			});
-
-			setItemsInStorage([{ key: StorageKeys.viewed, value: 'true' }]);
 		}
 	}
 
@@ -493,7 +500,28 @@
 			};
 		});
 
-		correctPositions = positions;
+		// update tutorial step to sync with game state
+		if (tutorial.isTutorialMode && !invalidGuess) {
+			tutorialStore.update((state) => {
+				// exit tutorial if player is not following the tutorial
+				const isFollowingTutorial =
+					data.solutionPath[state.currentStep + 1] === cipherState.join('');
+
+				const isTutorialMode = isGameOver || !isFollowingTutorial ? false : state.isTutorialMode;
+
+				if (!isTutorialMode) {
+					removeItemsInStorage([StorageKeys.tutorialMode, StorageKeys.tutorialStep]);
+				}
+
+				return {
+					...state,
+					currentStep: state.currentStep + 1,
+					isTutorialMode
+				};
+			});
+
+			setItemsInStorage([{ key: StorageKeys.tutorialStep, value: `${tutorial.currentStep + 1}` }]);
+		}
 
 		if (isGameOver) {
 			// show the win modal
@@ -510,6 +538,10 @@
 	 * @description Main game loop handle player guess
 	 */
 	async function handleGuess() {
+		if (game.selected.length === 0) {
+			return;
+		}
+
 		const result = await guess({
 			errors: system.errors,
 			swaps: game.swaps,
@@ -591,19 +623,6 @@
 	}
 
 	/**
-	 * @description handle the state control for updates notification
-	 */
-	function toggleUpdatePopupAction() {
-		return updateGameSystemStore({
-			updatesState: toggleUpdatePopup(
-				system.updatesState,
-				updateNames.playerGuesses,
-				!getUpdateMapValue(updateNames.playerGuesses, system.updatesState)
-			)
-		});
-	}
-
-	/**
 	 *
 	 * @param preferences
 	 * @description get player preferences from settings
@@ -626,10 +645,11 @@
 	 */
 	function handleReplenishKeyboard() {
 		gameLogicStore.update((state) => {
-			const { replenishAmt, shouldAllowReplenish, moveAmount } = clearUsedLetters({
+			const { replenishAmt, shouldAllowReplenish, moveAmount, usedLetters } = clearUsedLetters({
 				moveAmount: state.moveAmount,
 				replenishAmt: state.replenishAmt
 			});
+
 			setItemsInStorage([
 				{ key: StorageKeys.moves, value: stringifyJSON(moveAmount) },
 				{ key: StorageKeys.replenishAmt, value: stringifyJSON(replenishAmt) }
@@ -642,6 +662,7 @@
 				replenishAmt,
 				shouldAllowReplenish,
 				moveAmount,
+				usedLetters,
 				alphaState: defaultAlphaState(alpha, game.cipherState, vowels)
 			};
 		});
@@ -661,12 +682,60 @@
 	}
 
 	/**
-	 * @description hides the tutorial for the player
+	 * @description starts the game and hides the tutorial modal
 	 */
-	function hideTutorialInUI() {
+	function startGame() {
+		updateGameLogicStore({
+			isGameStarted: true
+		});
 		updateGameUIStore({
 			showTutorial: false
 		});
+
+		setItemsInStorage([{ key: StorageKeys.viewed, value: 'true' }]);
+	}
+
+	/**
+	 * @description starts the tutorial and hides the tutorial modal
+	 */
+	function startTutorial() {
+		tutorialStore.update((state) => ({
+			...state,
+			isTutorialMode: true
+		}));
+		updateGameUIStore({
+			showTutorial: false
+		});
+		updateGameLogicStore({
+			isGameStarted: true
+		});
+
+		setItemsInStorage([
+			{ key: StorageKeys.tutorialMode, value: 'true' },
+			{ key: StorageKeys.viewed, value: 'true' },
+			{ key: StorageKeys.tutorialStep, value: `${tutorial.currentStep}` }
+		]);
+	}
+
+	/**
+	 * @description take the solution path and create steps for the tutorial
+	 */
+	function loadTutorialState() {
+		const n = data.word.length;
+
+		const steps = createTutorialSteps(data.solutionPath, n);
+
+		tutorialStore.update((state) => ({
+			...state,
+			steps
+		}));
+	}
+
+	function exitTutorial() {
+		tutorialStore.update((state) => ({
+			...state,
+			isTutorialMode: false
+		}));
 	}
 
 	onMount(() => {
@@ -674,7 +743,7 @@
 			checkTodaysPuzzle();
 			addTodaysPuzzleToStorage(word);
 			shouldShowTutorial();
-
+			loadTutorialState();
 			updateGameSystemStore({
 				hydrated: true,
 				loading: false,
@@ -696,6 +765,8 @@
 	}
 
 	$: (() => {
+		// this is an intentional dependency to trigger the update of the showLetters state
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		ui.modalOpen;
 
 		if (typeof window === 'undefined') return;
@@ -709,7 +780,7 @@
 </script>
 
 <svelte:head>
-	<title>Play CIPHER {`#`}{data.id || 'Uh oh :('} - Daily Word-Shuffle Puzzle</title>
+	<title>Play CIPHER #{data.id || 'Uh oh :('} - Daily Word-Shuffle Puzzle</title>
 	<meta
 		name="description"
 		content="Play Cipher, the daily interactive word-shuffle puzzle game. Decipher the shuffled word using clever moves, swapping mechanics, and logic-based strategy."
@@ -732,6 +803,10 @@
 	<div class="flex min-h-screen w-full flex-col items-center justify-center"><p>Uh oh</p></div>
 {/if}
 
+{#if ui.showTutorial && !game.isGameStarted}
+	<StartModal {data} {startGame} {startTutorial} />
+{/if}
+
 <div class:hidden={!system.hydrated && system.loading} class="flex w-full flex-col items-center">
 	<Nav
 		{word}
@@ -746,23 +821,11 @@
 		puzzleData={cipherPlayerData}
 		emoji={game.tier.emoji}
 		mistakeAmount={game.swaps.filter((b) => !b).length}
-		showPlayerGuessUpdate={getUpdateMapValue(updateNames.playerGuesses, system.updatesState)}
-		toggleUpdatePopup={toggleUpdatePopupAction}
 	/>
 
-	{#if ui.showTutorial}
-		<div
-			class="fixed top-0 z-20 flex max-h-full w-screen flex-col items-end gap-4 overflow-y-scroll bg-white/40 px-4 pt-10 dark:bg-black/40"
-		>
-			<button
-				on:click={hideTutorialInUI}
-				out:fly={{ y: -200 }}
-				class="fly-in-down bg-white p-4 text-black dark:bg-black dark:text-white">close</button
-			>
-			<div class="fly-in-up bg-white dark:bg-black" out:fly={{ y: 200 }}>
-				<HowTo />
-			</div>
-		</div>
+	<!-- Tutorial popup for tutorial mode -->
+	{#if tutorial.isTutorialMode}
+		<TutorialPopup tutorialState={tutorial} {exitTutorial} />
 	{/if}
 
 	<!-- GAME OVER STATE -->
@@ -782,21 +845,15 @@
 	{/if}
 
 	<!-- PLAY STATE UI-->
-	<div class="absolute top-10 flex flex-col gap-2">
+	<div class="absolute top-12 flex flex-col gap-2">
 		{#each system.errors.slice(0, 5) as error, i (`${error}-${i}`)}
-			<button transition:fly={{ y: -100 }} class="bg-black p-2 text-sm text-white shadow-lg"
-				>{error}</button
-			>
+			<FlyInButton content={error} />
 		{/each}
 	</div>
 
 	<div class="absolute top-14 flex w-full flex-col items-center gap-2">
 		{#if system.complimentIndex >= 0}
-			<button
-				transition:fly={{ y: -100 }}
-				class="w-1/4 bg-black px-2 py-1 text-sm text-white uppercase shadow-lg"
-				>{compliments[system.complimentIndex] || '😃'}</button
-			>
+			<FlyInButton content={compliments[system.complimentIndex] || '😃'} />
 		{/if}
 	</div>
 
@@ -840,12 +897,14 @@
 		{#if !ui.showMySolution}
 			<!-- Current user selection row -->
 			<Selection
+				isTutorialMode={tutorial.isTutorialMode}
 				selected={game.selected}
 				shouldHaveMargin={!checkIfPreferenceSettingExist(system.preferences)}
 			/>
 			<!-- Cipher blocks row -->
 			<Cipher
 				{word}
+				tutorialState={tutorial}
 				cipherState={game.cipherState}
 				allowChooseIndex={game.allowChooseIndex}
 				selected={game.selected}
@@ -862,6 +921,7 @@
 				alphaState={game.alphaState}
 				guess={handleGuess}
 				removeLetterFromSelection={handleRemoveLetterFromSelection}
+				tutorialState={tutorial}
 			/>
 
 			<!-- Action buttons -->

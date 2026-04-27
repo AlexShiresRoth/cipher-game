@@ -3,7 +3,7 @@
 	import ActionButtons from '$lib/components/action-buttons.svelte';
 	import Cipher from '$lib/components/cipher.svelte';
 	import Keyboard from '$lib/components/keyboard.svelte';
-	import Explanation from './explanation.svelte';
+	import Explanation from '../../lib/components/explanation.svelte';
 	const word = 'firework';
 	const cipher = 'feirokwr';
 	const guess = '';

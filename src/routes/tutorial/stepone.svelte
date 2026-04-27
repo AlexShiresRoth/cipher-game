@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Explanation from './explanation.svelte';
+	import Explanation from '../../lib/components/explanation.svelte';
 	import MockCipher from './mock-cipher.svelte';
 	const cipher = 'efirokwr';
 	const guess = 'factual';

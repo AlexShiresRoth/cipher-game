@@ -5,7 +5,6 @@
 	import PlayerGuesses from './player-guesses.svelte';
 	import SolutionPath from './solution-path.svelte';
 	import Stats from './stats.svelte';
-	import UpdatePopup from './update-popup.svelte';
 
 	export let showNavModal = false;
 	export let gameOver = false;
@@ -18,18 +17,44 @@
 	export let replenishAmt: number;
 	export let solutionPath: string[];
 	export let word: string;
-	export let showPlayerGuessUpdate: boolean;
-	export let toggleUpdatePopup;
 	export let puzzleData;
 	export let guesses: string[] = [];
 
-	$: showStats = false;
-	$: showSolution = false;
-	$: showCommonGuesses = false;
-	$: showMenu = !!showNavModal;
+	let showStats = false;
+	let showSolution = false;
+	let showCommonGuesses = false;
+	let showMenu = !!showNavModal;
 
 	function toggleMenu() {
 		showMenu = !showMenu;
+		showStats = false;
+		showSolution = false;
+		showCommonGuesses = false;
+	}
+
+	function hideMenu() {
+		showMenu = false;
+	}
+
+	function togglePlayerGuessesModal() {
+		showSolution = false;
+		showNavModal = false;
+		showStats = false;
+		showCommonGuesses = !showCommonGuesses;
+	}
+
+	function toggleSolutionModal() {
+		showSolution = !showSolution;
+		showStats = false;
+		showNavModal = false;
+		showCommonGuesses = false;
+	}
+
+	function toggleStatsModal() {
+		showStats = !showStats;
+		showNavModal = false;
+		showSolution = false;
+		showCommonGuesses = false;
 	}
 
 	$: (() => {
@@ -54,9 +79,7 @@
 		</div>
 		<div
 			class="relative flex w-full items-center justify-end gap-2"
-			on:mouseleave={() => {
-				showNavModal = false;
-			}}
+			on:mouseleave={hideMenu}
 			role="button"
 			tabindex="0"
 		>
@@ -65,27 +88,12 @@
 					<div class="relative flex flex-col items-center">
 						<button
 							disabled={!gameOver}
-							on:click={() => {
-								showSolution = false;
-								showNavModal = false;
-								showStats = false;
-								showCommonGuesses = !showCommonGuesses;
-							}}
+							on:click={togglePlayerGuessesModal}
 							class={clsx('transition-colors hover:cursor-pointer', {
 								'text-indigo-500': showCommonGuesses,
-								'text-gray-400/50 dark:text-gray-100/50':
-									!gameOver && !showCommonGuesses && !showPlayerGuessUpdate,
-								'text-amber-500': showPlayerGuessUpdate
+								'text-gray-400/50 dark:text-gray-100/50': !gameOver && !showCommonGuesses
 							})}><Puzzle size={16} /></button
 						>
-						{#if showPlayerGuessUpdate}
-							<UpdatePopup alignCarat="top-middle" {toggleUpdatePopup} alignClasses="top-[150%]"
-								><p class="text-xs dark:text-white">
-									<strong class="text-amber-500">UPDATE</strong>: {` `} You can now view the words other
-									players used to solve today’s Cipher.
-								</p></UpdatePopup
-							>
-						{/if}
 					</div>
 
 					<button
@@ -94,22 +102,12 @@
 							'text-emerald-500': showSolution,
 							'text-gray-400/50 dark:text-gray-100/50': !gameOver && !showSolution
 						})}
-						on:click={() => (
-							(showSolution = !showSolution),
-							(showStats = false),
-							(showNavModal = false),
-							(showCommonGuesses = false)
-						)}
+						on:click={toggleSolutionModal}
 					>
 						<Route size={16} />
 					</button>
 					<button
-						on:click={() => (
-							(showStats = !showStats),
-							(showNavModal = false),
-							(showSolution = false),
-							(showCommonGuesses = false)
-						)}
+						on:click={toggleStatsModal}
 						class={clsx('relative hover:cursor-pointer', {
 							'text-amber-300': showStats
 						})}
@@ -119,13 +117,9 @@
 				</div>
 			{/if}
 			<button
-				on:click={() => {
-					toggleMenu();
-					showStats = false;
-					showSolution = false;
-				}}
+				on:click={toggleMenu}
 				class="bg-black px-4 py-2 text-white uppercase transition-colors hover:cursor-pointer hover:bg-black/80"
-				>{'menu'}</button
+				>menu</button
 			>
 			{#if showMenu}
 				<div
