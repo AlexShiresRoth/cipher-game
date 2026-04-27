@@ -897,6 +897,7 @@
 		{#if !ui.showMySolution}
 			<!-- Current user selection row -->
 			<Selection
+				isTutorialMode={tutorial.isTutorialMode}
 				selected={game.selected}
 				shouldHaveMargin={!checkIfPreferenceSettingExist(system.preferences)}
 			/>

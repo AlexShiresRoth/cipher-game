@@ -4,13 +4,49 @@
 	import { fly } from 'svelte/transition';
 
 	export let clearUsedLetters: () => void;
-	export let clearSelection;
+	export let clearSelection: () => void;
 	export let selected: string[];
 	export let removeLetterFromSelection: () => void;
-	export let guess;
+	export let guess: () => void;
 	export let shouldAllowReplenish = false;
 
-	$: showKey = false;
+	let showKey = false;
+
+	$: showKeyReactive = showKey;
+
+	/**
+	 * @description handles showing the key modal
+	 */
+	function handleShowKey() {
+		showKey = !showKey;
+	}
+
+	/**
+	 * @description handles replenishing the keyboard, if letters are not available
+	 */
+	function handleReplenishKeyboard() {
+		if (shouldAllowReplenish) {
+			clearUsedLetters();
+		}
+	}
+
+	/**
+	 * @description handles clearing user selection in UI
+	 */
+	function handleClearSelection() {
+		if (selected.length > 0) {
+			clearSelection();
+		}
+	}
+
+	/**
+	 * @description handles submitting a guess to the game
+	 */
+	function handleGuess() {
+		if (selected.length > 2) {
+			guess();
+		}
+	}
 </script>
 
 <div data-testid="button-rows" class="my-8 flex w-full items-center justify-between gap-4">
@@ -18,11 +54,7 @@
 		<div class="relative flex items-center">
 			<button
 				data-testid="replenish-keyboard"
-				on:click={() => {
-					if (shouldAllowReplenish) {
-						clearUsedLetters();
-					}
-				}}
+				onclick={handleReplenishKeyboard}
 				class={clsx('rounded p-2 transition-colors md:text-lg', {
 					'bg-gray-100 text-black/80 dark:bg-gray-100/50 dark:text-black/60': !shouldAllowReplenish,
 					' bg-amber-500 text-black': shouldAllowReplenish
@@ -32,11 +64,7 @@
 		<div>
 			<button
 				data-testid="clear-selection"
-				on:click={() => {
-					if (selected.length > 0) {
-						clearSelection();
-					}
-				}}
+				onclick={handleClearSelection}
 				class={clsx('rounded p-2 transition-colors md:text-lg', {
 					'bg-gray-100 text-black/80 dark:bg-gray-100/50 dark:text-black/60': selected.length === 0,
 					'bg-black text-white dark:bg-indigo-500 dark:text-black': selected.length > 0
@@ -46,7 +74,7 @@
 		<div>
 			<button
 				data-testid="delete-letter"
-				on:click={removeLetterFromSelection}
+				onclick={removeLetterFromSelection}
 				class={clsx('rounded p-2 transition-colors md:text-lg', {
 					'bg-gray-100 text-black/80 dark:bg-gray-100/50 dark:text-black/60': selected.length === 0,
 					'bg-black text-white dark:bg-indigo-500 dark:text-black': selected.length > 0
@@ -57,10 +85,10 @@
 	<div class="flex gap-2">
 		<button
 			data-testid="key-button"
-			on:click={() => (showKey = !showKey)}
+			onclick={handleShowKey}
 			class="relative flex items-center justify-center rounded bg-black p-2 text-base text-white uppercase transition-colors dark:bg-indigo-500 dark:text-black"
 		>
-			{#if showKey}
+			{#if showKeyReactive}
 				<div
 					data-testid="key-modal"
 					class="absolute bottom-full flex w-54 flex-col items-center gap-2 border-2 border-black bg-white p-4 text-sm text-black shadow-lg after:absolute after:top-full after:left-1/2 after:-translate-x-1/2
@@ -105,11 +133,7 @@
 				'bg-gray-100 text-black/80 dark:bg-gray-100/50 dark:text-black/60': selected.length <= 2,
 				'bg-black text-white dark:bg-emerald-500 dark:text-black': selected.length > 2
 			})}
-			on:click={() => {
-				if (selected.length > 2) {
-					guess();
-				}
-			}}
+			onclick={handleGuess}
 			disabled={selected.length <= 2}>Guess</button
 		>
 	</div>

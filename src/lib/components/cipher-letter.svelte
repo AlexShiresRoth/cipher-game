@@ -46,7 +46,7 @@
 		{#key tutorialState.currentStep}
 			<span
 				in:fly={{ y: -50, delay: 500 }}
-				class="absolute -top-5 z-10 flex flex-col items-center justify-center text-xs text-white uppercase"
+				class="absolute -top-5 z-10 flex flex-col items-center justify-center text-xs uppercase dark:text-white"
 				>start</span
 			>
 		{/key}
@@ -55,7 +55,7 @@
 		{#key tutorialState.currentStep}
 			<span
 				in:fly={{ y: -50 }}
-				class="absolute -top-5 z-10 flex flex-col items-center justify-center text-xs text-white uppercase"
+				class="absolute -top-5 z-10 flex flex-col items-center justify-center text-xs uppercase dark:text-white"
 				>end</span
 			>
 		{/key}

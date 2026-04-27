@@ -57,7 +57,7 @@ export function createTutorialSteps(solutionPath: string[], n: number): Tutorial
 			end,
 			wordLength,
 			currentStepNode: `
-				${i === 0 ? `<p class="text-sm">Swap letters, with real words, to decipher the scrambled word.</p>` : ''}
+				${i === 0 ? `<p class="text-sm">Use real words to swap letters to decipher the scrambled word.</p>` : ''}
 
 				<p class="text-sm">
 					Swap <span class="text-amber-500 uppercase">${firstLetter}</span>

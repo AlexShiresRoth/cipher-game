@@ -37,7 +37,7 @@ export function clearUsedLetters({
 	const prevRepAmt = replenishAmt;
 	return {
 		usedLetters: [],
-		moveAmount: prevMvAmt + 1,
+		moveAmount: prevMvAmt,
 		replenishAmt: prevRepAmt + 1,
 		shouldAllowReplenish: false
 	};

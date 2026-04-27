@@ -1,8 +1,10 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import {
 		type PrefMap,
 		PreferenceKeys,
 		PreferenceStorageKeys,
+		URLS,
 		addPrefToStorage,
 		checkStorageForPreferences
 	} from '$lib';
@@ -13,6 +15,7 @@
 	let loading = true;
 	let showNavModal = false;
 	let prefs = new Map() as PrefMap;
+	let isDev = false;
 
 	$: preferences = prefs;
 
@@ -26,6 +29,7 @@
 		loading = false;
 
 		prefs = checkStorageForPreferences(PreferenceKeys);
+		isDev = page.url.origin === URLS.dev;
 	});
 </script>
 
@@ -90,21 +94,23 @@
 					<p class="text-sm text-black/80 dark:text-white/80">{value.description}</p>
 				</div>
 			{/each}
-			<div
-				class="flex flex-col gap-2 border-b border-b-black/20 bg-red-500/20 p-4 dark:border-b-gray-100/30"
-			>
-				<p class="text-sm text-black/80 dark:text-white/80">
-					This will reset your game and preferences to the default settings. This will also clear
-					your game history and reset your progress.
-				</p>
-				<div>
-					<button
-						onclick={resetGameAndPreferences}
-						class="rounded bg-red-500 p-2 text-black transition-colors hover:cursor-pointer hover:bg-red-500/50"
-						>Reset Game & Preferences</button
-					>
+			{#if isDev}
+				<div
+					class="flex flex-col gap-2 border-b border-b-black/20 bg-red-500/20 p-4 dark:border-b-gray-100/30"
+				>
+					<p class="text-sm text-black/80 dark:text-white/80">
+						This will reset your game and preferences to the default settings. This will also clear
+						your game history and reset your progress.
+					</p>
+					<div>
+						<button
+							onclick={resetGameAndPreferences}
+							class="rounded bg-red-500 p-2 text-xs text-white transition-colors hover:cursor-pointer hover:bg-red-500/50"
+							>Reset Game & Preferences</button
+						>
+					</div>
 				</div>
-			</div>
+			{/if}
 		</div>
 	</div>
 </div>

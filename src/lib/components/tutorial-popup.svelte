@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { TutorialState } from '$lib/types/store';
-	import { ChevronRight } from '@lucide/svelte';
+	import { WORD_LIST } from '$lib/wordlists';
+	import { ChevronRight, RotateCcw } from '@lucide/svelte';
 	import clsx from 'clsx';
 	import { fly } from 'svelte/transition';
 	import TutorialStep from './tutorial-step.svelte';
@@ -11,19 +12,31 @@
 	let showPopup = tutorialState.isTutorialMode;
 
 	$: step = tutorialState.steps?.[tutorialState.currentStep];
+	$: startLetter = Object.keys(step?.start || {})[0];
 
 	function togglePopup() {
 		showPopup = !showPopup;
 	}
-	// TODO - create an exit tutorial button
+
+	/**
+	 * @description get a random word by length and starting letter to use as a hint
+	 * @param length
+	 * @param letter
+	 */
+	function getWordByLength(length: number, letter: string) {
+		const wordsStartingWithLetter = WORD_LIST[length].words.filter((word) =>
+			word.startsWith(letter)
+		);
+		return wordsStartingWithLetter[Math.floor(Math.random() * wordsStartingWithLetter.length)];
+	}
 </script>
 
 <div
 	class={clsx(
 		'fixed top-20 left-0 z-10 flex overflow-hidden rounded-r-lg',
-		'border-2 border-l-0 border-amber-500/25 shadow-md dark:bg-black/90',
+		'border-2 border-l-0 border-amber-500/25 shadow-md dark:bg-black/80',
 		'backdrop-blur-sm transition-[width,box-shadow] duration-340 ease-[cubic-bezier(0.22,1,0.36,1)] ',
-		'dark:border-white/20 dark:bg-black',
+		'dark:border-white/25',
 		{
 			'w-[min(80vw,90vw)] md:max-w-md': showPopup
 		}
@@ -66,11 +79,23 @@
 			<h3>Step {tutorialState.currentStep + 1}</h3>
 
 			<svelte:component this={TutorialStep} node={step?.currentStepNode || ''} />
-
+			<p class="text-xs text-gray-500 italic">
+				Hint: use a {step?.wordLength}-letter word like
+				<span class="text-amber-500 uppercase"
+					>{getWordByLength(step?.wordLength || 0, startLetter)}</span
+				>
+			</p>
+			{#if tutorialState.currentStep > 0}
+				<p class="text-xs text-gray-500 italic">
+					(If some letters are not available, you can replenish the keyboard with the<span>
+						<RotateCcw size={14} class="mx-1 inline-block text-amber-500" />
+					</span>button).
+				</p>
+			{/if}
 			<div class="mt-2">
 				<button
 					onclick={exitTutorial}
-					class="rounded border-2 border-black/70 p-2 text-xs font-semibold text-black/70 dark:border-white/20 dark:text-white/70"
+					class="rounded-md border-2 bg-black p-2 text-xs font-semibold text-white dark:border-white/20 dark:text-white/70"
 					>Quit Tutorial</button
 				>
 			</div>
