@@ -40,7 +40,7 @@ export const load = async ({ setHeaders, cookies }) => {
 
 	const index = differenceInCalendarDays(estToday, START_DATE) + 1;
 
-	const cipher = await db.select().from(cipherPuzzle).where(eq(cipherPuzzle.id, 944));
+	const cipher = await db.select().from(cipherPuzzle).where(eq(cipherPuzzle.id, index));
 
 	console.info({ cipher, index, tzTime, isoDate: new Date().toISOString() });
 
