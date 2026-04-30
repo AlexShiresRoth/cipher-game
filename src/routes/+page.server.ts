@@ -40,7 +40,7 @@ export const load = async ({ setHeaders, cookies }) => {
 
 	const index = differenceInCalendarDays(estToday, START_DATE) + 1;
 
-	const cipher = await db.select().from(cipherPuzzle).where(eq(cipherPuzzle.id, index));
+	const cipher = await db.select().from(cipherPuzzle).where(eq(cipherPuzzle.id, 944));
 
 	console.info({ cipher, index, tzTime, isoDate: new Date().toISOString() });
 
@@ -58,7 +58,7 @@ export const load = async ({ setHeaders, cookies }) => {
 		return { ...cipher[0] };
 	}
 
-	const { wordsGuessed, cipherId, date } = cipherPlayerData[0];
+	const { wordsGuessed, cipherId, date = tzTime } = cipherPlayerData[0];
 
 	return { ...cipher[0], cipherPlayerData: { wordsGuessed, cipherId, date } };
 };
