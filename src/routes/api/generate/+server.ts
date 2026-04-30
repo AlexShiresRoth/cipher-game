@@ -59,7 +59,7 @@ export const POST = async ({ request, url }) => {
 		throw new Error(`${word} already used`);
 	}
 
-	function checkPuzzleCorrectNess(w: string, d: string) {
+	function checkPuzzleCorrectness(w: string, d: string) {
 		const wArr = [];
 		for (const l of d.split('')) {
 			if (w.includes(l)) {
@@ -70,7 +70,7 @@ export const POST = async ({ request, url }) => {
 		return wArr.length === w.length;
 	}
 
-	const isValidCipher = checkPuzzleCorrectNess(word, cipher);
+	const isValidCipher = checkPuzzleCorrectness(word, cipher);
 
 	if (!isValidCipher) {
 		throw new Error(`${word} does not match`);

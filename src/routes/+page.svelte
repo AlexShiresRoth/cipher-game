@@ -731,11 +731,16 @@
 		}));
 	}
 
+	/**
+	 * @description exits the tutorial and removes tutorial mode and step from local storage
+	 */
 	function exitTutorial() {
 		tutorialStore.update((state) => ({
 			...state,
 			isTutorialMode: false
 		}));
+
+		removeItemsInStorage([StorageKeys.tutorialMode, StorageKeys.tutorialStep]);
 	}
 
 	onMount(() => {

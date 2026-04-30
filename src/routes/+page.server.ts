@@ -58,7 +58,7 @@ export const load = async ({ setHeaders, cookies }) => {
 		return { ...cipher[0] };
 	}
 
-	const { wordsGuessed, cipherId, date } = cipherPlayerData[0];
+	const { wordsGuessed, cipherId, date = tzTime } = cipherPlayerData[0];
 
 	return { ...cipher[0], cipherPlayerData: { wordsGuessed, cipherId, date } };
 };
