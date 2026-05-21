@@ -23,7 +23,7 @@
 		<div>
 			<p class="text-xs text-gray-400">
 				created by <a
-					href="https://alexshiresroth.com/"
+					href="https://alexr.dev"
 					class="underline"
 					target="_blank"
 					rel="noopener noreferrer">Alex Rothenberg</a
