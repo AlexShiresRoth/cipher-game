@@ -1,8 +1,9 @@
-import { CRON_SECRET, DICTIONARY_API_KEY } from '$env/static/private';
+import { CRON_SECRET } from '$env/static/private';
 import { shuffle } from '$lib';
 import { bfsCipherSolver } from '$lib/logic/bfs-search.js';
 import { db } from '$lib/server/db/index.js';
 import { cipherPuzzle } from '$lib/server/db/schema.js';
+import { validateWord } from '$lib/server/validate-word.js';
 import { json } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
 import type { CipherPuzzle } from '../../../types.js';
@@ -10,24 +11,6 @@ import type { CipherPuzzle } from '../../../types.js';
 export const config = {
 	runtime: 'nodejs20.x'
 };
-
-async function validateWord(word: string) {
-	const res = await fetch(
-		`https://www.dictionaryapi.com/api/v3/references/collegiate/json/${word}?key=${DICTIONARY_API_KEY}`
-	);
-
-	const data = await res.json();
-
-	// If first entry is a string, this means it's suggestions
-	if (typeof data[0] === 'string') {
-		return new Response(JSON.stringify({ valid: false }), { status: 200 });
-	}
-
-	// if there are multiple meanings, the api provides example:1 as
-	const id = data[0]?.meta?.id?.split(':')[0];
-
-	return id === word || data[0]?.meta?.stems?.includes(word);
-}
 
 export const POST = async ({ request, url }) => {
 	const secret = url.searchParams.get('token')?.toString() || request.headers.get('Authorization');

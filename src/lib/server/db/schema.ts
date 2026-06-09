@@ -9,7 +9,8 @@ export const cipherPuzzle = pgTable('cipherPuzzle', {
 	solutionPath: text('solutionPath').array().notNull()
 });
 
-export const cipherPuzzleV2 = pgTable('cipherPuzzlePathUpdate', {
+// TODO - update code to use this table once we switch to it
+export const cipherPuzzleV2 = pgTable('cipherPuzzleV2', {
 	id: serial('id').primaryKey(),
 	word: text('word').unique(),
 	cipherWord: text('cipherWord'),
