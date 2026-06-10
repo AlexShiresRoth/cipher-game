@@ -1,1 +1,0 @@
--- ALTER TABLE "cipherPuzzle" ADD CONSTRAINT "cipherPuzzle_word_unique" UNIQUE("word");

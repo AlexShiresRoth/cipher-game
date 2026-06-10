@@ -1,9 +1,75 @@
 {
-  "id": "5e6a1dfe-a496-439d-98d2-65142d7d9d7f",
-  "prevId": "a78139a8-fdcb-43ca-ae07-f5b3d6393b7a",
+  "id": "d1cef596-ff1a-402d-9c24-7eeb1351c79e",
+  "prevId": "e52fed5d-ca0f-4a05-83da-ec5eba678eb8",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
+    "public.cipherGuesses": {
+      "name": "cipherGuesses",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "date": {
+          "name": "date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "words_guessed": {
+          "name": "words_guessed",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        "cipher_id": {
+          "name": "cipher_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "contributors": {
+          "name": "contributors",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "cipherGuesses_cipher_id_cipherPuzzle_id_fk": {
+          "name": "cipherGuesses_cipher_id_cipherPuzzle_id_fk",
+          "tableFrom": "cipherGuesses",
+          "tableTo": "cipherPuzzle",
+          "columnsFrom": [
+            "cipher_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "cipherGuesses_date_unique": {
+          "name": "cipherGuesses_date_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "date"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.cipherPuzzle": {
       "name": "cipherPuzzle",
       "schema": "",
@@ -26,21 +92,21 @@
           "primaryKey": false,
           "notNull": false
         },
-        "maxAttempts": {
-          "name": "maxAttempts",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
         "date": {
           "name": "date",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "dayOfWeek": {
-          "name": "dayOfWeek",
-          "type": "text",
+        "solutionPath": {
+          "name": "solutionPath",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "minMoves": {
+          "name": "minMoves",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false
         }
@@ -49,6 +115,13 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
+        "cipherPuzzle_word_unique": {
+          "name": "cipherPuzzle_word_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "word"
+          ]
+        },
         "cipherPuzzle_date_unique": {
           "name": "cipherPuzzle_date_unique",
           "nullsNotDistinct": false,
@@ -61,8 +134,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.user": {
-      "name": "user",
+    "public.cipherPuzzleV2": {
+      "name": "cipherPuzzleV2",
       "schema": "",
       "columns": {
         "id": {
@@ -71,17 +144,56 @@
           "primaryKey": true,
           "notNull": true
         },
-        "age": {
-          "name": "age",
+        "word": {
+          "name": "word",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cipherWord": {
+          "name": "cipherWord",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "date": {
+          "name": "date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "minMoves": {
+          "name": "minMoves",
           "type": "integer",
           "primaryKey": false,
           "notNull": false
+        },
+        "solutionPath": {
+          "name": "solutionPath",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true
         }
       },
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "cipherPuzzleV2_word_unique": {
+          "name": "cipherPuzzleV2_word_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "word"
+          ]
+        },
+        "cipherPuzzleV2_date_unique": {
+          "name": "cipherPuzzleV2_date_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "date"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false

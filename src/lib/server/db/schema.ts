@@ -5,15 +5,16 @@ export const cipherPuzzle = pgTable('cipherPuzzle', {
 	word: text('word').unique(),
 	cipherWord: text('cipherWord'),
 	date: text('date').unique(),
-	minMoves: integer('minMoves'),
-	solutionPath: text('solutionPath').array().notNull()
+	solutionPath: text('solutionPath').array().notNull(),
+	minMoves: integer('minMoves')
 });
 
-export const cipherPuzzleV2 = pgTable('cipherPuzzlePathUpdate', {
+export const cipherPuzzleV3 = pgTable('cipherPuzzleV2', {
 	id: serial('id').primaryKey(),
 	word: text('word').unique(),
 	cipherWord: text('cipherWord'),
 	date: text('date').unique(),
+	minMoves: integer('minMoves'),
 	solutionPath: text('solutionPath').array().notNull()
 });
 
