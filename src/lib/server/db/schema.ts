@@ -9,15 +9,6 @@ export const cipherPuzzle = pgTable('cipherPuzzle', {
 	minMoves: integer('minMoves')
 });
 
-export const cipherPuzzleV3 = pgTable('cipherPuzzleV2', {
-	id: serial('id').primaryKey(),
-	word: text('word').unique(),
-	cipherWord: text('cipherWord'),
-	date: text('date').unique(),
-	minMoves: integer('minMoves'),
-	solutionPath: text('solutionPath').array().notNull()
-});
-
 export const cipherGuesses = pgTable('cipherGuesses', {
 	id: serial('id').primaryKey(),
 	date: text('date').unique(),
