@@ -2,9 +2,6 @@ import { CRON_SECRET } from '$env/static/private';
 import { validateWord } from '$lib/server/validate-word.js';
 import { json } from '@sveltejs/kit';
 
-// TODO - make a new table with only valid words
-// criteria - they must be valid in the dictionary api and in our word list
-// the starting point should be the id of the current date's puzzle
 export const POST = async ({ request, url }) => {
 	try {
 		const secret =
@@ -29,7 +26,7 @@ export const POST = async ({ request, url }) => {
 			})
 		);
 
-		return json(validWords.filter((word) => !word.isValid));
+		return json(validWords);
 	} catch (error) {
 		console.error(error);
 		return new Response('Internal server error', {

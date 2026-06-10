@@ -1,6 +1,6 @@
 import { integer, jsonb, pgTable, serial, text } from 'drizzle-orm/pg-core';
 
-export const cipherPuzzle = pgTable('cipherPuzzle', {
+export const cipherPuzzleDeprecated = pgTable('cipherPuzzle', {
 	id: serial('id').primaryKey(),
 	word: text('word').unique(),
 	cipherWord: text('cipherWord'),
@@ -9,8 +9,7 @@ export const cipherPuzzle = pgTable('cipherPuzzle', {
 	solutionPath: text('solutionPath').array().notNull()
 });
 
-// TODO - update code to use this table once we switch to it
-export const cipherPuzzleV2 = pgTable('cipherPuzzleV2', {
+export const cipherPuzzle = pgTable('cipherPuzzleV2', {
 	id: serial('id').primaryKey(),
 	word: text('word').unique(),
 	cipherWord: text('cipherWord'),

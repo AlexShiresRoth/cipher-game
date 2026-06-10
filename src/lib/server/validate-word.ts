@@ -16,6 +16,7 @@ export async function validateWord(word: string): Promise<boolean> {
 
 	// If first entry is a string, this means it's suggestions
 	if (typeof data[0] === 'string') {
+		console.log('word is not in dictionary', word);
 		return false;
 	}
 
