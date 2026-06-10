@@ -1,19 +1,20 @@
 import { integer, jsonb, pgTable, serial, text } from 'drizzle-orm/pg-core';
 
-export const cipherPuzzleDeprecated = pgTable('cipherPuzzle', {
+export const cipherPuzzle = pgTable('cipherPuzzle', {
+	id: serial('id').primaryKey(),
+	word: text('word').unique(),
+	cipherWord: text('cipherWord'),
+	date: text('date').unique(),
+	solutionPath: text('solutionPath').array().notNull(),
+	minMoves: integer('minMoves')
+});
+
+export const cipherPuzzleV3 = pgTable('cipherPuzzleV2', {
 	id: serial('id').primaryKey(),
 	word: text('word').unique(),
 	cipherWord: text('cipherWord'),
 	date: text('date').unique(),
 	minMoves: integer('minMoves'),
-	solutionPath: text('solutionPath').array().notNull()
-});
-
-export const cipherPuzzle = pgTable('cipherPuzzleV2', {
-	id: serial('id').primaryKey(),
-	word: text('word').unique(),
-	cipherWord: text('cipherWord'),
-	date: text('date').unique(),
 	solutionPath: text('solutionPath').array().notNull()
 });
 
