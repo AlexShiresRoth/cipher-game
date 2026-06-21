@@ -9,7 +9,7 @@
 
 <div class="mt-8 min-h-screen bg-white dark:bg-black">
 	<div class="flex flex-col">
-		<span class="text-xs text-amber-500 uppercase">Cipher Word</span>
+		<span class="text-xs text-indigo-500 uppercase">Cipher Word</span>
 		<h3 class="mb-1 text-3xl uppercase">{cipherWord}</h3>
 	</div>
 	{#if puzzleData?.wordsGuessed}
@@ -35,7 +35,7 @@
 						<tr>
 							<td
 								class={clsx('border border-black px-3 py-2 text-left uppercase dark:border-white', {
-									'font-semibold text-amber-500': guesses.includes(word)
+									'font-semibold text-indigo-500': guesses.includes(word)
 								})}
 							>
 								{word}

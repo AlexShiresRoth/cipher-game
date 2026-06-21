@@ -1,0 +1,7 @@
+CREATE TABLE "dayRankings" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"rankings" jsonb[] DEFAULT '{}' NOT NULL,
+	"cipher_id" integer NOT NULL
+);
+--> statement-breakpoint
+ALTER TABLE "dayRankings" ADD CONSTRAINT "dayRankings_cipher_id_cipherPuzzle_id_fk" FOREIGN KEY ("cipher_id") REFERENCES "public"."cipherPuzzle"("id") ON DELETE cascade ON UPDATE no action;

@@ -1,3 +1,5 @@
+export type DayRanking = Record<string, { mistakes: number; emoji: string }>;
+
 export type PuzzleGuessesResponse = {
 	cipherId: string;
 	id: string;
