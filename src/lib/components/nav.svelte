@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { DayRanking } from '$lib/types';
+	import { resolve } from '$app/paths';
 	import { ChartNoAxesColumn, ChessQueen, Puzzle, Route } from '@lucide/svelte';
 	import clsx from 'clsx';
 	import { fly } from 'svelte/transition';
@@ -73,17 +74,15 @@
 		showLeaderBoard = !showLeaderBoard;
 	}
 
-	$: (() => {
-		(showStats, showSolution, showCommonGuesses, showLeaderBoard);
-
+	$: {
 		if (typeof window !== 'undefined') {
-			if ((showSolution || showStats || showCommonGuesses, showLeaderBoard)) {
+			if (showSolution || showStats || showCommonGuesses || showLeaderBoard) {
 				document.body.style.overflow = 'hidden';
-			} else if (!showSolution && !showStats && !showCommonGuesses) {
+			} else if (!showSolution && !showStats && !showCommonGuesses && !showLeaderBoard) {
 				document.body.style.overflow = 'visible';
 			}
 		}
-	})();
+	}
 </script>
 
 <nav class="relative flex w-full">
@@ -91,7 +90,7 @@
 		class="z-20 flex w-full justify-between border-b border-b-black bg-white dark:border-b-white/50 dark:bg-black"
 	>
 		<div class="flex w-full items-center justify-start border-r px-4 dark:border-white/50">
-			<a href="/" class="text-xl font-bold uppercase dark:text-white">CIPHER</a>
+			<a href={resolve('/')} class="text-xl font-bold uppercase dark:text-white">CIPHER</a>
 		</div>
 		<div
 			class="relative flex w-full items-center justify-end gap-2"
@@ -151,28 +150,26 @@
 				>
 					{#if showHome}
 						<a
-							href="/"
+							href={resolve('/')}
 							class="w-full px-2 py-1 hover:cursor-pointer hover:text-amber-500 hover:underline"
 							>home</a
 						>
 					{/if}
 					<a
-						href="/tutorial"
+						href={resolve('/tutorial')}
 						class="w-full border-t border-t-white/40 px-2 py-1 hover:cursor-pointer hover:text-amber-500 hover:underline"
 						>tutorial</a
 					>
 					<a
-						href="/how-to"
+						href={resolve('/how-to')}
 						class="w-full border-t border-t-white/40 px-2 py-1 hover:cursor-pointer hover:text-amber-500 hover:underline"
 						>how to play</a
 					>
-
 					<a
-						href="/preferences"
+						href={resolve('/preferences')}
 						class="w-full border-t border-t-white/40 px-2 py-1 hover:cursor-pointer hover:text-amber-500 hover:underline"
 						>preferences</a
 					>
-
 					{#if gameOver}
 						<button
 							class="w-full border-t border-t-white/40 px-2 py-1 text-left uppercase hover:cursor-pointer hover:text-amber-500 hover:underline"

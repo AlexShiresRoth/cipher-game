@@ -1,4 +1,5 @@
 <script>
+	import { resolve } from '$app/paths';
 	import clsx from 'clsx';
 	import ResultsAndScoring from './results-and-scoring.svelte';
 </script>
@@ -13,7 +14,7 @@
 		class="mb-6 flex flex-col gap-2 rounded border p-2 dark:border-white/20 dark:bg-white/10 dark:text-gray-400"
 	>
 		<p>
-			Want to try a step by step <a href="/tutorial" class="text-amber-500 underline">tutorial</a>?
+			Want to try a step by step <a href={resolve('/tutorial')} class="text-amber-500 underline">tutorial</a>?
 		</p>
 	</div>
 
@@ -91,8 +92,8 @@
 
 	<p>The cipher is:</p>
 	<div class="my-2 flex gap-2">
-		{#each 'ACTPREU'.split('') as key}
-			<button class={'relative flex items-center justify-center border-2 p-2 transition-all'}>
+		{#each 'ACTPREU'.split('') as key, i (i)}
+			<button class="relative flex items-center justify-center border-2 p-2 transition-all">
 				<p class="text-xl font-bold uppercase">{key}</p>
 			</button>
 		{/each}
@@ -111,7 +112,7 @@
 
 	<p>New cipher becomes:</p>
 	<div class="my-2 flex gap-2">
-		{#each 'CATPREU'.split('') as key, i}
+		{#each 'CATPREU'.split('') as key, i (i)}
 			<button
 				class={clsx('relative flex items-center justify-center border-2 p-2 transition-all', {
 					'border-emerald-500 text-emerald-500': i === 0 || i === 1
@@ -129,7 +130,7 @@
 		<li>Now the letters <strong>C A P T</strong> are in their correct spots.</li>
 	</ul>
 	<div class="mt-2 mb-8 flex gap-2">
-		{#each 'CAPTREU'.split('') as key, i}
+		{#each 'CAPTREU'.split('') as key, i (i)}
 			<button
 				class={clsx('relative flex items-center justify-center border-2 p-2 transition-all', {
 					'border-emerald-500 text-emerald-500': i <= 3

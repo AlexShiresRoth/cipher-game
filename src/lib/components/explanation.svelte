@@ -3,7 +3,7 @@
 	import clsx from 'clsx';
 	import { fade } from 'svelte/transition';
 
-	$: showExp = false;
+	let showExp = false;
 </script>
 
 <div class="flex w-full flex-col gap-4">

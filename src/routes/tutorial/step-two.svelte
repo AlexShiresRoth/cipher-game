@@ -6,8 +6,8 @@
 	const cipher = 'efirokwr';
 	const guess = 'factual';
 	const selected = guess.split('');
-	$: cipherState = cipher.split('');
-	$: alphaState = defaultAlphaState(alpha, cipherState, vowels);
+	const cipherState = cipher.split('');
+	const alphaState = defaultAlphaState(alpha, cipherState, vowels);
 </script>
 
 <div class="my-2"></div>
