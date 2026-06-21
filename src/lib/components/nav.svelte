@@ -1,7 +1,9 @@
 <script lang="ts">
-	import { ChartNoAxesColumn, Puzzle, Route } from '@lucide/svelte';
+	import type { DayRanking } from '$lib/types';
+	import { ChartNoAxesColumn, ChessQueen, Puzzle, Route } from '@lucide/svelte';
 	import clsx from 'clsx';
 	import { fly } from 'svelte/transition';
+	import Leaderboard from './leaderboard.svelte';
 	import PlayerGuesses from './player-guesses.svelte';
 	import SolutionPath from './solution-path.svelte';
 	import Stats from './stats.svelte';
@@ -19,10 +21,13 @@
 	export let word: string;
 	export let puzzleData;
 	export let guesses: string[] = [];
+	export let dayRankings: DayRanking[] = [];
+	export let playerId: string = '';
 
 	let showStats = false;
 	let showSolution = false;
 	let showCommonGuesses = false;
+	let showLeaderBoard = false;
 	let showMenu = !!showNavModal;
 
 	function toggleMenu() {
@@ -37,10 +42,11 @@
 	}
 
 	function togglePlayerGuessesModal() {
+		showCommonGuesses = !showCommonGuesses;
 		showSolution = false;
 		showNavModal = false;
 		showStats = false;
-		showCommonGuesses = !showCommonGuesses;
+		showLeaderBoard = false;
 	}
 
 	function toggleSolutionModal() {
@@ -48,6 +54,7 @@
 		showStats = false;
 		showNavModal = false;
 		showCommonGuesses = false;
+		showLeaderBoard = false;
 	}
 
 	function toggleStatsModal() {
@@ -55,13 +62,22 @@
 		showNavModal = false;
 		showSolution = false;
 		showCommonGuesses = false;
+		showLeaderBoard = false;
+	}
+
+	function toggleLeaderboardModal() {
+		showStats = false;
+		showNavModal = false;
+		showSolution = false;
+		showCommonGuesses = false;
+		showLeaderBoard = !showLeaderBoard;
 	}
 
 	$: (() => {
-		(showStats, showSolution, showCommonGuesses);
+		(showStats, showSolution, showCommonGuesses, showLeaderBoard);
 
 		if (typeof window !== 'undefined') {
-			if (showSolution || showStats || showCommonGuesses) {
+			if ((showSolution || showStats || showCommonGuesses, showLeaderBoard)) {
 				document.body.style.overflow = 'hidden';
 			} else if (!showSolution && !showStats && !showCommonGuesses) {
 				document.body.style.overflow = 'visible';
@@ -85,6 +101,14 @@
 		>
 			{#if !showHome}
 				<div class="relative flex items-center justify-center gap-2">
+					<button
+						disabled={!gameOver}
+						on:click={toggleLeaderboardModal}
+						class={clsx('transition-colors hover:cursor-pointer', {
+							'text-orange-400': showLeaderBoard,
+							'text-gray-400/50 dark:text-gray-100/50': !gameOver && !showLeaderBoard
+						})}><ChessQueen size={14} /></button
+					>
 					<div class="relative flex flex-col items-center">
 						<button
 							disabled={!gameOver}
@@ -92,7 +116,7 @@
 							class={clsx('transition-colors hover:cursor-pointer', {
 								'text-indigo-500': showCommonGuesses,
 								'text-gray-400/50 dark:text-gray-100/50': !gameOver && !showCommonGuesses
-							})}><Puzzle size={16} /></button
+							})}><Puzzle size={14} /></button
 						>
 					</div>
 
@@ -104,7 +128,7 @@
 						})}
 						on:click={toggleSolutionModal}
 					>
-						<Route size={16} />
+						<Route size={14} />
 					</button>
 					<button
 						on:click={toggleStatsModal}
@@ -112,7 +136,7 @@
 							'text-amber-300': showStats
 						})}
 					>
-						<ChartNoAxesColumn size={16} />
+						<ChartNoAxesColumn size={14} />
 					</button>
 				</div>
 			{/if}
@@ -198,6 +222,14 @@
 				</p>
 				<PlayerGuesses {puzzleData} {guesses} cipherWord={word} />
 			</div>
+		</div>
+	{/if}
+	{#if showLeaderBoard && dayRankings.length > 0}
+		<div
+			class="fixed top-0 z-10 flex h-full w-full flex-col items-center gap-2 overflow-scroll bg-white p-4 py-16 dark:bg-black"
+			transition:fly={{ y: -100 }}
+		>
+			<Leaderboard {dayRankings} {playerId} />
 		</div>
 	{/if}
 </nav>

@@ -1,6 +1,6 @@
 {
-  "id": "d1cef596-ff1a-402d-9c24-7eeb1351c79e",
-  "prevId": "e52fed5d-ca0f-4a05-83da-ec5eba678eb8",
+  "id": "fbb79684-6edf-49c2-9f9f-8976b3fd49df",
+  "prevId": "aea2888f-7917-430d-bc6e-e9a231cc45d7",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -134,8 +134,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.cipherPuzzleV2": {
-      "name": "cipherPuzzleV2",
+    "public.dayRankings": {
+      "name": "dayRankings",
       "schema": "",
       "columns": {
         "id": {
@@ -144,56 +144,38 @@
           "primaryKey": true,
           "notNull": true
         },
-        "word": {
-          "name": "word",
-          "type": "text",
+        "rankings": {
+          "name": "rankings",
+          "type": "jsonb[]",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true,
+          "default": "'{}'"
         },
-        "cipherWord": {
-          "name": "cipherWord",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "date": {
-          "name": "date",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "minMoves": {
-          "name": "minMoves",
+        "cipher_id": {
+          "name": "cipher_id",
           "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "solutionPath": {
-          "name": "solutionPath",
-          "type": "text[]",
           "primaryKey": false,
           "notNull": true
         }
       },
       "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "cipherPuzzleV2_word_unique": {
-          "name": "cipherPuzzleV2_word_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "word"
-          ]
-        },
-        "cipherPuzzleV2_date_unique": {
-          "name": "cipherPuzzleV2_date_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "date"
-          ]
+      "foreignKeys": {
+        "dayRankings_cipher_id_cipherPuzzle_id_fk": {
+          "name": "dayRankings_cipher_id_cipherPuzzle_id_fk",
+          "tableFrom": "dayRankings",
+          "tableTo": "cipherPuzzle",
+          "columnsFrom": [
+            "cipher_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false

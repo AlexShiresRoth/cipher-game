@@ -24,9 +24,11 @@
 		StorageKeys,
 		stringifyJSON,
 		vowels,
+		type DayRanking,
 		type GuessReturnValues,
 		type PrefMap,
-		type PuzzleGuessesResponse
+		type PuzzleGuessesResponse,
+		type Tier
 	} from '$lib';
 	import ActionButtons from '$lib/components/action-buttons.svelte';
 	import Cipher from '$lib/components/cipher.svelte';
@@ -52,12 +54,17 @@
 	import type { CipherPuzzle } from '../types';
 
 	/*** Init Vars from page server ***/
-	export let data: CipherPuzzle & { id: number } & { cipherPlayerData: PuzzleGuessesResponse };
+	export let data: CipherPuzzle & { id: number } & {
+		cipherPlayerData: PuzzleGuessesResponse;
+		playerId: string;
+		dayRankings: DayRanking[];
+	};
 
+	let playerId = data.playerId;
 	let word = data.word;
 	let cipher = data.cipherWord;
 	let cipherPlayerData = data.cipherPlayerData;
-
+	let dayRankings = data.dayRankings;
 	const winGameKey = 'win';
 	const initAlphaState = defaultAlphaState(alpha, cipher.split(''), vowels);
 	const defaultGameLogic: GameLogicState = {
@@ -154,7 +161,7 @@
 	/**
 	 *
 	 * @param val
-	 * @description toggle the WHAT
+	 * @description toggle the nav modal open and close state
 	 */
 	function toggleModalOpen(val: boolean) {
 		return updateGameUIStore({ modalOpen: val });
@@ -317,6 +324,23 @@
 		const res = await fetch('api/add-guess', {
 			method: 'POST',
 			body: JSON.stringify({ guesses: playerGuesses, cipherId, date })
+		});
+
+		return await res.json();
+	}
+
+	/**
+	 *
+	 * @param cipherId
+	 * @param playerName
+	 * @param moveAmount
+	 * @param minMoves
+	 * @description on game over add player ranking to db for leaderboards
+	 */
+	async function submitPlayerRanking(cipherId: string, playerId: string, tier: Tier) {
+		const res = await fetch('api/submit-ranking', {
+			method: 'POST',
+			body: JSON.stringify({ cipherId, tier })
 		});
 
 		return await res.json();
@@ -529,8 +553,17 @@
 				modalOpen: true
 			});
 
-			// add the words players used to solve the cipher to the db, on win
-			cipherPlayerData = await submitPlayerUsedWords(guesses, data.id, data.date);
+			try {
+				const { tier } = get(gameLogicStore);
+				// add the words players used to solve the cipher to the db, on win
+				cipherPlayerData = await submitPlayerUsedWords(guesses, data.id, data.date);
+				// add player ranking to db for leaderboards
+				dayRankings = await submitPlayerRanking(data.id, playerId, tier);
+				// TODO - does this work for ninja?
+			} catch (error) {
+				// we can let this fail silently since it doesn't affect gameplay, but log it for debugging and monitoring purposes
+				console.error('Error submitting player data:', error);
+			}
 		}
 	}
 
@@ -826,6 +859,8 @@
 		puzzleData={cipherPlayerData}
 		emoji={game.tier.emoji}
 		mistakeAmount={game.swaps.filter((b) => !b).length}
+		{dayRankings}
+		{playerId}
 	/>
 
 	<!-- Tutorial popup for tutorial mode -->

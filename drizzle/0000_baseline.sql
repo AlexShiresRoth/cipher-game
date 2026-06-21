@@ -18,15 +18,4 @@ CREATE TABLE "cipherPuzzle" (
 	CONSTRAINT "cipherPuzzle_date_unique" UNIQUE("date")
 );
 --> statement-breakpoint
-CREATE TABLE "cipherPuzzleV3" (
-	"id" serial PRIMARY KEY NOT NULL,
-	"word" text,
-	"cipherWord" text,
-	"date" text,
-	"minMoves" integer,
-	"solutionPath" text[] NOT NULL,
-	CONSTRAINT "cipherPuzzleV3_word_unique" UNIQUE("word"),
-	CONSTRAINT "cipherPuzzleV3_date_unique" UNIQUE("date")
-);
---> statement-breakpoint
 ALTER TABLE "cipherGuesses" ADD CONSTRAINT "cipherGuesses_cipher_id_cipherPuzzle_id_fk" FOREIGN KEY ("cipher_id") REFERENCES "public"."cipherPuzzle"("id") ON DELETE cascade ON UPDATE no action;

@@ -1,6 +1,6 @@
 import { NODE_ENV, STARTING_DATE } from '$env/static/private';
 import { db } from '$lib/server/db';
-import { cipherGuesses, cipherPuzzle } from '$lib/server/db/schema';
+import { cipherGuesses, cipherPuzzle, dayRankings } from '$lib/server/db/schema';
 import { differenceInCalendarDays, parseISO } from 'date-fns';
 import { formatInTimeZone } from 'date-fns-tz';
 import { eq } from 'drizzle-orm';
@@ -9,20 +9,23 @@ export const prerender = false;
 const PLAYER_COOKIE = 'playerId';
 
 export const load = async ({ setHeaders, cookies }) => {
-	const playerCookie = cookies.get(PLAYER_COOKIE);
+	const existingCookie = cookies.get(PLAYER_COOKIE);
+	const isProd = NODE_ENV === 'production';
 
-	if (!playerCookie) {
-		const isProd = NODE_ENV === 'production';
-
-		cookies.set(PLAYER_COOKIE, v4(), {
-			path: '/',
-			httpOnly: true,
-			secure: isProd,
-			sameSite: 'lax',
-			maxAge: 60 * 60 * 24 * 365,
-			...(isProd && { domain: 'play-cipher.com' })
-		});
-	}
+	const playerCookie =
+		existingCookie ??
+		(() => {
+			const newId = v4();
+			cookies.set(PLAYER_COOKIE, newId, {
+				path: '/',
+				httpOnly: true,
+				secure: isProd,
+				sameSite: 'lax',
+				maxAge: 60 * 60 * 24 * 365,
+				...(isProd && { domain: 'play-cipher.com' })
+			});
+			return newId;
+		})();
 
 	setHeaders({
 		'cache-control': 'no-store, max-age=0, must-revalidate',
@@ -58,7 +61,20 @@ export const load = async ({ setHeaders, cookies }) => {
 		return { ...cipher[0] };
 	}
 
+	const cipherDayRankings = await db
+		.select()
+		.from(dayRankings)
+		.where(eq(dayRankings.cipherId, cipher[0].id))
+		.limit(1);
+
 	const { wordsGuessed, cipherId, date = tzTime } = cipherPlayerData[0];
 
-	return { ...cipher[0], cipherPlayerData: { wordsGuessed, cipherId, date } };
+	console.log('player cookie', playerCookie);
+
+	return {
+		...cipher[0],
+		cipherPlayerData: { wordsGuessed, cipherId, date },
+		playerId: playerCookie,
+		dayRankings: cipherDayRankings[0]?.rankings || []
+	};
 };
