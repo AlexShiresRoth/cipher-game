@@ -18,7 +18,7 @@ export async function shareResultsAction({
 	emoji: string;
 }) {
 	function getRows() {
-		let rows: boolean[][] = [];
+		const rows: boolean[][] = [];
 		for (let i = 0; i < swaps.length; i += 4) {
 			rows.push(swaps.slice(i, i + 4));
 		}
@@ -54,7 +54,7 @@ ${replenishAmt} reps used`.trim();
 			await navigator.clipboard.writeText(shareData.text);
 			alert('copied to clipboard!');
 		}
-	} catch (error) {
+	} catch {
 		console.info('Player aborted share');
 	}
 }

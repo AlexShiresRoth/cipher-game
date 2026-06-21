@@ -1,13 +1,14 @@
 <script lang="ts">
 	import '@lucide/svelte';
 	import { onMount } from 'svelte';
+	import { SvelteMap } from 'svelte/reactivity';
 	export let nodePair: HTMLElement[] = [];
 
-	$: line = new Map();
+	let line = new SvelteMap<string, number>();
 	let container: HTMLElement;
 
 	function updateLine(ref1: HTMLElement, ref2: HTMLElement) {
-		const newLineMap = new Map<string, number>([...line]);
+		const newLineMap = new SvelteMap<string, number>([...line]);
 		if (!container || !ref1 || !ref2) return newLineMap;
 		const cr = container.getBoundingClientRect();
 

@@ -28,7 +28,7 @@
 
 <div class="my-6 flex w-full justify-center">
 	<div class="flex w-full gap-2 md:w-auto md:gap-4">
-		{#each cipher as l, i}
+		{#each cipher as l, i (i)}
 			{@const meta = getSelectedMeta(i)}
 			<div class="flex w-full flex-col items-center gap-1">
 				<div class="relative flex w-full flex-col">

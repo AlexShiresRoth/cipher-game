@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import Nav from '$lib/components/nav.svelte';
 	import { ArrowLeft, ArrowRight } from '@lucide/svelte';
 	import clsx from 'clsx';
@@ -43,8 +44,8 @@
 		{ header: 'Donezo!', content: StepEleven }
 	];
 
-	$: started = false;
-	$: step = 0;
+	let started = false;
+	let step = 0;
 
 	function incrementStep(num: number) {
 		window.scrollTo({
@@ -89,9 +90,7 @@
 	solvableAmt={0}
 	replenishAmt={0}
 	word=""
-	toggleUpdatePopup={() => {}}
 	solutionPath={[]}
-	showSolutionUpdate={false}
 />
 
 <div class="flex min-h-screen w-full flex-col justify-center gap-4 px-5 py-16 md:w-2/3 lg:w-1/2">
@@ -141,7 +140,7 @@
 		<div class="flex flex-col items-center gap-4">
 			<p>Feeling confident? Maybe, a little?</p>
 			<a
-				href="/"
+				href={resolve('/')}
 				class="flex items-center justify-center rounded bg-emerald-500 px-4 py-2 text-black"
 				>Try Today's Puzzle</a
 			>
@@ -151,7 +150,7 @@
 		<div class="mt-4 flex flex-col gap-2">
 			<p class="uppercase">Pages</p>
 			<div class="flex flex-wrap items-center gap-4">
-				{#each steps as s, i}
+				{#each steps as s, i (i)}
 					<button
 						on:click={() => {
 							step = i;

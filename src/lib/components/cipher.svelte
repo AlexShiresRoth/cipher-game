@@ -9,7 +9,7 @@
 	export let indexToSwap: number;
 	export let word: string;
 	export let chooseStartingIndex;
-	export let tutorialState: TutorialState | undefined;
+	export let tutorialState: TutorialState | undefined = undefined;
 </script>
 
 <div class="mb-8 flex w-full max-w-full justify-center gap-2">

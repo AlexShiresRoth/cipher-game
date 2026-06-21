@@ -1,8 +1,8 @@
 <script lang="ts">
 	import clsx from 'clsx';
-	import type { ActionData } from '../../routes/$types';
+	import type { PuzzleGuessesResponse } from '$lib/types';
 
-	export let puzzleData: ActionData;
+	export let puzzleData: PuzzleGuessesResponse | null;
 	export let guesses: string[];
 	export let cipherWord: string;
 </script>

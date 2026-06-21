@@ -7,7 +7,6 @@
 	let word: string[] = [];
 	let cipher: string[] = [];
 	let date: string = '';
-	let isLoading: boolean = false;
 
 	function handleInput(i: number, value: string) {
 		const el = inputs[i];
@@ -62,9 +61,6 @@
 		}
 	}
 
-	$: () => {
-		(inputs, cipher, date, isLoading);
-	};
 </script>
 
 <main class="flex w-full flex-col items-center justify-center py-16">
@@ -75,7 +71,7 @@
 				<h2 class="text-xl">Cipher</h2>
 				<div class="grid grid-cols-8 items-center gap-2">
 					{#if cipher.length > 0}
-						{#each cipher.filter((l) => l !== '') as letter, i}
+						{#each cipher.filter((l) => l !== '') as letter, i (i)}
 							<button
 								data-index={i}
 								type="button"
@@ -94,7 +90,7 @@
 			<div class="flex flex-col gap-2">
 				<h2 class="text-xl">Puzzle Word</h2>
 				<div class="grid grid-cols-8 items-center gap-2">
-					{#each Array(letterAmt) as _, i}
+					{#each Array.from({ length: letterAmt }, (v, k) => k) as i (i)}
 						<input
 							type="text"
 							name={`letter-${i}`}

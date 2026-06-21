@@ -9,7 +9,7 @@
 	export let alpha: string[];
 	export let removeLetterFromSelection: () => void;
 	export let guess;
-	export let tutorialState: TutorialState;
+	export let tutorialState: TutorialState | undefined = undefined;
 
 	function isAvailable(l: string) {
 		const uses = alphaState.get(l) || 0;
