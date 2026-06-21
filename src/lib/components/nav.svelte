@@ -19,7 +19,7 @@
 	export let replenishAmt: number;
 	export let solutionPath: string[];
 	export let word: string;
-	export let puzzleData;
+	export let puzzleData: import('$lib/types').PuzzleGuessesResponse | null = null;
 	export let guesses: string[] = [];
 	export let dayRankings: DayRanking[] = [];
 	export let playerId: string = '';

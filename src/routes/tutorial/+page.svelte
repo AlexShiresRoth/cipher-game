@@ -89,9 +89,7 @@
 	solvableAmt={0}
 	replenishAmt={0}
 	word=""
-	toggleUpdatePopup={() => {}}
 	solutionPath={[]}
-	showSolutionUpdate={false}
 />
 
 <div class="flex min-h-screen w-full flex-col justify-center gap-4 px-5 py-16 md:w-2/3 lg:w-1/2">

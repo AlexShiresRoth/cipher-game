@@ -39,7 +39,7 @@ function makeEvent(options: { playerId?: string; body?: object }) {
 	return {
 		request: { json: vi.fn().mockResolvedValue(options.body ?? { cipherId: '1', tier: mockTier }) },
 		cookies: { get: vi.fn().mockReturnValue(options.playerId) }
-	} as Parameters<typeof POST>[0];
+	} as unknown as Parameters<typeof POST>[0];
 }
 
 describe('POST /api/submit-ranking', () => {

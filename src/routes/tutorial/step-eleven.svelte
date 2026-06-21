@@ -47,7 +47,6 @@
 	removeLetterFromSelection={() => {}}
 	guess={() => {}}
 	{selected}
-	usedLetters={[]}
 />
 
 <Explanation>
