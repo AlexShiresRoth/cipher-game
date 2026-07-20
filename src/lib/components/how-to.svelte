@@ -8,7 +8,7 @@
 	id="how-to-play"
 	class="mx-auto max-w-xl border border-black p-6 font-mono leading-relaxed md:max-w-1/2 dark:border-white/50"
 >
-	<h2 class="mb-2 border-b-2 border-black pb-2 text-xl font-bold">How to Play Cipher</h2>
+	<h1 class="mb-2 border-b-2 border-black pb-2 text-xl font-bold">How to Play Cipher</h1>
 
 	<div
 		class="mb-6 flex flex-col gap-2 rounded border p-2 dark:border-white/20 dark:bg-white/10 dark:text-gray-400"

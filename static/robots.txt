@@ -1,2 +1,7 @@
 User-agent: *
 Allow: /
+Disallow: /auth/
+Disallow: /preferences
+Disallow: /api/
+
+Sitemap: https://play-cipher.com/sitemap.xml

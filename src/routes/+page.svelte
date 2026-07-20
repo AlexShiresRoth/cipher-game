@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import {
 		alpha,
 		checkAlphaStateIsDiminshed,
@@ -58,6 +59,22 @@
 		cipherPlayerData: PuzzleGuessesResponse;
 		playerId: string;
 		dayRankings: DayRanking[];
+	};
+
+	const jsonLd = {
+		'@context': 'https://schema.org',
+		'@type': 'WebApplication',
+		name: 'Cipher',
+		url: 'https://play-cipher.com/',
+		description:
+			'Play Cipher, the daily interactive word-shuffle puzzle game. Decipher the shuffled word using clever moves, swapping mechanics, and logic-based strategy.',
+		applicationCategory: 'GameApplication',
+		operatingSystem: 'Any',
+		offers: {
+			'@type': 'Offer',
+			price: '0',
+			priceCurrency: 'USD'
+		}
 	};
 
 	let playerId = data.playerId;
@@ -831,10 +848,17 @@
 		property="og:description"
 		content="Decipher shuffled words and challenge yourself with the daily brain-teaser."
 	/>
-	<meta property="og:type" content="game" />
-	<meta property="og:url" content="https://play-cipher.com" />
-	<meta property="og:image" content="https://play-cipher.com/og-image.png" />
+	<meta property="og:url" content="https://play-cipher.com/" />
+	<meta
+		name="twitter:title"
+		content={`CIPHER #${data.id || 'Uh oh :('} – Daily Word-Shuffle Puzzle`}
+	/>
+	<meta
+		name="twitter:description"
+		content="Decipher shuffled words and challenge yourself with the daily brain-teaser."
+	/>
 	<link rel="canonical" href="https://play-cipher.com/" />
+	{@html `<script type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g, '\\u003c')}</script>`}
 </svelte:head>
 
 {#if system.internalError}
@@ -993,8 +1017,19 @@
 </div>
 
 <div class:hidden={system.hydrated && !system.loading}>
-	<div class="flex h-screen items-center justify-center gap-2">
-		<img src="/logo.svg" alt="logo" height="300" width="300" />
+	<div class="flex h-screen flex-col items-center justify-center gap-4 px-6 text-center">
+		<img src="/logo.svg" alt="Cipher word puzzle logo" height="300" width="300" />
+		<h1 class="text-5xl font-bold uppercase">Cipher</h1>
+		<p class="max-w-md opacity-80">
+			Decipher the shuffled word. Play the daily word-shuffle puzzle and solve Cipher #{data.id ||
+				''}.
+		</p>
+		<p class="text-sm opacity-60">
+			New to the game?
+			<a class="underline" href={resolve('/how-to')}>Learn how to play</a>
+			or try the
+			<a class="underline" href={resolve('/tutorial')}>interactive tutorial</a>.
+		</p>
 	</div>
 </div>
 

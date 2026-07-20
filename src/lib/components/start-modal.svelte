@@ -8,9 +8,9 @@
 
 <div class="flex min-h-screen w-full flex-col items-center justify-center gap-12">
 	<div class="flex flex-col items-center justify-center">
-		<img src="/logo.svg" alt="logo" height="100" width="100" />
+		<img src="/logo.svg" alt="Cipher word puzzle logo" height="100" width="100" />
 		<h1 class="text-5xl font-bold uppercase">Cipher</h1>
-		<p class="text-center opacity-80">Decipher the shuffled word.</p>
+		<p class="text-center opacity-80">Decipher the shuffled word. Play the daily word-shuffle puzzle.</p>
 		<div class="mt-8 grid min-w-36 grid-cols-1 gap-3 text-center">
 			<button
 				on:click={startGame}

@@ -64,20 +64,23 @@
 </script>
 
 <svelte:head>
-	<title>CIPHER|How to play</title>
+	<title>Cipher Tutorial – Learn the Daily Word Puzzle</title>
 	<meta
 		name="description"
-		content="A detailed guide on how to play the Cipher word puzzle game. 
-	This guide consists of examples and thorough instructions."
+		content="Interactive Cipher tutorial: learn the cipher, keyboard, action buttons, and move-by-move strategies for the daily word-shuffle puzzle."
 	/>
+	<meta property="og:title" content="Cipher Tutorial – Learn the Daily Word Puzzle" />
 	<meta
 		property="og:description"
-		content="A detailed guide on how to play the Cipher word puzzle game. 
-	This guide consists of examples and thorough instructions."
+		content="Interactive Cipher tutorial: learn the cipher, keyboard, action buttons, and move-by-move strategies for the daily word-shuffle puzzle."
 	/>
-	<meta property="og:type" content="game" />
-	<meta property="og:url" content="https://play-cipher.com" />
-	<meta property="og:image" content="https://play-cipher.com/og-image.png" />
+	<meta property="og:url" content="https://play-cipher.com/tutorial" />
+	<meta name="twitter:title" content="Cipher Tutorial – Learn the Daily Word Puzzle" />
+	<meta
+		name="twitter:description"
+		content="Interactive Cipher tutorial: learn the cipher, keyboard, action buttons, and move-by-move strategies for the daily word-shuffle puzzle."
+	/>
+	<link rel="canonical" href="https://play-cipher.com/tutorial" />
 </svelte:head>
 
 <Nav
