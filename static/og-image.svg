@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#000000"/>
+  <defs>
+    <linearGradient id="border" x1="0" y1="315" x2="1200" y2="315" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8C52FF"/>
+      <stop offset="1" stop-color="#00BF63"/>
+    </linearGradient>
+  </defs>
+  <rect x="56" y="56" width="1088" height="518" rx="36" fill="none" stroke="url(#border)" stroke-width="10"/>
+  <!-- CIPHER wordmark as paths-ish using large text with generous spacing -->
+  <g fill="#FFFFFF" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
+    <text x="600" y="290" font-size="96" font-weight="700" letter-spacing="16">CIPHER</text>
+    <text x="600" y="370" font-size="34" fill-opacity="0.85" letter-spacing="1">Daily word-shuffle puzzle</text>
+    <text x="600" y="500" font-size="26" fill-opacity="0.55">play-cipher.com</text>
+  </g>
+</svg>

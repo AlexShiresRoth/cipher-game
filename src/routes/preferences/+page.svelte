@@ -33,6 +33,11 @@
 	});
 </script>
 
+<svelte:head>
+	<title>Cipher Preferences</title>
+	<meta name="robots" content="noindex, nofollow" />
+</svelte:head>
+
 <div class:hidden={loading} class="flex w-full flex-col">
 	<Nav
 		gameOver={false}

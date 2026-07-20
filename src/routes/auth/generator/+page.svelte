@@ -63,6 +63,11 @@
 
 </script>
 
+<svelte:head>
+	<title>Cipher Puzzle Generator</title>
+	<meta name="robots" content="noindex, nofollow" />
+</svelte:head>
+
 <main class="flex w-full flex-col items-center justify-center py-16">
 	<div class="flex w-11/12 flex-col justify-between gap-8 md:w-1/2">
 		<h1 class="text-3xl">Generate a new puzzle</h1>
