@@ -31,7 +31,7 @@
 	on:click={() => chooseStartingIndex(i)}
 	in:fly={{ y: i % 2 === 0 ? -50 : 50, duration: 400 }}
 	class={clsx(
-		'relative z-0 flex min-w-8 items-center justify-center border-2 p-2 transition-all md:min-w-16',
+		'relative z-0 flex flex-1 items-center justify-center border-2 p-2 transition-all',
 		{
 			'border-emerald-500 text-emerald-500':
 				highlightAtCorrectPosition && !selectedLetter && !highlightAtStartIndex,

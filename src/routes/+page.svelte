@@ -965,40 +965,41 @@
 				selected={game.selected}
 				shouldHaveMargin={!checkIfPreferenceSettingExist(system.preferences)}
 			/>
-			<!-- Cipher blocks row -->
-			<Cipher
-				{word}
-				tutorialState={tutorial}
-				cipherState={game.cipherState}
-				allowChooseIndex={game.allowChooseIndex}
-				selected={game.selected}
-				startIndex={game.startIndex}
-				indexToSwap={game.indexToSwap}
-				chooseStartingIndex={handleStartingIndexUpdate}
-			/>
-
-			<!-- Letter selection box -->
-			<Keyboard
-				selected={game.selected}
-				{handleSelect}
-				{alpha}
-				alphaState={game.alphaState}
-				guess={handleGuess}
-				removeLetterFromSelection={handleRemoveLetterFromSelection}
-				tutorialState={tutorial}
-			/>
-
-			<!-- Action buttons -->
-			{#if !system.gameOver}
-				<ActionButtons
-					clearSelection={handleClearSelection}
-					clearUsedLetters={handleReplenishKeyboard}
-					removeLetterFromSelection={handleRemoveLetterFromSelection}
-					guess={handleGuess}
+			<!-- Cipher + keyboard share width; keyboard defines it, cipher stretches to match -->
+			<div class="mx-auto flex w-fit max-w-full flex-col items-stretch gap-8">
+				<Cipher
+					{word}
+					tutorialState={tutorial}
+					cipherState={game.cipherState}
+					allowChooseIndex={game.allowChooseIndex}
 					selected={game.selected}
-					shouldAllowReplenish={game.shouldAllowReplenish}
+					startIndex={game.startIndex}
+					indexToSwap={game.indexToSwap}
+					chooseStartingIndex={handleStartingIndexUpdate}
 				/>
-			{/if}
+				<div class="flex flex-col items-center gap-4">
+					<Keyboard
+						selected={game.selected}
+						{handleSelect}
+						{alpha}
+						alphaState={game.alphaState}
+						guess={handleGuess}
+						removeLetterFromSelection={handleRemoveLetterFromSelection}
+						tutorialState={tutorial}
+					/>
+					<!-- Action buttons -->
+					{#if !system.gameOver}
+						<ActionButtons
+							clearSelection={handleClearSelection}
+							clearUsedLetters={handleReplenishKeyboard}
+							removeLetterFromSelection={handleRemoveLetterFromSelection}
+							guess={handleGuess}
+							selected={game.selected}
+							shouldAllowReplenish={game.shouldAllowReplenish}
+						/>
+					{/if}
+				</div>
+			</div>
 		{/if}
 
 		<!-- TOGGLE PLAYER SOLUTION AND ENDGAME STATE -->

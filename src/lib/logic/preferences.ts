@@ -24,27 +24,27 @@ export const PreferenceItems: Record<string, PrefItem> = {
 	[PreferenceKeys.showMoves]: {
 		title: 'Moves Display',
 		description: 'Display or hide your current move amount in the game interface',
-		show: false
+		show: true
 	},
 	[PreferenceKeys.showMistakes]: {
 		title: 'Mistakes Display',
 		description: 'Display or hide your current mistakes amount in the game interface',
-		show: false
+		show: true
 	},
 	[PreferenceKeys.showReps]: {
 		title: 'Replenishes Display',
 		description: 'Display or hide your current replenishes amount in the game interface',
-		show: false
+		show: true
 	},
 	[PreferenceKeys.showSolvable]: {
 		title: 'Puzzle Complexity',
 		description: 'Display or hide the puzzle"\'"s minimum moves to solve in game interface',
-		show: false
+		show: true
 	},
 	[PreferenceKeys.showRank]: {
 		title: 'Rank Display',
 		description: 'Display or hide your current rank emoji in game interface',
-		show: false
+		show: true
 	}
 };
 

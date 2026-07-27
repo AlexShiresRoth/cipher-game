@@ -27,7 +27,7 @@
 	<button on:click={() => handleSelect(letter)} class="relative flex flex-col items-center">
 		<span
 			class={clsx(
-				'flex min-w-12 flex-col items-center justify-between gap-2 rounded p-2 text-2xl uppercase transition-colors hover:cursor-pointer md:w-16 md:p-2 md:text-4xl',
+				'flex w-8 flex-col items-center justify-between gap-1 rounded p-1.5 text-lg uppercase transition-colors hover:cursor-pointer sm:w-10 sm:p-2 sm:text-2xl md:w-14 md:text-3xl',
 				{
 					'bg-amber-500': alphaKeyColorIncluded,
 					'bg-gray-100 dark:bg-gray-100/80': !alphaKeyColorIncluded && !isTutorialMode,
@@ -52,7 +52,7 @@
 {:else}
 	<button
 		disabled
-		class="flex min-w-12 flex-col items-center justify-between gap-2 rounded p-2 text-2xl text-gray-400/50 uppercase transition-colors hover:cursor-pointer md:w-16 md:p-2 md:text-4xl dark:bg-gray-100/10"
+		class="flex w-8 flex-col items-center justify-between gap-1 rounded p-1.5 text-lg text-gray-400/50 uppercase transition-colors hover:cursor-pointer sm:w-10 sm:p-2 sm:text-2xl md:w-14 md:text-3xl dark:bg-gray-100/10"
 		><p>{letter}</p>
 		<div class="flex items-center gap-1">
 			<span class={clsx('block h-1 w-1')}></span>
