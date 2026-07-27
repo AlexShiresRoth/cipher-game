@@ -11,6 +11,12 @@
 	export let guess;
 	export let tutorialState: TutorialState | undefined = undefined;
 
+	const rows = [
+		['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
+		['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'],
+		['z', 'x', 'c', 'v', 'b', 'n', 'm']
+	];
+
 	function isAvailable(l: string) {
 		const uses = alphaState.get(l) || 0;
 		return uses > 0;
@@ -31,10 +37,12 @@
 	});
 </script>
 
-<div class="relative flex w-full justify-center">
-	<div class="flex flex-wrap items-center justify-center gap-2 dark:text-black">
-		{#each alpha as letter, i (letter + i)}
-			<KeyboardLetter {alphaState} {letter} {selected} {tutorialState} {handleSelect} />
-		{/each}
-	</div>
+<div class="relative flex flex-col items-center gap-2 dark:text-black">
+	{#each rows as row, rowIndex (rowIndex)}
+		<div class="flex items-center justify-center gap-1 sm:gap-2">
+			{#each row as letter (letter)}
+				<KeyboardLetter {alphaState} {letter} {selected} {tutorialState} {handleSelect} />
+			{/each}
+		</div>
+	{/each}
 </div>
