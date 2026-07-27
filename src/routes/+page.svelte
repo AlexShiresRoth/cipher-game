@@ -966,7 +966,7 @@
 				shouldHaveMargin={!checkIfPreferenceSettingExist(system.preferences)}
 			/>
 			<!-- Cipher + keyboard share width; keyboard defines it, cipher stretches to match -->
-			<div class="mx-auto flex w-fit max-w-full flex-col items-stretch gap-8">
+			<div class="mx-auto flex w-fit max-w-full flex-col items-stretch gap-2">
 				<Cipher
 					{word}
 					tutorialState={tutorial}
@@ -977,28 +977,26 @@
 					indexToSwap={game.indexToSwap}
 					chooseStartingIndex={handleStartingIndexUpdate}
 				/>
-				<div class="flex flex-col items-center gap-4">
-					<Keyboard
-						selected={game.selected}
-						{handleSelect}
-						{alpha}
-						alphaState={game.alphaState}
-						guess={handleGuess}
+				<Keyboard
+					selected={game.selected}
+					{handleSelect}
+					{alpha}
+					alphaState={game.alphaState}
+					guess={handleGuess}
+					removeLetterFromSelection={handleRemoveLetterFromSelection}
+					tutorialState={tutorial}
+				/>
+				<!-- Action buttons -->
+				{#if !system.gameOver}
+					<ActionButtons
+						clearSelection={handleClearSelection}
+						clearUsedLetters={handleReplenishKeyboard}
 						removeLetterFromSelection={handleRemoveLetterFromSelection}
-						tutorialState={tutorial}
+						guess={handleGuess}
+						selected={game.selected}
+						shouldAllowReplenish={game.shouldAllowReplenish}
 					/>
-					<!-- Action buttons -->
-					{#if !system.gameOver}
-						<ActionButtons
-							clearSelection={handleClearSelection}
-							clearUsedLetters={handleReplenishKeyboard}
-							removeLetterFromSelection={handleRemoveLetterFromSelection}
-							guess={handleGuess}
-							selected={game.selected}
-							shouldAllowReplenish={game.shouldAllowReplenish}
-						/>
-					{/if}
-				</div>
+				{/if}
 			</div>
 		{/if}
 
