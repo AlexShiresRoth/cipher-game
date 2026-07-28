@@ -926,11 +926,9 @@
 		{/if}
 	</div>
 
-	<!-- Top: prefs/selection/cipher. Bottom: keyboard/buttons (always fully visible). -->
-	<div
-		class="grid min-h-0 w-11/12 flex-1 grid-rows-[minmax(0,1fr)_auto] overflow-hidden md:w-2/3 lg:w-1/2"
-	>
-		<div class="flex min-h-0 flex-col overflow-y-auto">
+	<!-- Scrollable play area: centers cipher when tall, stacks+scrolls when short (e.g. landscape). -->
+	<div class="min-h-0 w-11/12 flex-1 overflow-y-auto overscroll-y-contain md:w-2/3 lg:w-1/2">
+		<div class="flex min-h-full flex-col">
 			{#if checkIfPreferenceSettingExist(system.preferences)}
 				<div class="my-4 flex w-full shrink-0 flex-wrap justify-between gap-4 text-sm">
 					{#if system.preferences.get(PreferenceKeys.showRank)?.show}
@@ -967,7 +965,7 @@
 			{/if}
 
 			{#if !ui.showMySolution}
-				<div class="flex min-h-0 w-full flex-1 flex-col items-stretch justify-center">
+				<div class="flex w-full flex-1 flex-col items-stretch justify-center py-2">
 					<Selection
 						isTutorialMode={tutorial.isTutorialMode}
 						selected={game.selected}
@@ -984,34 +982,32 @@
 						chooseStartingIndex={handleStartingIndexUpdate}
 					/>
 				</div>
-			{/if}
-		</div>
 
-		<div class="flex w-full shrink-0 flex-col items-stretch gap-4 pb-12">
-			{#if !ui.showMySolution}
-				<Keyboard
-					selected={game.selected}
-					{handleSelect}
-					{alpha}
-					alphaState={game.alphaState}
-					guess={handleGuess}
-					removeLetterFromSelection={handleRemoveLetterFromSelection}
-					tutorialState={tutorial}
-				/>
-				{#if !system.gameOver}
-					<ActionButtons
-						clearSelection={handleClearSelection}
-						clearUsedLetters={handleReplenishKeyboard}
-						removeLetterFromSelection={handleRemoveLetterFromSelection}
-						guess={handleGuess}
+				<div class="mt-6 flex w-full shrink-0 flex-col items-stretch gap-4 pb-12">
+					<Keyboard
 						selected={game.selected}
-						shouldAllowReplenish={game.shouldAllowReplenish}
+						{handleSelect}
+						{alpha}
+						alphaState={game.alphaState}
+						guess={handleGuess}
+						removeLetterFromSelection={handleRemoveLetterFromSelection}
+						tutorialState={tutorial}
 					/>
-				{/if}
+					{#if !system.gameOver}
+						<ActionButtons
+							clearSelection={handleClearSelection}
+							clearUsedLetters={handleReplenishKeyboard}
+							removeLetterFromSelection={handleRemoveLetterFromSelection}
+							guess={handleGuess}
+							selected={game.selected}
+							shouldAllowReplenish={game.shouldAllowReplenish}
+						/>
+					{/if}
+				</div>
 			{/if}
 
 			{#if system.gameOver}
-				<div class="flex items-center justify-center gap-2 py-4">
+				<div class="flex shrink-0 items-center justify-center gap-2 py-4">
 					<button
 						on:click={toggleMySolutionInUI}
 						class={clsx('rounded px-4 py-2 uppercase dark:text-black', {
