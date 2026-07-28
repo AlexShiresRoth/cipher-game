@@ -24,10 +24,10 @@
 </script>
 
 {#if isAvailable}
-	<button on:click={() => handleSelect(letter)} class="relative flex flex-col items-center">
+	<button on:click={() => handleSelect(letter)} class="key relative flex flex-col items-center">
 		<span
 			class={clsx(
-				'flex w-8 flex-col items-center justify-between gap-1 rounded p-1.5 text-lg uppercase transition-colors hover:cursor-pointer sm:w-10 sm:p-2 sm:text-2xl md:w-14 md:text-3xl',
+				'flex w-full flex-col items-center justify-between gap-1 rounded p-1.5 text-[length:clamp(0.875rem,2.8vw,1.875rem)] uppercase transition-colors hover:cursor-pointer sm:p-2',
 				{
 					'bg-amber-500': alphaKeyColorIncluded,
 					'bg-gray-100 dark:bg-gray-100/80': !alphaKeyColorIncluded && !isTutorialMode,
@@ -52,10 +52,17 @@
 {:else}
 	<button
 		disabled
-		class="flex w-8 flex-col items-center justify-between gap-1 rounded p-1.5 text-lg text-gray-400/50 uppercase transition-colors hover:cursor-pointer sm:w-10 sm:p-2 sm:text-2xl md:w-14 md:text-3xl dark:bg-gray-100/10"
+		class="key flex flex-col items-center justify-between gap-1 rounded p-1.5 text-[length:clamp(0.875rem,2.8vw,1.875rem)] text-gray-400/50 uppercase transition-colors hover:cursor-pointer sm:p-2 dark:bg-gray-100/10"
 		><p>{letter}</p>
 		<div class="flex items-center gap-1">
 			<span class={clsx('block h-1 w-1')}></span>
 		</div></button
 	>
 {/if}
+
+<style>
+	.key {
+		width: var(--key-size);
+		flex-shrink: 0;
+	}
+</style>

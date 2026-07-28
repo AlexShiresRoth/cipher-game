@@ -869,23 +869,28 @@
 	<StartModal {data} {startGame} {startTutorial} />
 {/if}
 
-<div class:hidden={!system.hydrated && system.loading} class="flex w-full flex-col items-center">
-	<Nav
-		{word}
-		solutionPath={data.solutionPath}
-		gameOver={system.gameOver}
-		showNavModal={ui.showNavModal}
-		{toggleModalOpen}
-		replenishAmt={game.replenishAmt}
-		moveAmount={game.moveAmount}
-		guesses={game.guesses}
-		solvableAmt={data.minMoves}
-		puzzleData={cipherPlayerData}
-		emoji={game.tier.emoji}
-		mistakeAmount={game.swaps.filter((b) => !b).length}
-		{dayRankings}
-		{playerId}
-	/>
+<div
+	class:hidden={!system.hydrated && system.loading}
+	class="flex h-dvh w-full flex-col items-center overflow-hidden"
+>
+	<div class="w-full shrink-0">
+		<Nav
+			{word}
+			solutionPath={data.solutionPath}
+			gameOver={system.gameOver}
+			showNavModal={ui.showNavModal}
+			{toggleModalOpen}
+			replenishAmt={game.replenishAmt}
+			moveAmount={game.moveAmount}
+			guesses={game.guesses}
+			solvableAmt={data.minMoves}
+			puzzleData={cipherPlayerData}
+			emoji={game.tier.emoji}
+			mistakeAmount={game.swaps.filter((b) => !b).length}
+			{dayRankings}
+			{playerId}
+		/>
+	</div>
 
 	<!-- Tutorial popup for tutorial mode -->
 	{#if tutorial.isTutorialMode}
@@ -921,62 +926,69 @@
 		{/if}
 	</div>
 
-	<div class="flex w-11/12 flex-col items-center md:w-2/3 lg:w-1/2">
-		<!-- PREFERENCES UI -->
-		{#if checkIfPreferenceSettingExist(system.preferences)}
-			<div class="my-4 flex w-full flex-wrap justify-between gap-4 text-sm">
-				{#if system.preferences.get(PreferenceKeys.showRank)?.show}
-					<div class="flex items-center gap-1">
-						<p>
-							Status <span>{game.tier.emoji}</span>
-						</p>
-					</div>
-				{/if}
-				{#if system.preferences.get(PreferenceKeys.showMistakes)?.show}
-					<div class="flex items-center gap-1">
-						<p>Mistakes <span>{game.swaps.filter((b) => !b).length}</span></p>
-					</div>
-				{/if}
-				{#if system.preferences.get(PreferenceKeys.showMoves)?.show}
-					<div class="flex items-center gap-1"><p>Moves <span>{game.moveAmount}</span></p></div>
-				{/if}
-				{#if system.preferences.get(PreferenceKeys.showReps)?.show}
-					<div class="flex items-center gap-1"><p>Reps <span>{game.replenishAmt}</span></p></div>
-				{/if}
-				{#if system.preferences.get(PreferenceKeys.showSolvable)?.show}
-					<div class="flex items-center gap-1"><p>Solvable <span>{data.minMoves}</span></p></div>
-				{/if}
-			</div>
-		{/if}
-
-		{#if ui.showMySolution && system.gameOver}
-			<div class="flex w-full flex-col">
-				<div class="w-full pt-4">
-					<h2 class="text-3xl uppercase">My Solution</h2>
+	<!-- Top: prefs/selection/cipher. Bottom: keyboard/buttons (always fully visible). -->
+	<div
+		class="grid min-h-0 w-11/12 flex-1 grid-rows-[minmax(0,1fr)_auto] overflow-hidden md:w-2/3 lg:w-1/2"
+	>
+		<div class="flex min-h-0 flex-col overflow-y-auto">
+			{#if checkIfPreferenceSettingExist(system.preferences)}
+				<div class="my-4 flex w-full shrink-0 flex-wrap justify-between gap-4 text-sm">
+					{#if system.preferences.get(PreferenceKeys.showRank)?.show}
+						<div class="flex items-center gap-1">
+							<p>
+								Status <span>{game.tier.emoji}</span>
+							</p>
+						</div>
+					{/if}
+					{#if system.preferences.get(PreferenceKeys.showMistakes)?.show}
+						<div class="flex items-center gap-1">
+							<p>Mistakes <span>{game.swaps.filter((b) => !b).length}</span></p>
+						</div>
+					{/if}
+					{#if system.preferences.get(PreferenceKeys.showMoves)?.show}
+						<div class="flex items-center gap-1"><p>Moves <span>{game.moveAmount}</span></p></div>
+					{/if}
+					{#if system.preferences.get(PreferenceKeys.showReps)?.show}
+						<div class="flex items-center gap-1"><p>Reps <span>{game.replenishAmt}</span></p></div>
+					{/if}
+					{#if system.preferences.get(PreferenceKeys.showSolvable)?.show}
+						<div class="flex items-center gap-1"><p>Solvable <span>{data.minMoves}</span></p></div>
+					{/if}
 				</div>
-				<SolutionPath {word} solutionPath={system.cipherStateHistory} guesses={game.guesses} />
-			</div>
-		{/if}
+			{/if}
 
-		{#if !ui.showMySolution}
-			<!-- Current user selection row -->
-			<Selection
-				isTutorialMode={tutorial.isTutorialMode}
-				selected={game.selected}
-				shouldHaveMargin={!checkIfPreferenceSettingExist(system.preferences)}
-			/>
-			<!-- Cipher + keyboard share width; keyboard defines it, cipher stretches to match -->
-			<div class="mx-auto flex w-fit max-w-full flex-col items-stretch gap-2">
-				<Cipher
-					{word}
-					tutorialState={tutorial}
-					cipherState={game.cipherState}
-					allowChooseIndex={game.allowChooseIndex}
-					selected={game.selected}
-					startIndex={game.startIndex}
-					indexToSwap={game.indexToSwap}
-					chooseStartingIndex={handleStartingIndexUpdate}
-				/>
+			{#if ui.showMySolution && system.gameOver}
+				<div class="flex w-full flex-col">
+					<div class="w-full pt-4">
+						<h2 class="text-3xl uppercase">My Solution</h2>
+					</div>
+					<SolutionPath {word} solutionPath={system.cipherStateHistory} guesses={game.guesses} />
+				</div>
+			{/if}
+
+			{#if !ui.showMySolution}
+				<div class="flex min-h-0 w-full flex-1 flex-col items-stretch justify-center">
+					<Selection
+						isTutorialMode={tutorial.isTutorialMode}
+						selected={game.selected}
+						shouldHaveMargin={!checkIfPreferenceSettingExist(system.preferences)}
+					/>
+					<Cipher
+						{word}
+						tutorialState={tutorial}
+						cipherState={game.cipherState}
+						allowChooseIndex={game.allowChooseIndex}
+						selected={game.selected}
+						startIndex={game.startIndex}
+						indexToSwap={game.indexToSwap}
+						chooseStartingIndex={handleStartingIndexUpdate}
+					/>
+				</div>
+			{/if}
+		</div>
+
+		<div class="flex w-full shrink-0 flex-col items-stretch gap-4 pb-12">
+			{#if !ui.showMySolution}
 				<Keyboard
 					selected={game.selected}
 					{handleSelect}
@@ -986,7 +998,6 @@
 					removeLetterFromSelection={handleRemoveLetterFromSelection}
 					tutorialState={tutorial}
 				/>
-				<!-- Action buttons -->
 				{#if !system.gameOver}
 					<ActionButtons
 						clearSelection={handleClearSelection}
@@ -997,21 +1008,20 @@
 						shouldAllowReplenish={game.shouldAllowReplenish}
 					/>
 				{/if}
-			</div>
-		{/if}
+			{/if}
 
-		<!-- TOGGLE PLAYER SOLUTION AND ENDGAME STATE -->
-		{#if system.gameOver}
-			<div class="flex items-center gap-2 py-8">
-				<button
-					on:click={toggleMySolutionInUI}
-					class={clsx('rounded px-4 py-2 uppercase dark:text-black', {
-						'bg-black text-white dark:bg-emerald-500': ui.showMySolution,
-						'bg-black text-white dark:bg-indigo-500': !ui.showMySolution
-					})}>{ui.showMySolution ? 'View Game' : 'View solution'}</button
-				>
-			</div>
-		{/if}
+			{#if system.gameOver}
+				<div class="flex items-center justify-center gap-2 py-4">
+					<button
+						on:click={toggleMySolutionInUI}
+						class={clsx('rounded px-4 py-2 uppercase dark:text-black', {
+							'bg-black text-white dark:bg-emerald-500': ui.showMySolution,
+							'bg-black text-white dark:bg-indigo-500': !ui.showMySolution
+						})}>{ui.showMySolution ? 'View Game' : 'View solution'}</button
+					>
+				</div>
+			{/if}
+		</div>
 	</div>
 </div>
 
