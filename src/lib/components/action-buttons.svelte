@@ -49,7 +49,7 @@
 	}
 </script>
 
-<div data-testid="button-rows" class="my-12 flex w-full items-center justify-between gap-4">
+<div data-testid="button-rows" class="mt-3 flex w-full items-center justify-between gap-4">
 	<div class="flex items-center gap-2">
 		<div class="relative flex items-center">
 			<button
