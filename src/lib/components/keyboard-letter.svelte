@@ -27,7 +27,7 @@
 	<button on:click={() => handleSelect(letter)} class="key relative flex flex-col items-center">
 		<span
 			class={clsx(
-				'flex w-full flex-col items-center justify-between gap-1 rounded p-1.5 text-[length:clamp(0.875rem,2.8vw,1.875rem)] uppercase transition-colors hover:cursor-pointer sm:p-2',
+				'flex w-full flex-col items-center justify-between gap-1.5 rounded-md p-2 text-[clamp(1.125rem,3.2vw,1.75rem)] uppercase transition-colors hover:cursor-pointer sm:p-2.5',
 				{
 					'bg-amber-500': alphaKeyColorIncluded,
 					'bg-gray-100 dark:bg-gray-100/80': !alphaKeyColorIncluded && !isTutorialMode,
@@ -52,7 +52,7 @@
 {:else}
 	<button
 		disabled
-		class="key flex flex-col items-center justify-between gap-1 rounded p-1.5 text-[length:clamp(0.875rem,2.8vw,1.875rem)] text-gray-400/50 uppercase transition-colors hover:cursor-pointer sm:p-2 dark:bg-gray-100/10"
+		class="key flex flex-col items-center justify-between gap-1.5 rounded-md p-2 text-[clamp(1.125rem,3.2vw,1.75rem)] text-gray-400/50 uppercase transition-colors hover:cursor-pointer sm:p-2.5 dark:bg-gray-100/10"
 		><p>{letter}</p>
 		<div class="flex items-center gap-1">
 			<span class={clsx('block h-1 w-1')}></span>
@@ -63,6 +63,7 @@
 <style>
 	.key {
 		width: var(--key-size);
+		min-height: min(calc(var(--key-size) * 1.15), 3.25rem);
 		flex-shrink: 0;
 	}
 </style>
