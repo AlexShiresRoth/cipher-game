@@ -37,7 +37,7 @@
 	});
 </script>
 
-<div class="keyboard relative flex w-full flex-col items-center gap-2 dark:text-black">
+<div class="keyboard relative flex w-full flex-col items-center gap-1 dark:text-black">
 	{#each rows as row, rowIndex (rowIndex)}
 		<div class="keyboard-row flex w-full items-center justify-center">
 			{#each row as letter (letter)}
@@ -49,7 +49,7 @@
 
 <style>
 	.keyboard {
-		--key-gap: 0.25rem;
+		--key-gap: 0.2rem;
 		/* Top row has 10 keys; all rows use that size so shorter rows stay centered */
 		--key-size: calc((100% - 9 * var(--key-gap)) / 10);
 	}
@@ -60,7 +60,7 @@
 
 	@media (min-width: 640px) {
 		.keyboard {
-			--key-gap: 0.5rem;
+			--key-gap: 0.4rem;
 		}
 	}
 </style>

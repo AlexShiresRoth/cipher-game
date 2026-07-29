@@ -927,7 +927,9 @@
 	</div>
 
 	<!-- Scrollable play area: centers cipher when tall, stacks+scrolls when short (e.g. landscape). -->
-	<div class="min-h-0 w-11/12 flex-1 overflow-y-auto overscroll-y-contain md:w-2/3 lg:w-1/2">
+	<div
+		class="min-h-0 w-full flex-1 overflow-y-auto overscroll-y-contain px-3 md:w-2/3 md:px-0 lg:w-1/2"
+	>
 		<div class="flex min-h-full flex-col">
 			{#if checkIfPreferenceSettingExist(system.preferences)}
 				<div class="my-4 flex w-full shrink-0 flex-wrap justify-between gap-4 text-sm">
