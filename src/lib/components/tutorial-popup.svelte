@@ -77,13 +77,15 @@
 		>
 			<h2 class="text-lg font-bold text-amber-500">Tutorial</h2>
 			<h3>Step {tutorialState.currentStep + 1}</h3>
-
 			<svelte:component this={TutorialStep} node={step?.currentStepNode || ''} />
 			<p class="text-xs text-gray-500 italic">
 				Hint: use a {step?.wordLength}-letter word like
 				<span class="text-amber-500 uppercase"
 					>{getWordByLength(step?.wordLength || 0, startLetter)}</span
 				>
+			</p>
+			<p class="text-xs text-gray-500 italic">
+				Note: not following the tutorial steps will end the tutorial early.
 			</p>
 			{#if tutorialState.currentStep > 0}
 				<p class="text-xs text-gray-500 italic">
@@ -95,7 +97,7 @@
 			<div class="mt-2">
 				<button
 					onclick={exitTutorial}
-					class="rounded-md border-2 bg-black p-2 text-xs font-semibold text-white dark:border-white/20 dark:text-white/70"
+					class="rounded-md border-2 bg-black p-2 text-xs font-semibold text-white transition-colors duration-200 hover:cursor-pointer hover:bg-amber-500 hover:text-black dark:border-white/20 dark:text-white/70"
 					>Quit Tutorial</button
 				>
 			</div>

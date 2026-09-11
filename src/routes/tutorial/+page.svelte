@@ -98,15 +98,17 @@
 
 <div class="flex min-h-screen w-full flex-col justify-center gap-4 px-5 py-16 md:w-2/3 lg:w-1/2">
 	{#if !started}
-		<h1 class="text-2xl md:text-4xl">
-			Welcome to the Cipher tutorial. Let’s go step by step and learn how to decipher the puzzle.
-		</h1>
-		<div>
-			<button
-				on:click={() => (started = true)}
-				class="rounded bg-emerald-500 px-4 py-2 transition-colors hover:cursor-pointer hover:bg-emerald-400 dark:text-black"
-				>Start Tutorial</button
-			>
+		<div class="flex flex-col gap-8">
+			<h1 class="text-2xl md:text-4xl">
+				Welcome to the Cipher tutorial. Let’s go step by step and learn how to decipher the puzzle.
+			</h1>
+			<div>
+				<button
+					on:click={() => (started = true)}
+					class="rounded bg-emerald-500 px-4 py-2 transition-colors hover:cursor-pointer hover:bg-emerald-400 dark:text-black"
+					>Detailed Tutorial</button
+				>
+			</div>
 		</div>
 	{/if}
 
