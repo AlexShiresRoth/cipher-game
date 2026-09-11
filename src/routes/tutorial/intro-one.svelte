@@ -21,7 +21,7 @@
 <p>
 	When starting the puzzle, the first thing you may notice is a scrambled word at the top. In this
 	example the scrambled word is <code class="rounded bg-gray-100/10 text-amber-500 uppercase italic"
-		>wfiroker</code
+		>efirokwr</code
 	>.
 </p>
 <p>
