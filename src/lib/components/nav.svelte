@@ -1,9 +1,10 @@
 <script lang="ts">
-	import type { DayRanking } from '$lib/types';
 	import { resolve } from '$app/paths';
-	import { ChartNoAxesColumn, ChessQueen, Puzzle, Route } from '@lucide/svelte';
+	import type { DayRanking } from '$lib/types';
+	import { ChartNoAxesColumn, ChessQueen, CircleQuestionMark, Puzzle, Route } from '@lucide/svelte';
 	import clsx from 'clsx';
 	import { fly } from 'svelte/transition';
+	import HowTo from './how-to.svelte';
 	import Leaderboard from './leaderboard.svelte';
 	import PlayerGuesses from './player-guesses.svelte';
 	import SolutionPath from './solution-path.svelte';
@@ -29,6 +30,7 @@
 	let showSolution = false;
 	let showCommonGuesses = false;
 	let showLeaderBoard = false;
+	let showTutorial = false;
 	let showMenu = !!showNavModal;
 
 	function toggleMenu() {
@@ -36,6 +38,9 @@
 		showStats = false;
 		showSolution = false;
 		showCommonGuesses = false;
+		showTutorial = false;
+		showLeaderBoard = false;
+		showStats = false;
 	}
 
 	function hideMenu() {
@@ -48,6 +53,7 @@
 		showNavModal = false;
 		showStats = false;
 		showLeaderBoard = false;
+		showTutorial = false;
 	}
 
 	function toggleSolutionModal() {
@@ -56,6 +62,7 @@
 		showNavModal = false;
 		showCommonGuesses = false;
 		showLeaderBoard = false;
+		showTutorial = false;
 	}
 
 	function toggleStatsModal() {
@@ -64,6 +71,7 @@
 		showSolution = false;
 		showCommonGuesses = false;
 		showLeaderBoard = false;
+		showTutorial = false;
 	}
 
 	function toggleLeaderboardModal() {
@@ -71,14 +79,30 @@
 		showNavModal = false;
 		showSolution = false;
 		showCommonGuesses = false;
+		showTutorial = false;
 		showLeaderBoard = !showLeaderBoard;
+	}
+
+	function toggleTutorialModal() {
+		showTutorial = !showTutorial;
+		showNavModal = false;
+		showSolution = false;
+		showCommonGuesses = false;
+		showLeaderBoard = false;
+		showStats = false;
 	}
 
 	$: {
 		if (typeof window !== 'undefined') {
-			if (showSolution || showStats || showCommonGuesses || showLeaderBoard) {
+			if (showSolution || showStats || showCommonGuesses || showLeaderBoard || showTutorial) {
 				document.body.style.overflow = 'hidden';
-			} else if (!showSolution && !showStats && !showCommonGuesses && !showLeaderBoard) {
+			} else if (
+				!showSolution &&
+				!showStats &&
+				!showCommonGuesses &&
+				!showLeaderBoard &&
+				!showTutorial
+			) {
 				document.body.style.overflow = 'visible';
 			}
 		}
@@ -118,7 +142,6 @@
 							})}><Puzzle size={14} /></button
 						>
 					</div>
-
 					<button
 						disabled={!gameOver}
 						class={clsx('transition-colors hover:cursor-pointer', {
@@ -136,6 +159,14 @@
 						})}
 					>
 						<ChartNoAxesColumn size={14} />
+					</button>
+					<button
+						on:click={toggleTutorialModal}
+						class={clsx('relative hover:cursor-pointer', {
+							'text-amber-300': showTutorial
+						})}
+					>
+						<CircleQuestionMark size={14} />
 					</button>
 				</div>
 			{/if}
@@ -155,11 +186,7 @@
 							>home</a
 						>
 					{/if}
-					<a
-						href={resolve('/tutorial')}
-						class="w-full border-t border-t-white/40 px-2 py-1 hover:cursor-pointer hover:text-amber-500 hover:underline"
-						>tutorial</a
-					>
+
 					<a
 						href={resolve('/how-to')}
 						class="w-full border-t border-t-white/40 px-2 py-1 hover:cursor-pointer hover:text-amber-500 hover:underline"
@@ -227,6 +254,14 @@
 			transition:fly={{ y: -100 }}
 		>
 			<Leaderboard {dayRankings} {playerId} />
+		</div>
+	{/if}
+	{#if showTutorial}
+		<div
+			class="fixed top-0 z-10 flex h-full w-full flex-col items-center gap-2 overflow-scroll bg-white p-4 py-16 dark:bg-black"
+			transition:fly={{ y: -100 }}
+		>
+			<HowTo />
 		</div>
 	{/if}
 </nav>
