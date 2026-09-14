@@ -6,7 +6,9 @@
 	export let startTutorial: () => void;
 </script>
 
-<div class="flex min-h-screen w-full flex-col items-center justify-center gap-12">
+<div
+	class="fixed top-0 left-0 z-9999 flex min-h-screen w-full flex-col items-center justify-center gap-12 bg-white dark:bg-black"
+>
 	<div class="flex flex-col items-center justify-center gap-2">
 		<img src="/logo.svg" alt="Cipher word puzzle logo" height="100" width="100" />
 		<div class="flex max-w-3/4 flex-col text-center opacity-80">

@@ -823,8 +823,16 @@
 		// this is an intentional dependency to trigger the update of the showLetters state
 		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		ui.modalOpen;
+		ui.showTutorial;
+		game.isGameStarted;
 
 		if (typeof window === 'undefined') return;
+
+		if (ui.showTutorial && !game.isGameStarted) {
+			document.body.style.overflow = 'hidden';
+		} else {
+			document.body.style.overflow = 'auto';
+		}
 
 		updateGameUIStore({ showLetters: false });
 
@@ -869,10 +877,7 @@
 	<StartModal {data} {startGame} {startTutorial} />
 {/if}
 
-<div
-	class:hidden={!system.hydrated && system.loading}
-	class="flex h-dvh w-full flex-col items-center overflow-hidden"
->
+<div class:hidden={!system.hydrated && system.loading} class="flex w-full flex-col items-center">
 	<div class="w-full shrink-0">
 		<Nav
 			{word}
@@ -927,10 +932,8 @@
 	</div>
 
 	<!-- Scrollable play area: centers cipher when tall, stacks+scrolls when short (e.g. landscape). -->
-	<div
-		class="min-h-0 w-full flex-1 overflow-y-auto overscroll-y-contain px-3 md:w-2/3 md:px-0 lg:w-1/2"
-	>
-		<div class="flex min-h-full flex-col">
+	<div class="min-h-0 w-full flex-1 px-4 md:w-2/3 md:px-0 lg:w-1/2">
+		<div class="flex flex-col gap-8">
 			{#if checkIfPreferenceSettingExist(system.preferences)}
 				<div class="my-4 flex w-full shrink-0 flex-wrap justify-between gap-4 text-sm">
 					{#if system.preferences.get(PreferenceKeys.showRank)?.show}
@@ -985,7 +988,7 @@
 					/>
 				</div>
 
-				<div class="mt-6 flex w-full shrink-0 flex-col items-stretch gap-4 pb-12">
+				<div class="mt-24 flex w-full shrink-0 flex-col items-stretch gap-4 pb-12">
 					<Keyboard
 						selected={game.selected}
 						{handleSelect}

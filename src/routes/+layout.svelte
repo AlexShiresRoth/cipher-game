@@ -24,7 +24,7 @@
 	<link rel="apple-touch-icon" href="/favicon.png" />
 </svelte:head>
 
-<main class="mb-28 flex min-h-screen w-screen flex-col items-center overflow-x-hidden">
+<main class="mb-28 flex w-screen flex-col items-center overflow-x-hidden">
 	{@render children()}
 </main>
 
