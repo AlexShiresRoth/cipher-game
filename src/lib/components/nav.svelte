@@ -263,7 +263,7 @@
 	{/if}
 	{#if showTutorial}
 		<div
-			class="nav-overlay dark:bg-background fixed top-0 z-10 flex h-full w-full flex-col items-center gap-2 overflow-scroll bg-white p-4 py-16"
+			class="nav-overlay dark:bg-background fixed top-0 z-10 flex h-full flex-col items-center gap-2 overflow-scroll bg-white p-4 py-16"
 			transition:fly={{ y: -100 }}
 		>
 			<HowTo />
