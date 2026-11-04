@@ -936,11 +936,6 @@
 		<div class="flex flex-col gap-8">
 			<header class="game-intro">
 				<p class="eyebrow">Daily cipher · No. {data.id}</p>
-				<h1>Crack the word.</h1>
-				<p>
-					Build words. Swap letters. Find the solution.<br />Every move brings you closer to today’s
-					Cipher.
-				</p>
 			</header>
 			{#if checkIfPreferenceSettingExist(system.preferences)}
 				<div class="game-stats flex w-full shrink-0 flex-wrap justify-between gap-4 text-sm">
