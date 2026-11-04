@@ -44,7 +44,7 @@
 	</p>
 
 	<div class="mt-8">
-		<table class="w-full table-fixed border-collapse">
+		<table class="terminal-table w-full table-fixed border-collapse">
 			<thead>
 				<tr>
 					<th class="w-1/2 border border-gray-300 px-4 py-2 text-center font-semibold">Tier</th>

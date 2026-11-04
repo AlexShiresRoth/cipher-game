@@ -7,14 +7,14 @@
 	export let cipherWord: string;
 </script>
 
-<div class="mt-8 min-h-screen bg-white dark:bg-background">
+<div class="dark:bg-background mt-8 min-h-screen bg-white">
 	<div class="flex flex-col">
 		<span class="text-xs text-indigo-500 uppercase">Cipher Word</span>
 		<h3 class="mb-1 text-3xl uppercase">{cipherWord}</h3>
 	</div>
 	{#if puzzleData?.wordsGuessed}
 		<div class="flex w-full justify-center gap-2 pt-2">
-			<table class="w-full table-fixed border-collapse text-sm">
+			<table class="terminal-table w-full table-fixed border-collapse text-sm">
 				<thead>
 					<tr>
 						<th

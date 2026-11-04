@@ -60,7 +60,6 @@
 			console.error('error', error);
 		}
 	}
-
 </script>
 
 <svelte:head>
@@ -68,8 +67,9 @@
 	<meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
-<main class="flex w-full flex-col items-center justify-center py-16">
+<main class="generator-page content-page flex w-full flex-col items-center justify-center py-16">
 	<div class="flex w-11/12 flex-col justify-between gap-8 md:w-1/2">
+		<p class="section-kicker">Puzzle workshop</p>
 		<h1 class="text-3xl">Generate a new puzzle</h1>
 		<form class="flex w-full flex-col gap-12" on:submit={submit}>
 			<div class="flex min-h-24 flex-col gap-2">

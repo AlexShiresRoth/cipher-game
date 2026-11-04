@@ -24,15 +24,15 @@
 	<link rel="apple-touch-icon" href="/favicon.png" />
 </svelte:head>
 
-<main class="mb-28 flex w-screen flex-col items-center overflow-x-hidden">
+<main class="app-shell mb-28 flex w-screen flex-col items-center overflow-x-hidden">
 	{@render children()}
 </main>
 
-<footer class="dark:bg-background flex w-full flex-col items-center bg-gray-100">
+<footer class="app-footer dark:bg-background flex w-full flex-col items-center bg-gray-100">
 	<div
 		class="flex w-full items-center border-b border-b-gray-200/50 px-4 py-2 dark:border-b-gray-100/10"
 	>
-		<img src="/logo.svg" alt="Cipher word puzzle logo" height="30" width="30" />
+		<span class="footer-mark" aria-hidden="true">C</span>
 		<p class="text-xs text-gray-400">
 			&copy; Cipher {new Date().getFullYear()}, All rights reserved.
 		</p>

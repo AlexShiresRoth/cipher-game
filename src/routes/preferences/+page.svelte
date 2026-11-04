@@ -55,8 +55,9 @@
 		guesses={[]}
 	/>
 
-	<div class="flex w-full flex-col items-center py-8">
+	<div class="preferences-page content-page flex w-full flex-col items-center py-8">
 		<div class="w-full px-4">
+			<p class="section-kicker">Make it yours</p>
 			<h1 class="text-3xl">Preferences</h1>
 		</div>
 		<div class="mt-8 w-full border-b border-b-black/20 px-4 pb-4 dark:border-b-gray-100/30">
@@ -80,7 +81,9 @@
 										btoa(JSON.stringify([...updatedPrefs]))
 									);
 								}}
-								aria-label="toggle-switch"
+								aria-label={`Show ${value.title}`}
+								role="switch"
+								aria-checked={value.show}
 								class="relative flex h-1 w-8 items-center rounded bg-gray-200 hover:cursor-pointer dark:bg-white/50"
 							>
 								<span

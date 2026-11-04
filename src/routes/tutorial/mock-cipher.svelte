@@ -54,7 +54,7 @@
 					{/if}
 					<div
 						class={clsx(
-							'flex w-8 items-center justify-center border-2 p-2 text-xl font-bold uppercase transition-all md:min-w-15 md:text-5xl',
+							'example-tile flex w-8 items-center justify-center border-2 p-2 text-xl font-bold uppercase transition-all md:min-w-15 md:text-5xl',
 							{
 								'border-amber-500 text-amber-500': i === startSwap,
 								'border-indigo-500 text-indigo-500': i === endSwap,

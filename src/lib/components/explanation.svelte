@@ -6,7 +6,7 @@
 	let showExp = false;
 </script>
 
-<div class="flex w-full flex-col gap-4">
+<div class="explanation-panel flex w-full flex-col gap-4">
 	<div>
 		<button
 			class={clsx(

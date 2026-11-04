@@ -182,7 +182,7 @@
 			>
 			{#if showMenu}
 				<div
-					class="absolute top-full right-0 -z-10 flex w-full max-w-36 flex-col items-start bg-black text-sm text-white uppercase"
+					class="nav-menu absolute top-full right-0 -z-10 flex w-full max-w-36 flex-col items-start bg-black text-sm text-white uppercase"
 				>
 					{#if showHome}
 						<a
@@ -216,7 +216,7 @@
 	</div>
 	{#if showStats}
 		<div
-			class="dark:bg-background fixed top-0 z-10 flex h-full w-full flex-col items-center justify-center gap-2 overflow-scroll bg-white p-4 py-16"
+			class="nav-overlay dark:bg-background fixed top-0 z-10 flex h-full w-full flex-col items-center justify-center gap-2 overflow-scroll bg-white p-4 py-16"
 			transition:fly={{ y: -100 }}
 		>
 			<div class="w-full md:w-1/2">
@@ -227,7 +227,7 @@
 	{/if}
 	{#if showSolution}
 		<div
-			class="dark:bg-background fixed top-0 z-10 flex h-full w-full flex-col items-center gap-2 overflow-scroll bg-white p-4 py-16"
+			class="nav-overlay dark:bg-background fixed top-0 z-10 flex h-full w-full flex-col items-center gap-2 overflow-scroll bg-white p-4 py-16"
 			transition:fly={{ y: -100 }}
 		>
 			<div class="w-full md:w-1/2">
@@ -241,7 +241,7 @@
 	{/if}
 	{#if showCommonGuesses && puzzleData}
 		<div
-			class="dark:bg-background fixed top-0 z-10 flex h-full w-full flex-col items-center gap-2 overflow-scroll bg-white p-4 py-16"
+			class="nav-overlay dark:bg-background fixed top-0 z-10 flex h-full w-full flex-col items-center gap-2 overflow-scroll bg-white p-4 py-16"
 			transition:fly={{ y: -100 }}
 		>
 			<div class="w-full md:w-1/2">
@@ -255,7 +255,7 @@
 	{/if}
 	{#if showLeaderBoard && dayRankings.length > 0}
 		<div
-			class="dark:bg-background fixed top-0 z-10 flex h-full w-full flex-col items-center gap-2 overflow-scroll bg-white p-4 py-16"
+			class="nav-overlay dark:bg-background fixed top-0 z-10 flex h-full w-full flex-col items-center gap-2 overflow-scroll bg-white p-4 py-16"
 			transition:fly={{ y: -100 }}
 		>
 			<Leaderboard {dayRankings} {playerId} />
@@ -263,7 +263,7 @@
 	{/if}
 	{#if showTutorial}
 		<div
-			class="dark:bg-background fixed top-0 z-10 flex h-full w-full flex-col items-center gap-2 overflow-scroll bg-white p-4 py-16"
+			class="nav-overlay dark:bg-background fixed top-0 z-10 flex h-full w-full flex-col items-center gap-2 overflow-scroll bg-white p-4 py-16"
 			transition:fly={{ y: -100 }}
 		>
 			<HowTo />

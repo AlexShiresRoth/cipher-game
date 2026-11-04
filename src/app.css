@@ -308,3 +308,383 @@ a:focus-visible {
 		transition-duration: 0.01ms !important;
 	}
 }
+
+/* Shared surfaces for the rest of Cipher. */
+:root {
+	color-scheme: dark;
+}
+.app-shell {
+	--color-white: var(--text-primary);
+	--color-gray-300: #a6b09f;
+	--color-gray-400: #8b9883;
+	--color-gray-500: #7b8974;
+}
+.content-page {
+	width: min(100%, 880px);
+	max-width: 880px;
+	margin-inline: auto;
+	padding: clamp(32px, 6vw, 64px) clamp(20px, 4vw, 40px);
+}
+.section-kicker,
+.tutorial-progress {
+	margin-bottom: 14px;
+	color: var(--purple);
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+}
+.content-page h1,
+.welcome-screen h1,
+.results-screen h1,
+.nav-overlay h2 {
+	font-family: 'VT323', monospace;
+	font-weight: 400;
+	font-size: clamp(36px, 5vw, 56px);
+	line-height: 1.1;
+	text-transform: uppercase;
+}
+.content-page h2,
+.content-page h3 {
+	color: var(--purple);
+}
+.content-page p,
+.content-page li {
+	line-height: 1.9;
+}
+.content-page p:not(.section-kicker):not(.tutorial-progress) {
+	color: var(--text-muted);
+}
+.content-page strong {
+	color: var(--text-primary);
+}
+.content-page :is(.border-b, .border-t, .border, .border-b-2) {
+	border-color: var(--border);
+}
+.content-page button:not([role='switch']),
+.content-page a.bg-emerald-500 {
+	border-radius: 2px;
+}
+.content-page button.bg-emerald-500,
+.content-page a.bg-emerald-500 {
+	background: var(--purple);
+	color: #101508;
+	padding: 12px 20px;
+	font-weight: 600;
+	box-shadow: 3px 4px 0 #354918;
+}
+.content-page button.bg-emerald-500:hover {
+	background: var(--purple-bright);
+}
+.preferences-page > div {
+	padding-inline: 0;
+}
+.preferences-page > div:nth-child(2) {
+	margin-top: 32px;
+	padding: 20px;
+	border: 1px solid var(--border);
+	background: var(--panel);
+}
+.preferences-page > div:nth-child(3) > div {
+	padding: 24px 20px;
+}
+.preferences-page h3 {
+	color: var(--text-primary);
+	font-weight: 600;
+}
+.preferences-page [role='switch'] {
+	width: 44px;
+	height: 24px;
+	border: 1px solid #45513c;
+	border-radius: 2px;
+	background: #202c23;
+	flex-shrink: 0;
+}
+.preferences-page [role='switch'] > span {
+	translate: none;
+	left: 3px;
+	width: 16px;
+	height: 16px;
+	border-radius: 1px;
+	background: #899581;
+}
+.preferences-page [role='switch'][aria-checked='true'] {
+	border-color: var(--purple);
+	background: #273714;
+}
+.preferences-page [role='switch'][aria-checked='true'] > span {
+	background: var(--purple);
+	transform: translateX(20px);
+}
+.help-page > h1 {
+	padding-bottom: 24px;
+	margin-bottom: 28px;
+	border-bottom: 1px solid var(--border);
+}
+.help-page ol {
+	margin-block: 24px;
+	padding: 24px;
+	border: 1px solid var(--border);
+	background: var(--panel);
+}
+.help-page > div {
+	margin-top: 32px;
+	padding: 24px;
+	border: 1px solid var(--border);
+	border-radius: 2px;
+}
+.help-page video {
+	width: 100%;
+	max-width: 400px;
+	border-radius: 2px;
+}
+.tutorial-page {
+	min-height: 70svh;
+}
+.tutorial-page [data-test-id='tutorial-content'] {
+	padding-block: 20px;
+	line-height: 1.9;
+}
+.tutorial-page [data-test-id='tutorial-content'] h3 {
+	margin-top: 12px;
+}
+.tutorial-page .tutorial-progress {
+	width: fit-content;
+	padding: 8px 12px;
+	border: 1px solid var(--border);
+	background: var(--panel);
+	color: var(--cyan);
+}
+.tutorial-page button.border-b {
+	padding: 6px 8px;
+	font-size: 12px;
+}
+.tutorial-page button.text-amber-500 {
+	color: var(--purple);
+	border-color: var(--purple);
+	background: #b2f4420d;
+}
+.welcome-screen,
+.results-screen {
+	overflow-y: auto;
+	padding: 32px 20px;
+	background-color: var(--background);
+	background-image:
+		linear-gradient(#a6da4109 1px, transparent 1px),
+		linear-gradient(90deg, #a6da4109 1px, transparent 1px);
+	background-size: 36px 36px;
+}
+.welcome-mark {
+	display: grid;
+	place-items: center;
+	width: 80px;
+	height: 88px;
+	margin-bottom: 24px;
+	border: 3px solid var(--purple);
+	box-shadow: 6px 6px 0 #273714;
+	color: var(--purple);
+	font-size: 56px;
+	font-weight: 700;
+}
+.welcome-screen h1 {
+	font-size: clamp(72px, 12vw, 112px);
+}
+.welcome-screen p.text-lg {
+	max-width: 460px;
+	color: var(--text-muted);
+	font-size: 14px;
+	line-height: 1.9;
+}
+.welcome-screen p.italic {
+	color: var(--text-muted);
+	font-style: normal;
+}
+.welcome-screen button {
+	min-height: 48px;
+	padding: 12px 24px;
+	border: 1px solid var(--border);
+	border-radius: 2px;
+	background: var(--panel);
+	color: var(--text-primary);
+}
+.welcome-screen button:first-child {
+	background: var(--purple);
+	border-color: var(--purple);
+	color: #101508;
+	font-weight: 600;
+	box-shadow: 3px 4px 0 #354918;
+}
+.welcome-screen button:hover {
+	border-color: var(--purple);
+	background: #273714;
+	color: var(--text-primary);
+}
+.welcome-screen > div:last-child {
+	color: var(--text-muted);
+	font-size: 12px;
+	line-height: 1.9;
+}
+.results-panel {
+	max-width: 800px;
+	margin-inline: auto;
+}
+.results-screen button.rounded-full {
+	border-radius: 2px;
+	padding: 14px 24px;
+	background: var(--purple);
+	color: #101508;
+	font-weight: 600;
+	box-shadow: 3px 4px 0 #354918;
+}
+.results-screen > div:first-child button {
+	width: 40px;
+	height: 40px;
+	border: 1px solid var(--border);
+	color: var(--text-muted);
+}
+.terminal-table {
+	background: var(--panel);
+}
+.terminal-table :is(th, td, tr) {
+	border-color: var(--border);
+}
+.terminal-table th {
+	padding: 14px 10px;
+	color: var(--text-muted);
+	background: #192219;
+	font-size: 11px;
+	font-weight: 500;
+	text-transform: uppercase;
+	letter-spacing: 0.07em;
+}
+.terminal-table td {
+	padding: 14px 10px;
+}
+.terminal-table tbody tr:nth-child(even) {
+	background: #ffffff03;
+}
+.terminal-table td.border-orange-400 {
+	border-color: var(--purple);
+	color: var(--purple);
+	background: #b2f4420a;
+}
+.nav-overlay {
+	padding-top: 110px;
+	padding-bottom: 40px;
+}
+.nav-overlay > div {
+	width: min(100%, 800px);
+}
+.nav-overlay h2 {
+	margin-bottom: 20px;
+}
+.nav-overlay > div > p {
+	color: var(--text-muted);
+	line-height: 1.9;
+}
+.nav-menu {
+	border: 1px solid var(--border);
+	background: #101810;
+	box-shadow: 5px 6px 0 #030703;
+}
+.nav-menu :is(a, button) {
+	border-color: var(--border);
+	padding: 12px 14px;
+	font-size: 11px;
+}
+.nav-menu :is(a, button):hover {
+	color: var(--purple);
+	background: #b2f4420a;
+}
+.tutorial-panel,
+.terminal-popup {
+	border-color: var(--border);
+	border-radius: 2px;
+	background: #101810f5;
+	box-shadow: 5px 6px 0 #030703;
+}
+.tutorial-panel h2 {
+	color: var(--purple);
+	text-transform: uppercase;
+	letter-spacing: 0.1em;
+}
+.tutorial-panel button {
+	border-radius: 2px;
+}
+.app-footer > div {
+	border-color: var(--border);
+	gap: 12px;
+}
+.footer-mark {
+	color: var(--purple);
+	border: 1px solid var(--border);
+	padding: 2px 6px;
+	font-weight: 700;
+}
+.generator-page > div {
+	width: 100%;
+}
+.generator-page input {
+	padding: 12px 6px;
+	border: 1px solid var(--border);
+	background: var(--panel);
+	color: var(--text-primary);
+	border-radius: 2px;
+}
+.generator-page input:focus {
+	outline: 2px solid var(--purple);
+	outline-offset: 3px;
+}
+@media (max-width: 480px) {
+	.terminal-table th {
+		padding: 10px 5px;
+		letter-spacing: 0;
+		font-size: 10px;
+	}
+	.terminal-table td {
+		padding: 12px 5px;
+	}
+	.help-page > div,
+	.help-page ol {
+		padding: 16px;
+	}
+	.nav-overlay {
+		padding-top: 88px;
+	}
+	.welcome-screen {
+		gap: 28px;
+	}
+}
+
+.example-tile,
+.solution-tile {
+	border-width: 1px;
+	border-radius: 2px;
+	border-color: var(--border);
+	background: linear-gradient(#131d14, #0c130f);
+	box-shadow: 3px 4px 0 #030703;
+}
+.example-tile.border-amber-500,
+.solution-tile.border-amber-500 {
+	border-color: #ffbf24;
+	background: #332b12;
+}
+.example-tile.border-indigo-500 {
+	border-color: var(--purple);
+}
+.example-tile.dark\:border-emerald-500,
+.solution-tile.border-emerald-500 {
+	border-color: var(--cyan);
+}
+.explanation-panel > div > button {
+	border: 1px solid var(--border);
+	border-radius: 2px;
+	background: var(--panel);
+	font-style: normal;
+	color: var(--cyan);
+	padding: 10px 16px;
+}
+.explanation-panel > div.border {
+	border-color: var(--border);
+	background: var(--panel);
+}
