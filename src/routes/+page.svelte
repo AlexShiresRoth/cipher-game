@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Logo from '$lib/components/logo.svelte';
 	import { resolve } from '$app/paths';
 	import {
 		alpha,
@@ -1039,7 +1040,7 @@
 
 <div class:hidden={system.hydrated && !system.loading}>
 	<div class="flex h-screen flex-col items-center justify-center gap-4 px-6 text-center">
-		<img src="/logo.svg" alt="Cipher word puzzle logo" height="300" width="300" />
+		<Logo size="splash" />
 		<h1 class="text-5xl font-bold uppercase">Cipher</h1>
 		<p class="max-w-md opacity-80">
 			Decipher the shuffled word. Play the daily word-shuffle puzzle and solve Cipher #{data.id ||

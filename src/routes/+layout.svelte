@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Logo from '$lib/components/logo.svelte';
 	import {
 		DEFAULT_DESCRIPTION,
 		DEFAULT_OG_IMAGE,
@@ -32,7 +33,7 @@
 	<div
 		class="flex w-full items-center border-b border-b-gray-200/50 px-4 py-2 dark:border-b-gray-100/10"
 	>
-		<span class="footer-mark" aria-hidden="true">C</span>
+		<Logo size="footer" />
 		<p class="text-xs text-gray-400">
 			&copy; Cipher {new Date().getFullYear()}, All rights reserved.
 		</p>

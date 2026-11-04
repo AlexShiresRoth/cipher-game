@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Logo from '$lib/components/logo.svelte';
 	import { resolve } from '$app/paths';
 	import type { DayRanking } from '$lib/types';
 	import { ChartNoAxesColumn, ChessQueen, CircleQuestionMark, Puzzle, Route } from '@lucide/svelte';
@@ -116,7 +117,7 @@
 		class="dark:bg-background z-20 flex w-full justify-between border-b border-b-black bg-white py-2 dark:border-b-white/10"
 	>
 		<div class="flex items-center justify-start px-4">
-			<span class="brand-mark" aria-hidden="true">C</span>
+			<Logo />
 			<a href={resolve('/')} class="font-bold uppercase dark:text-white">CIPHER</a>
 		</div>
 		<div
