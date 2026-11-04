@@ -87,6 +87,8 @@ a:focus-visible {
 	outline-offset: 5px;
 }
 .cipher-nav > div:first-child {
+	background: var(--background);
+	color: var(--text-primary);
 	min-height: 72px;
 	padding-inline: clamp(0px, 3vw, 36px);
 	border-bottom-color: var(--border);
@@ -569,6 +571,10 @@ a:focus-visible {
 	background: #b2f4420a;
 }
 .nav-overlay {
+	background: var(--background);
+	color: var(--text-primary);
+	inset-inline: 0;
+	width: 100%;
 	padding-top: 110px;
 	padding-bottom: 40px;
 }
@@ -687,4 +693,57 @@ a:focus-visible {
 .explanation-panel > div.border {
 	border-color: var(--border);
 	background: var(--panel);
+}
+
+.keyboard-info {
+	position: absolute;
+	bottom: calc(100% + 12px);
+	left: 50%;
+	z-index: 30;
+	display: flex;
+	width: min(260px, calc(100vw - 32px));
+	flex-direction: column;
+	gap: 16px;
+	padding: 20px;
+	border: 1px solid var(--border);
+	border-radius: 2px;
+	background: var(--panel);
+	color: var(--text-muted);
+	font-size: 12px;
+	line-height: 1.7;
+	translate: -50% 0;
+	box-shadow: 5px 6px 0 #030703;
+}
+.keyboard-info::after {
+	content: '';
+	position: absolute;
+	top: 100%;
+	left: 50%;
+	border: 8px solid transparent;
+	border-top-color: var(--panel);
+	translate: -50% 0;
+}
+.keyboard-info-heading {
+	width: 100%;
+	padding-bottom: 12px;
+	border-bottom: 1px solid var(--border);
+	color: var(--cyan);
+	font-size: 11px;
+	letter-spacing: 0.1em;
+}
+.keyboard-info-key {
+	display: flex;
+	min-width: 44px;
+	flex-direction: column;
+	align-items: center;
+	gap: 6px;
+	padding: 8px;
+	border: 1px solid #344737;
+	border-radius: 2px;
+	background: var(--keyboard);
+	color: var(--text-primary);
+	font-size: 24px;
+}
+.keyboard-info-marker {
+	background: var(--text-primary);
 }
