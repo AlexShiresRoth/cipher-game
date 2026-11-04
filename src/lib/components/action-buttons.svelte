@@ -49,7 +49,10 @@
 	}
 </script>
 
-<div data-testid="button-rows" class="mt-3 flex w-full items-center justify-between gap-4">
+<div
+	data-testid="button-rows"
+	class="game-actions mt-3 flex w-full items-center justify-between gap-4"
+>
 	<div class="flex items-center gap-2">
 		<div class="relative flex items-center">
 			<button
@@ -91,9 +94,9 @@
 			{#if showKeyReactive}
 				<div
 					data-testid="key-modal"
-					class="absolute bottom-full flex w-54 flex-col items-center gap-2 border-2 border-black bg-white p-4 text-sm text-black shadow-lg after:absolute after:top-full after:left-1/2 after:-translate-x-1/2
-							after:border-8 after:border-transparent after:border-t-white hover:cursor-pointer
-							dark:border-white dark:bg-background dark:text-white after:dark:border-t-black"
+					class="dark:bg-background absolute bottom-full flex w-54 flex-col items-center gap-2 border-2 border-black bg-white p-4 text-sm text-black shadow-lg after:absolute after:top-full after:left-1/2
+							after:-translate-x-1/2 after:border-8 after:border-transparent after:border-t-white
+							hover:cursor-pointer dark:border-white dark:text-white after:dark:border-t-black"
 					transition:fly
 				>
 					<div class="mb-2 w-full border-b-2 border-b-black py-2 dark:border-gray-100">

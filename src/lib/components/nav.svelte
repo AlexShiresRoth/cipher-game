@@ -111,12 +111,12 @@
 	}
 </script>
 
-<nav class="relative flex w-full">
+<nav class="cipher-nav relative flex w-full">
 	<div
 		class="dark:bg-background z-20 flex w-full justify-between border-b border-b-black bg-white py-2 dark:border-b-white/10"
 	>
 		<div class="flex items-center justify-start px-4">
-			<img src="/logo.svg" alt="Cipher word puzzle logo" height="30" width="30" />
+			<span class="brand-mark" aria-hidden="true">C</span>
 			<a href={resolve('/')} class="font-bold uppercase dark:text-white">CIPHER</a>
 		</div>
 		<div

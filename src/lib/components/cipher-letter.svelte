@@ -31,7 +31,7 @@
 	on:click={() => chooseStartingIndex(i)}
 	in:fly={{ y: i % 2 === 0 ? -50 : 50, duration: 400 }}
 	class={clsx(
-		'border-border dark:bg-tile relative z-0 flex flex-1 items-center justify-center rounded-lg rounded-bl-none border-2 p-2 py-4 transition-all',
+		'cipher-tile border-border dark:bg-tile relative z-0 flex flex-1 items-center justify-center rounded-lg rounded-bl-none border-2 p-2 py-4 transition-all',
 		{
 			'text-cyan': highlightAtCorrectPosition && !selectedLetter && !highlightAtStartIndex,
 			' dark:text-primary': defaultCipherDisplay,

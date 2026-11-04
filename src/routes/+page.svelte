@@ -932,10 +932,18 @@
 	</div>
 
 	<!-- Scrollable play area: centers cipher when tall, stacks+scrolls when short (e.g. landscape). -->
-	<div class="min-h-0 w-full flex-1 px-4 md:w-2/3 md:px-0 lg:w-1/2">
+	<div class="game-board min-h-0 w-full flex-1">
 		<div class="flex flex-col gap-8">
+			<header class="game-intro">
+				<p class="eyebrow">Daily cipher · No. {data.id}</p>
+				<h1>Crack the word.</h1>
+				<p>
+					Build words. Swap letters. Find the solution.<br />Every move brings you closer to today’s
+					Cipher.
+				</p>
+			</header>
 			{#if checkIfPreferenceSettingExist(system.preferences)}
-				<div class="my-8 flex w-full shrink-0 flex-wrap justify-between gap-4 text-sm">
+				<div class="game-stats flex w-full shrink-0 flex-wrap justify-between gap-4 text-sm">
 					{#if system.preferences.get(PreferenceKeys.showRank)?.show}
 						<div class="flex items-center gap-1">
 							<p>
