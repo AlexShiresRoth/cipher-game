@@ -935,7 +935,7 @@
 	<div class="min-h-0 w-full flex-1 px-4 md:w-2/3 md:px-0 lg:w-1/2">
 		<div class="flex flex-col gap-8">
 			{#if checkIfPreferenceSettingExist(system.preferences)}
-				<div class="my-4 flex w-full shrink-0 flex-wrap justify-between gap-4 text-sm">
+				<div class="my-8 flex w-full shrink-0 flex-wrap justify-between gap-4 text-sm">
 					{#if system.preferences.get(PreferenceKeys.showRank)?.show}
 						<div class="flex items-center gap-1">
 							<p>
@@ -986,9 +986,17 @@
 						indexToSwap={game.indexToSwap}
 						chooseStartingIndex={handleStartingIndexUpdate}
 					/>
+					<div class="flex flex-col gap-8">
+						<div class="mt-10 flex w-full items-center justify-between gap-2">
+							<span class="h-0.5 w-full dark:bg-white/10"></span>
+							<p class="w-full text-center text-xs opacity-45">Swap letters to decode the cipher</p>
+							<span class="h-0.5 w-full dark:bg-white/10"></span>
+						</div>
+						<div class="h-0.5 w-full dark:bg-white/10"></div>
+					</div>
 				</div>
 
-				<div class="mt-24 flex w-full shrink-0 flex-col items-stretch gap-4 pb-12">
+				<div class="mt-16 flex w-full shrink-0 flex-col items-stretch gap-4 pb-12">
 					<Keyboard
 						selected={game.selected}
 						{handleSelect}
@@ -1016,8 +1024,8 @@
 					<button
 						on:click={toggleMySolutionInUI}
 						class={clsx('rounded px-4 py-2 uppercase dark:text-black', {
-							'bg-black text-white dark:bg-emerald-500': ui.showMySolution,
-							'bg-black text-white dark:bg-indigo-500': !ui.showMySolution
+							'bg-background text-white dark:bg-emerald-500': ui.showMySolution,
+							'bg-background text-white dark:bg-indigo-500': !ui.showMySolution
 						})}>{ui.showMySolution ? 'View Game' : 'View solution'}</button
 					>
 				</div>

@@ -14,7 +14,7 @@
 
 <div
 	transition:fade
-	class="fixed top-0 left-0 z-50 flex h-screen w-screen flex-col items-center bg-white dark:bg-black"
+	class="fixed top-0 left-0 z-50 flex h-screen w-screen flex-col items-center bg-white dark:bg-background"
 >
 	<div class="mt-2 flex w-full items-center justify-end px-4">
 		<button

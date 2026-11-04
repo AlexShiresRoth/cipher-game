@@ -26,6 +26,8 @@
 	export let dayRankings: DayRanking[] = [];
 	export let playerId: string = '';
 
+	const ICON_SIZE = 16;
+
 	let showStats = false;
 	let showSolution = false;
 	let showCommonGuesses = false;
@@ -111,26 +113,27 @@
 
 <nav class="relative flex w-full">
 	<div
-		class="z-20 flex w-full justify-between border-b border-b-black bg-white dark:border-b-white/50 dark:bg-black"
+		class="dark:bg-background z-20 flex w-full justify-between border-b border-b-black bg-white py-2 dark:border-b-white/10"
 	>
-		<div class="flex w-full items-center justify-start border-r px-4 dark:border-white/50">
-			<a href={resolve('/')} class="text-xl font-bold uppercase dark:text-white">CIPHER</a>
+		<div class="flex items-center justify-start px-4">
+			<img src="/logo.svg" alt="Cipher word puzzle logo" height="30" width="30" />
+			<a href={resolve('/')} class="font-bold uppercase dark:text-white">CIPHER</a>
 		</div>
 		<div
-			class="relative flex w-full items-center justify-end gap-2"
+			class="relative flex items-center gap-2"
 			on:mouseleave={hideMenu}
 			role="button"
 			tabindex="0"
 		>
 			{#if !showHome}
-				<div class="relative flex items-center justify-center gap-2">
+				<div class="relative flex items-center justify-center gap-4">
 					<button
 						disabled={!gameOver}
 						on:click={toggleLeaderboardModal}
 						class={clsx('transition-colors hover:cursor-pointer', {
 							'text-orange-400': showLeaderBoard,
 							'text-gray-400/50 dark:text-gray-100/50': !gameOver && !showLeaderBoard
-						})}><ChessQueen size={14} /></button
+						})}><ChessQueen size={ICON_SIZE} /></button
 					>
 					<div class="relative flex flex-col items-center">
 						<button
@@ -139,7 +142,7 @@
 							class={clsx('transition-colors hover:cursor-pointer', {
 								'text-indigo-500': showCommonGuesses,
 								'text-gray-400/50 dark:text-gray-100/50': !gameOver && !showCommonGuesses
-							})}><Puzzle size={14} /></button
+							})}><Puzzle size={ICON_SIZE} /></button
 						>
 					</div>
 					<button
@@ -150,7 +153,7 @@
 						})}
 						on:click={toggleSolutionModal}
 					>
-						<Route size={14} />
+						<Route size={ICON_SIZE} />
 					</button>
 					<button
 						on:click={toggleStatsModal}
@@ -158,7 +161,7 @@
 							'text-amber-300': showStats
 						})}
 					>
-						<ChartNoAxesColumn size={14} />
+						<ChartNoAxesColumn size={ICON_SIZE} />
 					</button>
 					<button
 						on:click={toggleTutorialModal}
@@ -170,6 +173,8 @@
 					</button>
 				</div>
 			{/if}
+		</div>
+		<div>
 			<button
 				on:click={toggleMenu}
 				class="bg-black px-4 py-2 text-white uppercase transition-colors hover:cursor-pointer hover:bg-black/80"
@@ -211,7 +216,7 @@
 	</div>
 	{#if showStats}
 		<div
-			class="fixed top-0 z-10 flex h-full w-full flex-col items-center justify-center gap-2 overflow-scroll bg-white p-4 py-16 dark:bg-black"
+			class="dark:bg-background fixed top-0 z-10 flex h-full w-full flex-col items-center justify-center gap-2 overflow-scroll bg-white p-4 py-16"
 			transition:fly={{ y: -100 }}
 		>
 			<div class="w-full md:w-1/2">
@@ -222,7 +227,7 @@
 	{/if}
 	{#if showSolution}
 		<div
-			class="fixed top-0 z-10 flex h-full w-full flex-col items-center gap-2 overflow-scroll bg-white p-4 py-16 dark:bg-black"
+			class="dark:bg-background fixed top-0 z-10 flex h-full w-full flex-col items-center gap-2 overflow-scroll bg-white p-4 py-16"
 			transition:fly={{ y: -100 }}
 		>
 			<div class="w-full md:w-1/2">
@@ -236,7 +241,7 @@
 	{/if}
 	{#if showCommonGuesses && puzzleData}
 		<div
-			class="fixed top-0 z-10 flex h-full w-full flex-col items-center gap-2 overflow-scroll bg-white p-4 py-16 dark:bg-black"
+			class="dark:bg-background fixed top-0 z-10 flex h-full w-full flex-col items-center gap-2 overflow-scroll bg-white p-4 py-16"
 			transition:fly={{ y: -100 }}
 		>
 			<div class="w-full md:w-1/2">
@@ -250,7 +255,7 @@
 	{/if}
 	{#if showLeaderBoard && dayRankings.length > 0}
 		<div
-			class="fixed top-0 z-10 flex h-full w-full flex-col items-center gap-2 overflow-scroll bg-white p-4 py-16 dark:bg-black"
+			class="dark:bg-background fixed top-0 z-10 flex h-full w-full flex-col items-center gap-2 overflow-scroll bg-white p-4 py-16"
 			transition:fly={{ y: -100 }}
 		>
 			<Leaderboard {dayRankings} {playerId} />
@@ -258,7 +263,7 @@
 	{/if}
 	{#if showTutorial}
 		<div
-			class="fixed top-0 z-10 flex h-full w-full flex-col items-center gap-2 overflow-scroll bg-white p-4 py-16 dark:bg-black"
+			class="dark:bg-background fixed top-0 z-10 flex h-full w-full flex-col items-center gap-2 overflow-scroll bg-white p-4 py-16"
 			transition:fly={{ y: -100 }}
 		>
 			<HowTo />

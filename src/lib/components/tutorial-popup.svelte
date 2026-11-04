@@ -34,7 +34,7 @@
 <div
 	class={clsx(
 		'fixed top-20 left-0 z-10 flex overflow-hidden rounded-r-lg',
-		'border-2 border-l-0 border-amber-500/25 shadow-md dark:bg-black/80',
+		'border-2 border-l-0 border-amber-500/25 shadow-md dark:bg-background/80',
 		'backdrop-blur-sm transition-[width,box-shadow] duration-340 ease-[cubic-bezier(0.22,1,0.36,1)] ',
 		'dark:border-white/25',
 		{

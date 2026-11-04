@@ -31,14 +31,13 @@
 	on:click={() => chooseStartingIndex(i)}
 	in:fly={{ y: i % 2 === 0 ? -50 : 50, duration: 400 }}
 	class={clsx(
-		'relative z-0 flex flex-1 items-center justify-center border-2 p-2 transition-all',
+		'border-border dark:bg-tile relative z-0 flex flex-1 items-center justify-center rounded-lg rounded-bl-none border-2 p-2 py-4 transition-all',
 		{
-			'border-emerald-500 text-emerald-500':
-				highlightAtCorrectPosition && !selectedLetter && !highlightAtStartIndex,
-			'border-black dark:border-white dark:text-white': defaultCipherDisplay,
-			'animate-bounce border-amber-500 text-amber-500 hover:cursor-pointer': selectedLetter,
-			'border-amber-500 text-amber-500': highlightAtStartIndex,
-			'border-indigo-500 text-indigo-500': highlightAtSwapIndex && !selectedLetter
+			'text-cyan': highlightAtCorrectPosition && !selectedLetter && !highlightAtStartIndex,
+			' dark:text-primary': defaultCipherDisplay,
+			'animate-bounce text-amber-400 hover:cursor-pointer': selectedLetter,
+			' text-amber-400': highlightAtStartIndex,
+			' text-indigo-600': highlightAtSwapIndex && !selectedLetter
 		}
 	)}
 >
@@ -60,7 +59,7 @@
 			>
 		{/key}
 	{/if}
-	<p class="text-2xl font-bold uppercase md:text-5xl">{key}</p>
+	<p class="text-2xl font-bold uppercase md:text-4xl">{key}</p>
 	{#if selectedLetter}
 		<div
 			class="absolute -bottom-10 z-10 flex flex-col items-center justify-center"

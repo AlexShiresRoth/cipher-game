@@ -28,7 +28,7 @@
 	{@render children()}
 </main>
 
-<footer class="flex w-full flex-col items-center bg-gray-100 dark:bg-black">
+<footer class="dark:bg-background flex w-full flex-col items-center bg-gray-100">
 	<div
 		class="flex w-full items-center border-b border-b-gray-200/50 px-4 py-2 dark:border-b-gray-100/10"
 	>

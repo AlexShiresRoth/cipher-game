@@ -2,8 +2,42 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/typography';
 
+:root {
+	--background: #080611;
+	--panel: #120e22;
+	--tile: #19122d;
+	--keyboard: #2a2040;
+
+	--text-primary: #f6f2ff;
+	--text-muted: #9a94ae;
+
+	--purple: #a66cff;
+	--purple-bright: #c37cff;
+	--cyan: #70e7ff;
+	--magenta: #ff79d1;
+
+	--border: rgba(188, 154, 255, 0.18);
+}
+
 @theme {
+	--color-background: var(--background);
+	--color-tile: var(--tile);
+	--color-keyboard: var(--keyboard);
+	--color-border: var(--border);
+	--color-primary: var(--text-primary);
+	--color-muted: var(--text-muted);
+	--color-purple: var(--purple);
+	--color-purple-bright: var(--purple-bright);
+	--color-cyan: var(--cyan);
+	--color-magenta: var(--magenta);
 	--font-sans: 'Stack Sans Notch', sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--background: #0b010d;
+		--foreground: #ededed;
+	}
 }
 
 html,
