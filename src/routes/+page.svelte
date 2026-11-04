@@ -920,15 +920,12 @@
 	{/if}
 
 	<!-- PLAY STATE UI-->
-	<div class="absolute top-12 flex flex-col gap-2">
+	<div class="toast-stack" aria-live="polite" aria-atomic="false">
 		{#each system.errors.slice(0, 5) as error, i (`${error}-${i}`)}
-			<FlyInButton content={error} />
+			<FlyInButton content={error} tone="error" />
 		{/each}
-	</div>
-
-	<div class="absolute top-14 flex w-full flex-col items-center gap-2">
 		{#if system.complimentIndex >= 0}
-			<FlyInButton content={compliments[system.complimentIndex] || '😃'} />
+			<FlyInButton content={compliments[system.complimentIndex] || '😃'} tone="success" />
 		{/if}
 	</div>
 

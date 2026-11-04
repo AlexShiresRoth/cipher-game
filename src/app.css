@@ -717,3 +717,17 @@ a:focus-visible {
 .keyboard-info-marker {
 	background: var(--text-primary);
 }
+
+.toast-stack {
+	position: fixed;
+	top: calc(env(safe-area-inset-top, 0px) + 16px);
+	inset-inline: 16px;
+	z-index: 10000;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 10px;
+	max-width: 440px;
+	margin-inline: auto;
+	pointer-events: none;
+}
