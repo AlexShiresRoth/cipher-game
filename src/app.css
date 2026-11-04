@@ -257,11 +257,25 @@ a:focus-visible {
 	}
 
 	.game-stats {
-		padding: 14px;
-		gap: 14px;
+		flex-wrap: nowrap;
+		padding: 12px 10px;
+		gap: 8px;
 	}
 	.game-stats > div {
-		min-width: 65px;
+		min-width: 0;
+		padding-right: 6px;
+	}
+	.game-stats > div:last-child {
+		padding-right: 0;
+	}
+	.game-stats p {
+		font-size: clamp(8px, 2.2vw, 10px);
+		letter-spacing: 0;
+		white-space: nowrap;
+	}
+	.game-stats p span {
+		margin-top: 6px;
+		font-size: 16px;
 	}
 	.keyboard .key,
 	.keyboard .key > span {
