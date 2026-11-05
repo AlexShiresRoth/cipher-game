@@ -17,6 +17,10 @@
 	<meta property="og:image" content={DEFAULT_OG_IMAGE} />
 	<meta property="og:image:width" content="1200" />
 	<meta property="og:image:height" content="630" />
+	<meta
+		property="og:image:alt"
+		content="Cipher — the daily word-shuffle puzzle. Build words. Swap letters."
+	/>
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:title" content={DEFAULT_TITLE} />
 	<meta name="twitter:description" content={DEFAULT_DESCRIPTION} />
