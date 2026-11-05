@@ -715,7 +715,7 @@ a:focus-visible {
 	font-size: 24px;
 }
 .keyboard-info-marker {
-	background: var(--text-primary);
+	background: currentColor;
 }
 
 .toast-stack {

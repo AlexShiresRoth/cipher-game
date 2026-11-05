@@ -41,10 +41,10 @@
 			</p>
 			<div class="flex items-center gap-1">
 				{#if alphaStateNumber === Infinity}
-					<span class="dark:bg-primary block h-1 w-3"></span>
+					<span class="block h-1 w-3 bg-current"></span>
 				{:else}
 					{#each getArrayFromNum(alphaStateNumber) as _u, j ('data-solution-path' + j + '-' + j + '-' + _u)}
-						<span class={clsx('dark:bg-primary block h-1  w-1')}></span>
+						<span class="block h-1 w-1 bg-current"></span>
 					{/each}
 				{/if}
 			</div>
