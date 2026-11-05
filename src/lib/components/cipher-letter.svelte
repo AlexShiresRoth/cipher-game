@@ -33,11 +33,12 @@
 	class={clsx(
 		'cipher-tile border-border dark:bg-tile relative z-0 flex flex-1 items-center justify-center rounded-lg rounded-bl-none border-2 p-2 py-4 transition-all',
 		{
-			'text-cyan': highlightAtCorrectPosition && !selectedLetter && !highlightAtStartIndex,
+			'text-purple':
+				!selectedLetter &&
+				((highlightAtCorrectPosition && !highlightAtStartIndex) || highlightAtSwapIndex),
 			' dark:text-primary': defaultCipherDisplay,
 			'animate-bounce text-amber-400 hover:cursor-pointer': selectedLetter,
-			' text-amber-400': highlightAtStartIndex,
-			' text-indigo-600': highlightAtSwapIndex && !selectedLetter
+			'text-amber-400': highlightAtStartIndex
 		}
 	)}
 >
@@ -75,7 +76,7 @@
 	{/if}
 	{#if indexToSwap === i && !allowChooseIndex}
 		<div class="absolute -bottom-6 z-10" transition:fly={{ y: 20 }}>
-			<span class="text-xs text-indigo-500 uppercase">{selected[0]}</span>
+			<span class="text-purple text-xs uppercase">{selected[0]}</span>
 		</div>
 	{/if}
 </button>

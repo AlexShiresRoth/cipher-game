@@ -34,7 +34,7 @@
 	--color-cyan: var(--cyan);
 	--color-magenta: var(--magenta);
 	--color-selection: #ffbf24;
-	--color-discard: #b79aff;
+	--color-discard: #f08080;
 	--font-sans: 'IBM Plex Mono', monospace;
 }
 
@@ -178,11 +178,8 @@ a:focus-visible {
 	background: linear-gradient(#332b12, #201c0d);
 	box-shadow: 4px 5px 0 #55400e;
 }
-.cipher-tile.text-indigo-600 {
-	border-color: var(--cyan);
-}
-.cipher-tile.text-cyan {
-	border-color: #377866;
+.cipher-tile.text-purple {
+	border-color: var(--purple);
 }
 .keyboard {
 	max-width: 760px;
