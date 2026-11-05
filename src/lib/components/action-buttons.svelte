@@ -49,7 +49,10 @@
 	}
 </script>
 
-<div data-testid="button-rows" class="mt-3 flex w-full items-center justify-between gap-4">
+<div
+	data-testid="button-rows"
+	class="game-actions mt-3 flex w-full items-center justify-between gap-4"
+>
 	<div class="flex items-center gap-2">
 		<div class="relative flex items-center">
 			<button
@@ -89,36 +92,26 @@
 			class="relative flex items-center justify-center rounded bg-black p-2 text-sm text-white uppercase transition-colors md:text-base dark:bg-indigo-500 dark:text-black"
 		>
 			{#if showKeyReactive}
-				<div
-					data-testid="key-modal"
-					class="absolute bottom-full flex w-54 flex-col items-center gap-2 border-2 border-black bg-white p-4 text-sm text-black shadow-lg after:absolute after:top-full after:left-1/2 after:-translate-x-1/2
-							after:border-8 after:border-transparent after:border-t-white hover:cursor-pointer
-							dark:border-white dark:bg-black dark:text-white after:dark:border-t-black"
-					transition:fly
-				>
-					<div class="mb-2 w-full border-b-2 border-b-black py-2 dark:border-gray-100">
+				<div data-testid="key-modal" class="keyboard-info" transition:fly>
+					<div class="keyboard-info-heading">
 						<p>Keyboard info</p>
 					</div>
 					<div class="flex w-full items-center gap-4">
-						<div
-							class="flex min-w-10 flex-col items-center gap-1 rounded bg-gray-100 p-2 text-2xl text-black dark:bg-gray-100/80"
-						>
+						<div class="keyboard-info-key">
 							<p>C</p>
 							<div class="flex items-center gap-1">
-								<span class="block h-1 w-5 bg-black"></span>
+								<span class="keyboard-info-marker block h-1 w-5"></span>
 							</div>
 						</div>
 						<p class="text-left lowercase">A Line indicates infinite uses</p>
 					</div>
 					<div class="flex w-full items-center gap-4">
-						<div
-							class="flex min-w-10 flex-col items-center gap-1 rounded bg-gray-100 p-2 text-2xl text-black dark:bg-gray-100/80"
-						>
+						<div class="keyboard-info-key">
 							<p>I</p>
 							<div class="flex items-center gap-1">
-								<span class="dot block h-1 w-1 bg-black"></span>
-								<span class="dot block h-1 w-1 bg-black"></span>
-								<span class="dot block h-1 w-1 bg-black"></span>
+								<span class="keyboard-info-marker dot block h-1 w-1"></span>
+								<span class="keyboard-info-marker dot block h-1 w-1"></span>
+								<span class="keyboard-info-marker dot block h-1 w-1"></span>
 							</div>
 						</div>
 						<p class="text-left lowercase">Dots represent uses left</p>

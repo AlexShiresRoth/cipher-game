@@ -7,7 +7,7 @@
 </script>
 
 <div class="flex w-full justify-center gap-2 pt-2">
-	<table class="w-full border-collapse rounded text-sm">
+	<table class="terminal-table w-full border-collapse rounded text-sm">
 		<thead>
 			<tr class="border border-black text-center text-sm dark:border-white">
 				<th class="border-r border-black px-2 py-2 dark:border-white dark:text-white/80">Status</th>

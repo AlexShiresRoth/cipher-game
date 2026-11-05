@@ -7,7 +7,7 @@
 			Each Cipher can be solved in a certain amount of moves. Each move, over that amount, will add
 			to the scoring and cause a lower ranking 😢.
 		</li>
-		<table class="my-4 table-fixed border-collapse border border-gray-300 text-left">
+		<table class="terminal-table my-4 table-fixed border-collapse border border-gray-300 text-left">
 			<thead>
 				<tr class="">
 					<th class="w-1/2 border border-gray-300 px-3 py-1 text-sm"

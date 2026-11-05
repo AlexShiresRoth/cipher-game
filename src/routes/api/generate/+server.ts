@@ -5,7 +5,7 @@ import { json } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
 
 export const config = {
-	runtime: 'nodejs20.x'
+	runtime: 'nodejs24.x'
 };
 
 async function validateWord(word: string) {

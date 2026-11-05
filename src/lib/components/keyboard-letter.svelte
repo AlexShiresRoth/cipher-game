@@ -27,11 +27,12 @@
 	<button on:click={() => handleSelect(letter)} class="key relative flex flex-col items-center">
 		<span
 			class={clsx(
-				'flex w-full flex-col items-center justify-between gap-1.5 rounded-md p-2 text-[clamp(1.125rem,3.2vw,1.75rem)] uppercase transition-colors hover:cursor-pointer sm:p-2.5',
+				'flex w-full flex-col items-center justify-between gap-1.5 rounded-lg rounded-bl-none p-2 text-[clamp(1.125rem,3.2vw,1.75rem)] uppercase transition-colors hover:cursor-pointer sm:p-2.5',
 				{
-					'bg-amber-500': alphaKeyColorIncluded,
-					'bg-gray-100 dark:bg-gray-100/80': !alphaKeyColorIncluded && !isTutorialMode,
-					'animate-pulse bg-amber-500': isTutorialMode && !alphaKeyColorIncluded
+					'bg-purple': alphaKeyColorIncluded,
+					'dark:bg-keyboard dark:text-primary bg-gray-100':
+						!alphaKeyColorIncluded && !isTutorialMode,
+					'bg-purple animate-pulse': isTutorialMode && !alphaKeyColorIncluded
 				}
 			)}
 		>
@@ -40,10 +41,10 @@
 			</p>
 			<div class="flex items-center gap-1">
 				{#if alphaStateNumber === Infinity}
-					<span class="block h-1 w-3 bg-black"></span>
+					<span class="block h-1 w-3 bg-current"></span>
 				{:else}
 					{#each getArrayFromNum(alphaStateNumber) as _u, j ('data-solution-path' + j + '-' + j + '-' + _u)}
-						<span class={clsx('block h-1 w-1  bg-black')}></span>
+						<span class="block h-1 w-1 bg-current"></span>
 					{/each}
 				{/if}
 			</div>

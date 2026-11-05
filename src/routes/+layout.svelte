@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Logo from '$lib/components/logo.svelte';
 	import {
 		DEFAULT_DESCRIPTION,
 		DEFAULT_OG_IMAGE,
@@ -16,6 +17,10 @@
 	<meta property="og:image" content={DEFAULT_OG_IMAGE} />
 	<meta property="og:image:width" content="1200" />
 	<meta property="og:image:height" content="630" />
+	<meta
+		property="og:image:alt"
+		content="Cipher — the daily word-shuffle puzzle. Build words. Swap letters."
+	/>
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:title" content={DEFAULT_TITLE} />
 	<meta name="twitter:description" content={DEFAULT_DESCRIPTION} />
@@ -24,15 +29,15 @@
 	<link rel="apple-touch-icon" href="/favicon.png" />
 </svelte:head>
 
-<main class="mb-28 flex w-screen flex-col items-center overflow-x-hidden">
+<main class="app-shell mb-28 flex w-screen flex-col items-center overflow-x-hidden">
 	{@render children()}
 </main>
 
-<footer class="flex w-full flex-col items-center bg-gray-100 dark:bg-black">
+<footer class="app-footer dark:bg-background flex w-full flex-col items-center bg-gray-100">
 	<div
 		class="flex w-full items-center border-b border-b-gray-200/50 px-4 py-2 dark:border-b-gray-100/10"
 	>
-		<img src="/logo.svg" alt="Cipher word puzzle logo" height="30" width="30" />
+		<Logo size="footer" />
 		<p class="text-xs text-gray-400">
 			&copy; Cipher {new Date().getFullYear()}, All rights reserved.
 		</p>

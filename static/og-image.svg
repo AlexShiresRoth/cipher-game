@@ -1,16 +1,43 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
-  <rect width="1200" height="630" fill="#000000"/>
   <defs>
-    <linearGradient id="border" x1="0" y1="315" x2="1200" y2="315" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#8C52FF"/>
-      <stop offset="1" stop-color="#00BF63"/>
-    </linearGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#b2f442" stroke-opacity="0.07"/>
+    </pattern>
   </defs>
-  <rect x="56" y="56" width="1088" height="518" rx="36" fill="none" stroke="url(#border)" stroke-width="10"/>
-  <!-- CIPHER wordmark as paths-ish using large text with generous spacing -->
-  <g fill="#FFFFFF" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
-    <text x="600" y="290" font-size="96" font-weight="700" letter-spacing="16">CIPHER</text>
-    <text x="600" y="370" font-size="34" fill-opacity="0.85" letter-spacing="1">Daily word-shuffle puzzle</text>
-    <text x="600" y="500" font-size="26" fill-opacity="0.55">play-cipher.com</text>
+  <rect width="1200" height="630" fill="#090e0b"/>
+  <rect width="1200" height="630" fill="url(#grid)"/>
+  <rect x="40" y="32" width="1120" height="566" fill="#090e0b" stroke="#354920" stroke-width="2"/>
+  <path d="M40 138H1160M40 520H1160" stroke="#354920" stroke-width="2"/>
+  <g transform="translate(80 61) scale(1.2)">  <path fill="#273714" d="M4 4h36v40H4z"/>
+  <path fill="#090e0b" stroke="#b2f442" stroke-width="2" d="M1 1h34v38H1z"/>
+  <path fill="#b2f442" d="M25 16h-4c-.2-2-1.1-3-2.7-3-2.3 0-3.3 2-3.3 6s1 6 3.3 6c1.6 0 2.5-1 2.7-3h4c-.4 4.5-2.7 6.8-6.7 6.8-4.9 0-7.3-3.3-7.3-9.8s2.4-9.8 7.3-9.8c4 0 6.3 2.3 6.7 6.8Z"/>
+</g>
+  <g font-family="Monaco, monospace">
+    <text x="148" y="98" fill="#e5efda" font-size="30" font-weight="bold">CIPHER</text>
+    <text x="1118" y="94" text-anchor="end" fill="#b2f442" font-size="16" letter-spacing="3">A NEW CHALLENGE EVERY DAY</text>
+    <path d="M80 190H104" stroke="#b2f442" stroke-width="2"/>
+    <text x="120" y="196" fill="#b2f442" font-size="17" letter-spacing="3">THE DAILY WORD-SHUFFLE PUZZLE</text>
+    <text x="80" y="270" fill="#e5efda" font-size="44" font-weight="bold">Build words. Swap letters.</text>
+    <text x="80" y="309" fill="#899581" font-size="22">Find the solution, one move at a time.</text>
+  <rect x="84" y="354" width="148" height="114" fill="#030703"/>
+  <rect x="80" y="350" width="148" height="114" rx="2" fill="#131d14" stroke="#354920" stroke-width="2"/>
+  <text x="154" y="423" text-anchor="middle" fill="#e5efda" font-size="50" font-weight="bold">C</text>
+  <rect x="258" y="354" width="148" height="114" fill="#030703"/>
+  <rect x="254" y="350" width="148" height="114" rx="2" fill="#131d14" stroke="#354920" stroke-width="2"/>
+  <text x="328" y="423" text-anchor="middle" fill="#e5efda" font-size="50" font-weight="bold">I</text>
+  <rect x="432" y="354" width="148" height="114" fill="#030703"/>
+  <rect x="428" y="350" width="148" height="114" rx="2" fill="#b2f442" stroke="#b2f442" stroke-width="2"/>
+  <text x="502" y="423" text-anchor="middle" fill="#151b0d" font-size="50" font-weight="bold">P</text>
+  <rect x="606" y="354" width="148" height="114" fill="#030703"/>
+  <rect x="602" y="350" width="148" height="114" rx="2" fill="#131d14" stroke="#354920" stroke-width="2"/>
+  <text x="676" y="423" text-anchor="middle" fill="#e5efda" font-size="50" font-weight="bold">H</text>
+  <rect x="780" y="354" width="148" height="114" fill="#030703"/>
+  <rect x="776" y="350" width="148" height="114" rx="2" fill="#131d14" stroke="#354920" stroke-width="2"/>
+  <text x="850" y="423" text-anchor="middle" fill="#e5efda" font-size="50" font-weight="bold">E</text>
+  <rect x="954" y="354" width="148" height="114" fill="#030703"/>
+  <rect x="950" y="350" width="148" height="114" rx="2" fill="#131d14" stroke="#354920" stroke-width="2"/>
+  <text x="1024" y="423" text-anchor="middle" fill="#e5efda" font-size="50" font-weight="bold">R</text>
+    <text x="80" y="566" fill="#899581" font-size="18">A little logic. A few clever moves.</text>
+    <text x="1118" y="566" text-anchor="end" fill="#b2f442" font-size="19">play-cipher.com</text>
   </g>
 </svg>

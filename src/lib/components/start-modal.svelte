@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Logo from '$lib/components/logo.svelte';
 	import { formatDate } from 'date-fns';
 	import type { CipherPuzzle } from '../../types';
 	export let data: CipherPuzzle & { id: number };
@@ -7,11 +8,12 @@
 </script>
 
 <div
-	class="fixed top-0 left-0 z-9999 flex min-h-screen w-full flex-col items-center justify-center gap-12 bg-white dark:bg-black"
+	class="welcome-screen dark:bg-background fixed top-0 left-0 z-9999 flex min-h-screen w-full flex-col items-center justify-center gap-12 bg-white"
 >
 	<div class="flex flex-col items-center justify-center gap-2">
-		<img src="/logo.svg" alt="Cipher word puzzle logo" height="100" width="100" />
+		<Logo size="splash" />
 		<div class="flex max-w-3/4 flex-col text-center opacity-80">
+			<p class="section-kicker">Your daily word puzzle</p>
 			<h1 class="text-6xl font-bold uppercase">Cipher</h1>
 			<p class="text-lg">Decipher the shuffled word. Play the daily word-shuffle puzzle.</p>
 			<p class="my-4 text-xs text-amber-500 italic">

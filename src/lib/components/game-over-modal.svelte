@@ -14,7 +14,7 @@
 
 <div
 	transition:fade
-	class="fixed top-0 left-0 z-50 flex h-screen w-screen flex-col items-center bg-white dark:bg-black"
+	class="results-screen dark:bg-background fixed top-0 left-0 z-50 flex h-screen w-screen flex-col items-center bg-white"
 >
 	<div class="mt-2 flex w-full items-center justify-end px-4">
 		<button
@@ -23,7 +23,7 @@
 		>
 	</div>
 
-	<div class="flex h-full w-full flex-col items-center justify-center">
+	<div class="results-panel flex h-full w-full flex-col items-center justify-center">
 		<div class="flex w-full flex-col items-center justify-center gap-8">
 			<div class="flex w-11/12 flex-col items-center justify-center gap-2">
 				{#if showLetters}

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Logo from '$lib/components/logo.svelte';
 	import { resolve } from '$app/paths';
 	import {
 		alpha,
@@ -919,23 +920,23 @@
 	{/if}
 
 	<!-- PLAY STATE UI-->
-	<div class="absolute top-12 flex flex-col gap-2">
+	<div class="toast-stack" aria-live="polite" aria-atomic="false">
 		{#each system.errors.slice(0, 5) as error, i (`${error}-${i}`)}
-			<FlyInButton content={error} />
+			<FlyInButton content={error} tone="error" />
 		{/each}
-	</div>
-
-	<div class="absolute top-14 flex w-full flex-col items-center gap-2">
 		{#if system.complimentIndex >= 0}
-			<FlyInButton content={compliments[system.complimentIndex] || '😃'} />
+			<FlyInButton content={compliments[system.complimentIndex] || '😃'} tone="success" />
 		{/if}
 	</div>
 
 	<!-- Scrollable play area: centers cipher when tall, stacks+scrolls when short (e.g. landscape). -->
-	<div class="min-h-0 w-full flex-1 px-4 md:w-2/3 md:px-0 lg:w-1/2">
+	<div class="game-board min-h-0 w-full flex-1">
 		<div class="flex flex-col gap-8">
+			<header class="game-intro">
+				<p class="eyebrow">Daily cipher · No. {data.id}</p>
+			</header>
 			{#if checkIfPreferenceSettingExist(system.preferences)}
-				<div class="my-4 flex w-full shrink-0 flex-wrap justify-between gap-4 text-sm">
+				<div class="game-stats flex w-full shrink-0 flex-wrap justify-between gap-4 text-sm">
 					{#if system.preferences.get(PreferenceKeys.showRank)?.show}
 						<div class="flex items-center gap-1">
 							<p>
@@ -986,9 +987,17 @@
 						indexToSwap={game.indexToSwap}
 						chooseStartingIndex={handleStartingIndexUpdate}
 					/>
+					<div class="flex flex-col gap-8">
+						<div class="mt-10 flex w-full items-center justify-between gap-2">
+							<span class="h-0.5 w-full dark:bg-white/10"></span>
+							<p class="w-full text-center text-xs opacity-45">Swap letters to decode the cipher</p>
+							<span class="h-0.5 w-full dark:bg-white/10"></span>
+						</div>
+						<div class="h-0.5 w-full dark:bg-white/10"></div>
+					</div>
 				</div>
 
-				<div class="mt-24 flex w-full shrink-0 flex-col items-stretch gap-4 pb-12">
+				<div class="mt-2 flex w-full shrink-0 flex-col items-stretch gap-4 pb-12">
 					<Keyboard
 						selected={game.selected}
 						{handleSelect}
@@ -1016,8 +1025,8 @@
 					<button
 						on:click={toggleMySolutionInUI}
 						class={clsx('rounded px-4 py-2 uppercase dark:text-black', {
-							'bg-black text-white dark:bg-emerald-500': ui.showMySolution,
-							'bg-black text-white dark:bg-indigo-500': !ui.showMySolution
+							'bg-background text-white dark:bg-emerald-500': ui.showMySolution,
+							'bg-background text-white dark:bg-indigo-500': !ui.showMySolution
 						})}>{ui.showMySolution ? 'View Game' : 'View solution'}</button
 					>
 				</div>
@@ -1028,7 +1037,7 @@
 
 <div class:hidden={system.hydrated && !system.loading}>
 	<div class="flex h-screen flex-col items-center justify-center gap-4 px-6 text-center">
-		<img src="/logo.svg" alt="Cipher word puzzle logo" height="300" width="300" />
+		<Logo size="splash" />
 		<h1 class="text-5xl font-bold uppercase">Cipher</h1>
 		<p class="max-w-md opacity-80">
 			Decipher the shuffled word. Play the daily word-shuffle puzzle and solve Cipher #{data.id ||

@@ -96,7 +96,8 @@
 	solutionPath={[]}
 />
 
-<div class="flex min-h-screen w-full flex-col justify-center gap-4 px-5 py-16 md:w-2/3 lg:w-1/2">
+<div class="tutorial-page content-page flex w-full flex-col gap-4">
+	<p class="section-kicker">Cipher academy</p>
 	{#if !started}
 		<div class="flex flex-col gap-8">
 			<h1 class="text-2xl md:text-4xl">
@@ -113,6 +114,7 @@
 	{/if}
 
 	{#if started}
+		<p class="tutorial-progress">Step {step + 1} / {steps.length}</p>
 		{#key step}
 			<div class="flex w-full flex-col gap-4">
 				<div class="w-full border-b border-b-white">

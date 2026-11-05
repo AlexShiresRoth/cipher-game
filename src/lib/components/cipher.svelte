@@ -12,7 +12,7 @@
 	export let tutorialState: TutorialState | undefined = undefined;
 </script>
 
-<div class="flex w-full min-w-0 gap-1 sm:gap-2">
+<div class="cipher-tiles flex w-full min-w-0 gap-1 sm:gap-2">
 	{#each cipherState as key, i (`${key}-${i}`)}
 		<CipherLetter
 			{key}

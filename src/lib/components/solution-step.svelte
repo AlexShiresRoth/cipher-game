@@ -14,10 +14,10 @@
 	export let onCreateNode;
 </script>
 
-<div class="flex w-full flex-col items-center">
+<div class="solution-letter flex w-full flex-col items-center">
 	<p
 		class={clsx(
-			'relative z-0 flex w-full items-center justify-center border-2 p-2 uppercase transition-all',
+			'solution-tile relative z-0 flex w-full items-center justify-center border-2 p-2 uppercase transition-all',
 			{
 				'border-emerald-500 text-emerald-500': part === word[i],
 				'border-black dark:border-white dark:text-white':

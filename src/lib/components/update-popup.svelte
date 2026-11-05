@@ -12,10 +12,10 @@
 	data-testid="update-popup"
 	transition:fade
 	class={clsx(
-		`absolute z-10 w-[250px] rounded border border-black/10 bg-white p-4 shadow-md after:absolute
-							 after:border-8
-							after:border-transparent after:border-t-white
-							hover:cursor-pointer dark:border-gray-100/50 dark:bg-black after:dark:border-t-black`,
+		`terminal-popup dark:bg-background absolute z-10 w-[250px] rounded border border-black/10 bg-white p-4 shadow-md
+							 after:absolute
+							after:border-8 after:border-transparent
+							after:border-t-white hover:cursor-pointer dark:border-gray-100/50 after:dark:border-t-black`,
 		{
 			[alignClasses]: alignClasses,
 			'bottom-full': !alignClasses,
@@ -29,7 +29,7 @@
 	onclick={toggleUpdatePopup}
 >
 	<p
-		class="absolute -top-3 -right-2 flex h-6 w-6 items-center justify-center rounded-full border border-gray-100/50 bg-white text-xs text-black dark:bg-black dark:text-white"
+		class="dark:bg-background absolute -top-3 -right-2 flex h-6 w-6 items-center justify-center rounded-full border border-gray-100/50 bg-white text-xs text-black dark:text-white"
 	>
 		X
 	</p>

@@ -4,7 +4,7 @@ import { WORD_LIST } from '$lib/wordlists';
 import { json } from '@sveltejs/kit';
 
 export const config = {
-	runtime: 'nodejs20.x'
+	runtime: 'nodejs24.x'
 };
 
 export const POST = async ({ request, url }) => {
