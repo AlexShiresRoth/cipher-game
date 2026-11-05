@@ -244,7 +244,7 @@ a:focus-visible {
 	.cipher-nav > div:first-child > div:first-child a {
 		font-size: 16px;
 	}
-	.cipher-nav svg {
+	.cipher-nav > div:first-child svg {
 		width: 16px;
 	}
 
