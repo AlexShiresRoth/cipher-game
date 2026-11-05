@@ -783,10 +783,7 @@ a:focus-visible {
 }
 .solution-connector {
 	position: absolute;
-	bottom: 10px;
-	left: 20px;
-	right: 20px;
-	height: 28px;
+	inset: 0;
 	pointer-events: none;
 }
 .solution-connector-center {
@@ -803,10 +800,6 @@ a:focus-visible {
 	}
 	.solution-complete {
 		padding-bottom: 14px;
-	}
-	.solution-connector {
-		left: 12px;
-		right: 12px;
 	}
 	.solution-card .solution-tile {
 		min-height: 40px;
