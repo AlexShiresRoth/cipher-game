@@ -19,7 +19,7 @@
 		class={clsx(
 			'solution-tile relative z-0 flex w-full items-center justify-center border-2 p-2 uppercase transition-all',
 			{
-				'border-emerald-500 text-emerald-500': part === word[i],
+				'border-purple text-purple': part === word[i],
 				'border-black dark:border-white dark:text-white':
 					part !== word[i] &&
 					!isPathStepPart(i, part, swappedLettersPerPath?.[pathStep]) &&
@@ -35,7 +35,7 @@
 	</p>
 	{#if !!swappedLettersPerPath[pathStep]}
 		{#if isPathStepPart(i, part, swappedLettersPerPath?.[pathStep])}
-			<span use:onCreateNode={pathStep} class="block h-3 w-0.5 bg-amber-500"> </span>
+			<span use:onCreateNode={pathStep} class="block h-5 w-0.5 bg-amber-500"> </span>
 		{/if}
 	{/if}
 </div>

@@ -997,7 +997,7 @@
 					</div>
 				</div>
 
-				<div class="mt-2 flex w-full shrink-0 flex-col items-stretch gap-4 pb-12">
+				<div class="mt-2 flex w-full shrink-0 flex-col items-stretch gap-4">
 					<Keyboard
 						selected={game.selected}
 						{handleSelect}
@@ -1021,13 +1021,11 @@
 			{/if}
 
 			{#if system.gameOver}
-				<div class="flex shrink-0 items-center justify-center gap-2 py-4">
+				<div class="game-solution-toggle flex shrink-0 items-center justify-center gap-2">
 					<button
 						on:click={toggleMySolutionInUI}
-						class={clsx('rounded px-4 py-2 uppercase dark:text-black', {
-							'bg-background text-white dark:bg-emerald-500': ui.showMySolution,
-							'bg-background text-white dark:bg-indigo-500': !ui.showMySolution
-						})}>{ui.showMySolution ? 'View Game' : 'View solution'}</button
+						class="border-purple bg-purple text-background rounded border px-4 py-2 uppercase"
+						>{ui.showMySolution ? 'View Game' : 'View solution'}</button
 					>
 				</div>
 			{/if}

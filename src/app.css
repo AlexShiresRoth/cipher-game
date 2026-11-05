@@ -33,6 +33,8 @@
 	--color-purple-bright: var(--purple-bright);
 	--color-cyan: var(--cyan);
 	--color-magenta: var(--magenta);
+	--color-selection: #ffbf24;
+	--color-discard: #f08080;
 	--font-sans: 'IBM Plex Mono', monospace;
 }
 
@@ -113,10 +115,7 @@ a:focus-visible {
 }
 .game-board {
 	width: min(100%, 1120px);
-	padding: 0 clamp(16px, 4vw, 40px);
-}
-.game-intro {
-	padding-top: clamp(24px, 3vw, 36px);
+	padding: clamp(24px, 3vw, 36px) clamp(16px, 4vw, 40px);
 }
 .game-intro .eyebrow {
 	color: var(--purple);
@@ -176,11 +175,8 @@ a:focus-visible {
 	background: linear-gradient(#332b12, #201c0d);
 	box-shadow: 4px 5px 0 #55400e;
 }
-.cipher-tile.text-indigo-600 {
-	border-color: var(--cyan);
-}
-.cipher-tile.text-cyan {
-	border-color: #377866;
+.cipher-tile.text-purple {
+	border-color: var(--purple);
 }
 .keyboard {
 	max-width: 760px;
@@ -205,9 +201,9 @@ a:focus-visible {
 .keyboard .key:hover:not(:disabled) > span {
 	border-color: var(--purple);
 }
-.keyboard .key > span.bg-purple {
+.keyboard .key > span.bg-selection {
 	color: #151b0d;
-	border-color: var(--purple);
+	border-color: var(--color-selection);
 }
 .game-actions {
 	margin-top: 20px;
@@ -644,9 +640,11 @@ a:focus-visible {
 .example-tile.border-indigo-500 {
 	border-color: var(--purple);
 }
-.example-tile.dark\:border-emerald-500,
-.solution-tile.border-emerald-500 {
+.example-tile.dark\:border-emerald-500 {
 	border-color: var(--cyan);
+}
+.solution-tile.border-purple {
+	border-color: var(--purple);
 }
 .explanation-panel > div > button {
 	border: 1px solid var(--border);
@@ -770,23 +768,20 @@ a:focus-visible {
 }
 .solution-complete {
 	padding-bottom: 20px;
-	border-color: #337562;
-	background: #0e1c18;
+	border-color: var(--purple);
+	background: #141e11;
 }
 .solution-done {
 	display: flex;
 	justify-content: space-between;
-	color: var(--cyan);
+	color: var(--purple);
 	font-size: 12px;
 	letter-spacing: 0.1em;
 	text-transform: uppercase;
 }
 .solution-connector {
 	position: absolute;
-	bottom: 10px;
-	left: 20px;
-	right: 20px;
-	height: 28px;
+	inset: 0;
 	pointer-events: none;
 }
 .solution-connector-center {
@@ -804,11 +799,14 @@ a:focus-visible {
 	.solution-complete {
 		padding-bottom: 14px;
 	}
-	.solution-connector {
-		left: 12px;
-		right: 12px;
-	}
 	.solution-card .solution-tile {
 		min-height: 40px;
 	}
+}
+
+.game-actions button[data-testid='delete-letter'].bg-selection {
+	border-color: var(--color-selection);
+}
+.game-actions button[data-testid='clear-selection'].bg-discard {
+	border-color: var(--color-discard);
 }

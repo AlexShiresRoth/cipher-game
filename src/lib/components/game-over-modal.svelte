@@ -37,7 +37,7 @@
 						{#if showLetters}
 							<div
 								in:fly={{ y: -100, delay: i * 80, duration: 400 }}
-								class="w-12 border-2 border-emerald-500 p-2 text-center text-emerald-500 uppercase"
+								class="border-purple text-purple w-12 border-2 p-2 text-center uppercase"
 							>
 								<p>{letter}</p>
 							</div>
