@@ -35,7 +35,7 @@
 	</p>
 	{#if !!swappedLettersPerPath[pathStep]}
 		{#if isPathStepPart(i, part, swappedLettersPerPath?.[pathStep])}
-			<span use:onCreateNode={pathStep} class="block h-3 w-0.5 bg-amber-500"> </span>
+			<span use:onCreateNode={pathStep} class="block h-5 w-0.5 bg-amber-500"> </span>
 		{/if}
 	{/if}
 </div>
