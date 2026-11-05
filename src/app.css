@@ -643,9 +643,11 @@ a:focus-visible {
 .example-tile.border-indigo-500 {
 	border-color: var(--purple);
 }
-.example-tile.dark\:border-emerald-500,
-.solution-tile.border-emerald-500 {
+.example-tile.dark\:border-emerald-500 {
 	border-color: var(--cyan);
+}
+.solution-tile.border-purple {
+	border-color: var(--purple);
 }
 .explanation-panel > div > button {
 	border: 1px solid var(--border);

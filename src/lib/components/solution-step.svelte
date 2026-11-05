@@ -19,7 +19,7 @@
 		class={clsx(
 			'solution-tile relative z-0 flex w-full items-center justify-center border-2 p-2 uppercase transition-all',
 			{
-				'border-emerald-500 text-emerald-500': part === word[i],
+				'border-purple text-purple': part === word[i],
 				'border-black dark:border-white dark:text-white':
 					part !== word[i] &&
 					!isPathStepPart(i, part, swappedLettersPerPath?.[pathStep]) &&
