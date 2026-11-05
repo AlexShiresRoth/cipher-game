@@ -115,11 +115,12 @@ a:focus-visible {
 }
 .game-board {
 	width: min(100%, 1120px);
-	padding: 0 clamp(16px, 4vw, 40px);
+	padding: clamp(24px, 3vw, 36px) clamp(16px, 4vw, 40px);
 }
-.game-intro {
-	padding-top: clamp(24px, 3vw, 36px);
+.game-solution-toggle {
+	margin-top: -16px;
 }
+
 .game-intro .eyebrow {
 	color: var(--purple);
 	font-size: 12px;
