@@ -34,8 +34,11 @@
 		'cipher-tile border-border dark:bg-tile relative z-0 flex flex-1 items-center justify-center rounded-lg rounded-bl-none border-2 p-2 py-4 transition-all',
 		{
 			'text-purple':
+				highlightAtCorrectPosition &&
 				!selectedLetter &&
-				((highlightAtCorrectPosition && !highlightAtStartIndex) || highlightAtSwapIndex),
+				!highlightAtStartIndex &&
+				!highlightAtSwapIndex,
+			'text-cyan cipher-destination': highlightAtSwapIndex && !selectedLetter,
 			' dark:text-primary': defaultCipherDisplay,
 			'animate-bounce text-amber-400 hover:cursor-pointer': selectedLetter,
 			'text-amber-400': highlightAtStartIndex
@@ -76,7 +79,13 @@
 	{/if}
 	{#if indexToSwap === i && !allowChooseIndex}
 		<div class="absolute -bottom-6 z-10" transition:fly={{ y: 20 }}>
-			<span class="text-purple text-xs uppercase">{selected[0]}</span>
+			<span class="text-cyan text-xs uppercase">{selected[0]}</span>
 		</div>
 	{/if}
 </button>
+
+<style>
+	.cipher-destination {
+		border-color: var(--cyan);
+	}
+</style>
