@@ -209,9 +209,9 @@ a:focus-visible {
 .keyboard .key:hover:not(:disabled) > span {
 	border-color: var(--purple);
 }
-.keyboard .key > span.bg-amber-400 {
+.keyboard .key > span.bg-purple {
 	color: #151b0d;
-	border-color: #ffbf24;
+	border-color: var(--purple);
 }
 .game-actions {
 	margin-top: 20px;
