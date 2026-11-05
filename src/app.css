@@ -102,9 +102,7 @@ a:focus-visible {
 .cipher-nav button {
 	min-height: 36px;
 }
-.cipher-nav button:hover:not(:disabled) {
-	color: var(--purple);
-}
+
 .cipher-nav button:disabled {
 	opacity: 0.55;
 }
@@ -244,7 +242,7 @@ a:focus-visible {
 	.cipher-nav > div:first-child > div:first-child a {
 		font-size: 16px;
 	}
-	.cipher-nav svg {
+	.cipher-nav > div:first-child svg {
 		width: 16px;
 	}
 
