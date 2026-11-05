@@ -9,7 +9,7 @@ import { eq } from 'drizzle-orm';
 import type { CipherPuzzle } from '../../../types.js';
 
 export const config = {
-	runtime: 'nodejs20.x'
+	runtime: 'nodejs24.x'
 };
 
 export const POST = async ({ request, url }) => {
