@@ -131,44 +131,60 @@
 					<button
 						disabled={!gameOver}
 						on:click={toggleLeaderboardModal}
-						class={clsx('transition-colors hover:cursor-pointer', {
-							'text-orange-400': showLeaderBoard,
-							'text-gray-400/50 dark:text-gray-100/50': !gameOver && !showLeaderBoard
-						})}><ChessQueen size={ICON_SIZE} /></button
+						class={clsx(
+							'rounded p-2 transition-colors hover:cursor-pointer hover:bg-white/10 hover:text-orange-400',
+							{
+								'bg-white/10 text-orange-400': showLeaderBoard,
+								'text-gray-400/50 hover:text-orange-400 dark:text-gray-100/50':
+									!gameOver && !showLeaderBoard
+							}
+						)}><ChessQueen size={ICON_SIZE} /></button
 					>
 					<div class="relative flex flex-col items-center">
 						<button
 							disabled={!gameOver}
 							on:click={togglePlayerGuessesModal}
-							class={clsx('transition-colors hover:cursor-pointer', {
-								'text-indigo-500': showCommonGuesses,
-								'text-gray-400/50 dark:text-gray-100/50': !gameOver && !showCommonGuesses
-							})}><Puzzle size={ICON_SIZE} /></button
+							class={clsx(
+								'rounded p-2 transition-colors hover:cursor-pointer hover:bg-white/10 hover:text-indigo-500',
+								{
+									'bg-white/10 text-indigo-500': showCommonGuesses,
+									'text-gray-400/50 dark:text-gray-100/50': !gameOver && !showCommonGuesses
+								}
+							)}><Puzzle size={ICON_SIZE} /></button
 						>
 					</div>
 					<button
 						disabled={!gameOver}
-						class={clsx('transition-colors hover:cursor-pointer', {
-							'text-emerald-500': showSolution,
-							'text-gray-400/50 dark:text-gray-100/50': !gameOver && !showSolution
-						})}
+						class={clsx(
+							'rounded p-2 transition-colors hover:cursor-pointer hover:bg-white/10 hover:text-emerald-500',
+							{
+								'bg-white/10 text-emerald-500': showSolution,
+								'text-gray-400/50 dark:text-gray-100/50': !gameOver && !showSolution
+							}
+						)}
 						on:click={toggleSolutionModal}
 					>
 						<Route size={ICON_SIZE} />
 					</button>
 					<button
 						on:click={toggleStatsModal}
-						class={clsx('relative hover:cursor-pointer', {
-							'text-amber-300': showStats
-						})}
+						class={clsx(
+							'relative rounded p-2 transition-colors hover:cursor-pointer hover:bg-white/10 hover:text-amber-300',
+							{
+								'bg-white/10 text-amber-300': showStats
+							}
+						)}
 					>
 						<ChartNoAxesColumn size={ICON_SIZE} />
 					</button>
 					<button
 						on:click={toggleTutorialModal}
-						class={clsx('relative hover:cursor-pointer', {
-							'text-amber-300': showTutorial
-						})}
+						class={clsx(
+							'relative rounded p-2 transition-colors hover:cursor-pointer hover:bg-white/10 hover:text-amber-300',
+							{
+								'bg-white/10 text-amber-300': showTutorial
+							}
+						)}
 					>
 						<CircleQuestionMark size={14} />
 					</button>
