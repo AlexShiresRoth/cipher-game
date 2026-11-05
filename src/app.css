@@ -33,6 +33,8 @@
 	--color-purple-bright: var(--purple-bright);
 	--color-cyan: var(--cyan);
 	--color-magenta: var(--magenta);
+	--color-selection: #ffbf24;
+	--color-discard: #b79aff;
 	--font-sans: 'IBM Plex Mono', monospace;
 }
 
@@ -205,9 +207,9 @@ a:focus-visible {
 .keyboard .key:hover:not(:disabled) > span {
 	border-color: var(--purple);
 }
-.keyboard .key > span.bg-purple {
+.keyboard .key > span.bg-selection {
 	color: #151b0d;
-	border-color: var(--purple);
+	border-color: var(--color-selection);
 }
 .game-actions {
 	margin-top: 20px;
@@ -804,4 +806,11 @@ a:focus-visible {
 	.solution-card .solution-tile {
 		min-height: 40px;
 	}
+}
+
+.game-actions button[data-testid='delete-letter'].bg-selection {
+	border-color: var(--color-selection);
+}
+.game-actions button[data-testid='clear-selection'].bg-discard {
+	border-color: var(--color-discard);
 }

@@ -70,7 +70,7 @@
 				onclick={handleClearSelection}
 				class={clsx('rounded p-2 transition-colors md:text-lg', {
 					'bg-gray-100 text-black/80 dark:bg-gray-100/50 dark:text-black/60': selected.length === 0,
-					'bg-black text-white dark:bg-indigo-500 dark:text-black': selected.length > 0
+					'bg-discard text-background': selected.length > 0
 				})}><Trash size={20} /></button
 			>
 		</div>
@@ -80,7 +80,7 @@
 				onclick={removeLetterFromSelection}
 				class={clsx('rounded p-2 transition-colors md:text-lg', {
 					'bg-gray-100 text-black/80 dark:bg-gray-100/50 dark:text-black/60': selected.length === 0,
-					'bg-black text-white dark:bg-indigo-500 dark:text-black': selected.length > 0
+					'bg-selection text-background': selected.length > 0
 				})}><ArrowLeft size={20} /></button
 			>
 		</div>
