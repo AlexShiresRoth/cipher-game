@@ -771,13 +771,13 @@ a:focus-visible {
 }
 .solution-complete {
 	padding-bottom: 20px;
-	border-color: #337562;
-	background: #0e1c18;
+	border-color: var(--purple);
+	background: #141e11;
 }
 .solution-done {
 	display: flex;
 	justify-content: space-between;
-	color: var(--cyan);
+	color: var(--purple);
 	font-size: 12px;
 	letter-spacing: 0.1em;
 	text-transform: uppercase;
