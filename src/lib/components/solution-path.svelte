@@ -54,15 +54,13 @@
 	});
 </script>
 
-<div class="flex w-full gap-2 pt-2">
+<div class="solution-path flex w-full gap-2 pt-2">
 	<div class="flex w-full flex-col items-center gap-2">
 		{#each solutionPath as path, pathStep (pathStep)}
-			<div
-				class="flex w-full flex-col gap-2 border-2 p-4 pb-8 dark:border-white/20 dark:bg-gray-200/10"
-			>
+			<div class="solution-card" class:solution-complete={pathStep === solutionPath.length - 1}>
 				{#if pathStep + 1 < solutionPath.length}
-					{#if !!guesses}
-						<div class="flex items-center">
+					{#if guesses?.[pathStep]}
+						<div class="solution-guess flex items-center">
 							<p>
 								<span class="font-bold text-amber-500">
 									{guesses?.[pathStep]?.toUpperCase()}
@@ -70,7 +68,7 @@
 							</p>
 						</div>
 					{/if}
-					<div class="flex w-full items-center justify-between">
+					<div class="solution-card-heading flex w-full items-center justify-between">
 						<p>
 							Move {pathStep + 1}
 						</p>
@@ -93,9 +91,9 @@
 						{/if}
 					</div>
 				{:else}
-					<p>Done 🎉</p>
+					<p class="solution-done">Cipher solved <span aria-hidden="true">✓</span></p>
 				{/if}
-				<div class="flex w-full gap-2">
+				<div class="solution-letter-row flex w-full gap-2">
 					{#each path.split('') as part, i (i)}
 						<SolutionStep
 							{part}

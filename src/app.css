@@ -731,3 +731,88 @@ a:focus-visible {
 	margin-inline: auto;
 	pointer-events: none;
 }
+
+.solution-path > div {
+	gap: 16px;
+}
+.solution-card {
+	position: relative;
+	isolation: isolate;
+	display: flex;
+	width: 100%;
+	flex-direction: column;
+	gap: 16px;
+	padding: 20px 20px 44px;
+	border: 1px solid var(--border);
+	border-radius: 2px;
+	background: var(--panel);
+}
+.solution-card-heading {
+	gap: 12px;
+	color: var(--text-muted);
+	font-size: 11px;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+.solution-guess {
+	padding-bottom: 12px;
+	border-bottom: 1px solid var(--border);
+	font-size: 14px;
+	letter-spacing: 0.12em;
+}
+.solution-letter {
+	min-width: 0;
+}
+.solution-card .solution-tile {
+	min-height: 48px;
+	padding: 8px 2px;
+	font-size: clamp(14px, 3vw, 24px);
+	font-weight: 600;
+}
+.solution-letter-row {
+	gap: clamp(4px, 1vw, 10px);
+}
+.solution-complete {
+	padding-bottom: 20px;
+	border-color: #337562;
+	background: #0e1c18;
+}
+.solution-done {
+	display: flex;
+	justify-content: space-between;
+	color: var(--cyan);
+	font-size: 12px;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+}
+.solution-connector {
+	position: absolute;
+	bottom: 10px;
+	left: 20px;
+	right: 20px;
+	height: 28px;
+	pointer-events: none;
+}
+.solution-connector-center {
+	fill: var(--panel);
+}
+@media (max-width: 600px) {
+	.solution-card {
+		padding: 14px 12px 42px;
+		gap: 12px;
+	}
+	.solution-card-heading {
+		font-size: 10px;
+		letter-spacing: 0;
+	}
+	.solution-complete {
+		padding-bottom: 14px;
+	}
+	.solution-connector {
+		left: 12px;
+		right: 12px;
+	}
+	.solution-card .solution-tile {
+		min-height: 40px;
+	}
+}

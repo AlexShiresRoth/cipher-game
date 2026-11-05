@@ -14,7 +14,7 @@
 	export let onCreateNode;
 </script>
 
-<div class="flex w-full flex-col items-center">
+<div class="solution-letter flex w-full flex-col items-center">
 	<p
 		class={clsx(
 			'solution-tile relative z-0 flex w-full items-center justify-center border-2 p-2 uppercase transition-all',
