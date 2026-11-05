@@ -997,7 +997,7 @@
 					</div>
 				</div>
 
-				<div class="mt-16 flex w-full shrink-0 flex-col items-stretch gap-4 pb-12">
+				<div class="mt-2 flex w-full shrink-0 flex-col items-stretch gap-4 pb-12">
 					<Keyboard
 						selected={game.selected}
 						{handleSelect}

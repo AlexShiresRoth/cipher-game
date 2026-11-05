@@ -175,7 +175,7 @@
 				</div>
 			{/if}
 		</div>
-		<div>
+		<div class="flex items-center">
 			<button
 				on:click={toggleMenu}
 				class="bg-black px-4 py-2 text-white uppercase transition-colors hover:cursor-pointer hover:bg-black/80"
