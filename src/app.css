@@ -2,6 +2,9 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/typography';
 
+/* Keep one theme until light mode has its own complete palette. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
 	--background: #090e0b;
 	--panel: #101810;
@@ -31,13 +34,6 @@
 	--color-cyan: var(--cyan);
 	--color-magenta: var(--magenta);
 	--font-sans: 'IBM Plex Mono', monospace;
-}
-
-@media (prefers-color-scheme: dark) {
-	:root {
-		--background: #090e0b;
-		--foreground: #ededed;
-	}
 }
 
 html,
