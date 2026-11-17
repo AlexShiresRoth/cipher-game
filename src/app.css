@@ -68,7 +68,6 @@ body > div > main {
 }
 body > div > footer {
 	max-width: 1400px;
-	margin: 0 auto;
 	border: 1px solid var(--border);
 	color: var(--text-muted);
 }
@@ -88,7 +87,7 @@ a:focus-visible {
 	background: var(--background);
 	color: var(--text-primary);
 	min-height: 72px;
-	padding-inline: clamp(0px, 3vw, 36px);
+	padding-inline: clamp(0px, 1vw, 36px);
 	border-bottom-color: var(--border);
 }
 .cipher-nav > div:first-child > div:first-child {

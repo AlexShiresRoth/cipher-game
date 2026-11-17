@@ -29,11 +29,11 @@
 	<link rel="apple-touch-icon" href="/favicon.png" />
 </svelte:head>
 
-<main class="app-shell mb-28 flex w-screen flex-col items-center overflow-x-hidden">
+<main class="app-shell mb-32 flex w-screen flex-col items-center overflow-x-hidden">
 	{@render children()}
 </main>
 
-<footer class="app-footer dark:bg-background flex w-full flex-col items-center bg-gray-100">
+<footer class="app-footer dark:bg-background mt-8 flex w-full flex-col items-center bg-gray-100">
 	<div
 		class="flex w-full items-center border-b border-b-gray-200/50 px-4 py-2 dark:border-b-gray-100/10"
 	>

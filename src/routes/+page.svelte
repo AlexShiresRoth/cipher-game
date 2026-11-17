@@ -971,7 +971,7 @@
 			{/if}
 
 			{#if !ui.showMySolution}
-				<div class="flex w-full flex-1 flex-col items-stretch justify-center py-2">
+				<div class="flex w-full flex-1 flex-col items-stretch justify-center">
 					<Selection
 						isTutorialMode={tutorial.isTutorialMode}
 						selected={game.selected}
@@ -987,17 +987,14 @@
 						indexToSwap={game.indexToSwap}
 						chooseStartingIndex={handleStartingIndexUpdate}
 					/>
-					<div class="flex flex-col gap-8">
-						<div class="mt-10 flex w-full items-center justify-between gap-2">
-							<span class="h-0.5 w-full dark:bg-white/10"></span>
-							<p class="w-full text-center text-xs opacity-45">Swap letters to decode the cipher</p>
-							<span class="h-0.5 w-full dark:bg-white/10"></span>
-						</div>
-						<div class="h-0.5 w-full dark:bg-white/10"></div>
+					<div
+						class="mt-10 flex w-full flex-col items-center justify-between gap-2 border-t border-b border-white/10 py-1"
+					>
+						<p class="flex text-center text-xs opacity-45">Swap letters to decode the cipher</p>
 					</div>
 				</div>
 
-				<div class="mt-2 flex w-full shrink-0 flex-col items-stretch gap-4">
+				<div class="flex w-full shrink-0 flex-col items-stretch gap-4">
 					<Keyboard
 						selected={game.selected}
 						{handleSelect}
